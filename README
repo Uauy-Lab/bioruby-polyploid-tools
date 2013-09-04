@@ -1,0 +1,14 @@
+= bio-polyploid-tools
+
+== Introduction
+This tools are designed to deal with polyploid wheat. The first tool is to design KASPer primers, making them as specific as possible. 
+
+
+== Installation
+'gem install bio-polyploid-tools'
+
+
+== Notes
+
+If the SNP is in a gap in the alignmetn to the chromosomes, it is ignored. 
+
