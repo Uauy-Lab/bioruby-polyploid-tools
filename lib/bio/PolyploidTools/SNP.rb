@@ -9,6 +9,10 @@ module Bio::PolyploidTools
     attr_accessor :container
     attr_accessor :flanking_size, :ideal_min, :ideal_max
 
+
+    #Format: 
+    #Gene_name,Original,SNP_Pos,pos
+    #A_comp0_c0_seq1,C,519,A
     def self.parse(reg_str)
       reg_str.chomp!
       snp = SNP.new
@@ -19,7 +23,7 @@ module Bio::PolyploidTools
       snp.exon_list = Hash.new()
       snp
     end
-
+    
 
 
     def add_exon(exon, arm)
@@ -310,7 +314,6 @@ module Bio::PolyploidTools
         else
           seq = container.gene_model_sequence(gene_region)
           unless name == self.snp_in
-            puts "Modiging original: #{name} #{self.original}"  
             seq[local_pos_in_gene] = self.original 
           end
         end

@@ -431,8 +431,6 @@ module Bio::BFRTools
         end
       end
       
-      p "BFRS empty"
-      p  @BFRs
 
       for i in (0..self.size-1)
         ratios_1 = @ratios_bulk_1[i]
@@ -688,31 +686,6 @@ module Bio::BFRTools
       return region
     end
 
-  end
-
-  class AssemblyContainer < Container
-
-    attr_writer :tmp_path
-    #Method to get the temporary path. 
-    #If the path is not set, it will use the system default
-    #If a path is set, the temporary folder is kept (for debugging purposes)
-    def tmp_path
-      return @tmp_path if @tmp_path
-
-      raise NotImplementedError.new ("implement this before running on the cluster!")
-
-    end
-
-    def process_region(opts={})
-      @proccesed_regions += 1
-      output = opts[:output_file] ? opts[:output_file] : $stdout
-      region = opts[:region]
-      pileup_parental_1 = []
-
-      reg = Bio::DB::Fasta::Region.parse_region(region)
-      @parental_2_sam.extract_reads(reg)
-
-    end
   end
 
 
