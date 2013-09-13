@@ -1,6 +1,45 @@
 # RYO %S\t%pi\t%ql\t%tl\t%g\t%V\n 
+
+
 module Bio::DB::Exonerate
 
+
+  #TODO: Make a proper object with generic parser
+  def self.align(opts={})
+    opts = {
+      :model => 'affine:local' ,
+      :ryo => "RESULT:\\t%S\\t%pi\\t%ql\\t%tl\\t%g\\t%V\\n" , 
+      :bestn => 10
+    }
+    .merge(opts)
+
+    target=opts[:target]
+    query=opts[:query]
+ 
+
+    cmdline = "exonerate --verbose 0 --showalignment no --bestn #{opts[:bestn]} --showvulgar no  --model #{opts[:model]}   --ryo '#{opts[:ryo]}' #{query} #{target}"
+    status, stdout, stderr = systemu cmdline
+    puts cmdline
+    if status.exitstatus == 0
+      blocks = Array.new unless block_given?
+      stdout.each_line do |line|
+      #  puts line
+        aln = Alignment.parse_custom(line) 
+        if aln
+          if block_given?
+            yield aln
+          else
+            blocks << aln
+          end
+        end
+      end
+      return blocks unless block_given?
+    else
+      raise ExonerateException.new(), "Error running exonerate. Command line was '#{cmdline}'\nExonerate STDERR was:\n#{stderr}"
+    end
+
+
+  end
   class ExonerateException < RuntimeError 
   end
 
@@ -120,8 +159,8 @@ module Bio::DB::Exonerate
       end
       out
     end
-
   end
+
 
   class Vulgar
     attr_reader :label, :query_length, :target_length, :query_start, :query_end, :target_start, :target_end, :record, :snp_in_gap
@@ -161,8 +200,8 @@ module Bio::DB::Exonerate
       reg.end = target_snp_pos + flanking_size
       raise  ExonerateException.new "Target Query out of bounds!" unless position.between?(query_start, query_end)
       #puts "Flanking region for #{position} in exon between ( #{query_id}:#{query_start}-#{query_end}), the target in #{target_snp_pos} ( #{target_id}:#{target_start}-#{target_end}) "
-     
-      
+
+
       reg
     end
 

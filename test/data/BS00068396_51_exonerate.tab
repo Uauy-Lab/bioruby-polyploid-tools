@@ -1,0 +1,6 @@
+Command line: [exonerate --showalignment no --bestn 10 --showvulgar no --model affine:local --ryo RESULT:\t%S\t%pi\t%ql\t%tl\t%g\t%V\n /Users/ramirezr/Dropbox/code/bioruby-polyploid-tools/test/data/BS00068396_51.fa /Users/ramirezr/Dropbox/code/bioruby-polyploid-tools/test/data/BS00068396_51_contigs.fa]
+Hostname: [n87398.nbi.ac.uk]
+RESULT:	BS00068396_51 0 101 + 2AS_5222932 3015 2914 - 501	99.01	101	6364	.	M 101 101
+RESULT:	BS00068396_51 0 101 + 2DS_5334799 6812 6913 + 501	99.01	101	7226	.	M 101 101
+RESULT:	BS00068396_51 0 101 + 2BS_5245544 4549 4651 + 462	96.04	101	8836	.	M 69 69 G 0 1 M 32 32
+RESULT:	BS00068396_51 0 101 + 2BS_5163353 7425 7323 - 462	96.04	101	11974	.	M 69 69 G 0 1 M 32 32

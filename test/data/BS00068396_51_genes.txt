@@ -1,0 +1,14 @@
+2AS_5222932
+2BS_5245544
+2BS_5163353
+2DS_5334799
+
+
+for g in  2AS_5222932 2BS_5245544 2BS_5163353 2DS_5334799; 
+
+
+ grep -A1 2AS_5222932 /Users/ramirezr/Documents/PHD/201305_Databases/iwgcs/2A*.fa >> contigs_2.fa
+ grep -A1 2BS_5245544 /Users/ramirezr/Documents/PHD/201305_Databases/iwgcs/2B*.fa >> contigs_2.fa
+ grep -A1 2BS_5163353 /Users/ramirezr/Documents/PHD/201305_Databases/iwgcs/2B*.fa >> contigs_2.fa
+ grep -A1 2DS_5334799 /Users/ramirezr/Documents/PHD/201305_Databases/iwgcs/2D*.fa >> contigs_2.fa
+ grep -A1 2DS_5334799 /Users/ramirezr/Documents/PHD/201305_Databases/iwgcs/2D*.fa >> contigs_2.fa
