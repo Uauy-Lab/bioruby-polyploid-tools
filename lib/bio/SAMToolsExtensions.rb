@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'pathname'
-require_relative 'db/fasta.rb'
+#require_relative 'db/fasta.rb'
 require 'bio'
 
 #require "set"

@@ -11,23 +11,24 @@ require 'bundler'
 #end
 require 'rake'
 
-#require 'jeweler'
-#Jeweler::Tasks.new do |gem|
+#
+require 'jeweler'
+Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-#  gem.name = "bio-polyploid-tools"
-#  gem.homepage = "http://github.com/homonecloco/bioruby-polyploid-tools"
-#  gem.license = "MIT"
-#  gem.summary = %Q{Tool to work with polyploids, NGS and molecular biology}
-#  gem.description = %Q{Repository of tools developed in TGAC and Crop Genetics in JIC to work with polyploid wheat}
-#  gem.email = "ricardo.ramirez-gonzalez@tgac.ac.uk"
-#  gem.authors = ["Ricardo Ramirez-Gonzalez"]
+   gem.name = "bio-polyploid-tools"
+  gem.homepage = "http://github.com/homonecloco/bioruby-polyploid-tools"
+  gem.license = "MIT"
+  gem.summary = %Q{Tool to work with polyploids, NGS and molecular biology}
+  gem.description = %Q{Repository of tools developed in TGAC and Crop Genetics in JIC to work with polyploid wheat}
+   gem.email = "ricardo.ramirez-gonzalez@tgac.ac.uk"
+  gem.authors = ["Ricardo Ramirez-Gonzalez"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
   #  gem.add_runtime_dependency 'jabber4r', '> 0.1'
   #  gem.add_development_dependency 'rspec', '> 1.2.3'
- # gem.extensions = "ext/mkrf_conf.rb"
-#end
-#Jeweler::RubygemsDotOrgTasks.new
+#  gem.extensions = "ext/mkrf_conf.rb"
+end
+Jeweler::RubygemsDotOrgTasks.new
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|

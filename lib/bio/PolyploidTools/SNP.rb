@@ -1,3 +1,4 @@
+require 'bio'
 module Bio::PolyploidTools
   class SNPException < RuntimeError 
    end
@@ -8,15 +9,16 @@ module Bio::PolyploidTools
     attr_accessor :exon_list
     attr_accessor :container
     attr_accessor :flanking_size, :ideal_min, :ideal_max
+    attr_accessor :template_sequence
 
 
     #Format: 
-    #Gene_name,Original,SNP_Pos,pos
+    #Gene_name,Original,SNP_Pos,pos,chromosome
     #A_comp0_c0_seq1,C,519,A
     def self.parse(reg_str)
       reg_str.chomp!
       snp = SNP.new
-      snp.gene, snp.original, snp.position, snp.snp = reg_str.split(",")
+      snp.gene, snp.original, snp.position, snp.snp, snp.chromosome = reg_str.split(",")
       snp.position = snp.position.to_i
       snp.original.upcase!
       snp.snp.upcase!  
@@ -24,7 +26,9 @@ module Bio::PolyploidTools
       snp
     end
     
-
+     def to_fasta
+        return ">#{self.gene}\n#{self.template_sequence}\n"
+      end
 
     def add_exon(exon, arm)
       @exon_list[arm] = exon unless @exon_list[arm]
@@ -67,6 +71,7 @@ module Bio::PolyploidTools
     end
 
     def local_position
+      puts "local_position #{self.position} #{self.covered_region.start}"
       self.position - self.covered_region.start
     end
 
@@ -360,6 +365,7 @@ module Bio::PolyploidTools
     end
 
     def cut_and_pad_sequence_to_primer_region(sequence)
+      p "cut_and_pad_sequence_to_primer_region #{local_position} #{flanking_size}" 
       ideal_min = self.local_position - flanking_size 
       ideal_max = self.local_position + flanking_size
       left_pad = 0
@@ -565,7 +571,7 @@ module Bio::PolyploidTools
       return @surrounding_exon_sequences if @surrounding_exon_sequences
       @surrounding_exon_sequences =  Bio::Alignment::SequenceHash.new
       self.exon_list.each do |chromosome, exon| 
-        puts flanking_size
+        puts "surrounding_exon_sequences #{flanking_size}"
        #puts chromosome
         #puts exon
         flanquing_region  = exon.target_flanking_region_from_position(position,flanking_size)

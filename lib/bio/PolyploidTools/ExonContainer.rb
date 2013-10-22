@@ -56,6 +56,11 @@ module Bio::PolyploidTools
       path = opts[:alig_path]
       chromosomes[name] = Bio::DB::Fasta::FastaFile.new(path)
     end
+    
+    def add_snp(snp)
+      @snp_map[snp.gene] = Array.new unless   @snp_map[snp.gene] 
+      @snp_map[snp.gene] << snp
+    end
 
     def add_snp_file(filename, chromosome, snp_in, original_name)
 
@@ -113,7 +118,11 @@ module Bio::PolyploidTools
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           #file.puts snp.primer_fasta_string 
-          file.puts snp.aligned_sequences_fasta
+          begin 
+            file.puts snp.aligned_sequences_fasta
+          rescue Exception=>e
+            $stderr.puts e.to_s
+          end
         end
       end
     end
@@ -121,8 +130,12 @@ module Bio::PolyploidTools
     def print_primer_3_exons (file, target_chromosome , parental )
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
+          begin 
           string = snp.primer_3_string( target_chromosome, parental )
           file.puts string if string.size > 0
+           rescue Exception=>e
+              $stderr.puts e.to_s
+            end
         end 
       end
     end
@@ -148,7 +161,7 @@ module Bio::PolyploidTools
             if snp_array != nil
               snp_array.each do |snp|                            
                 if snp != nil and snp.position.between?(record.query_start, record.query_end)
-                  exon = record.exome_on_gene_position(snp.position)
+                  exon = record.exon_on_gene_position(snp.position)
                   snp.add_exon(exon, arm_selection.call(record.target_id))
                   pos = exon.target_position_from_query(snp.position)
                 end

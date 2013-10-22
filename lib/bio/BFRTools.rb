@@ -5,7 +5,7 @@ require 'rubygems'
 #require 'bio/db/vcf'
 require 'pathname'
 #require_relative 'BIOExtensions.rb'
-require_relative 'db/fasta.rb'
+require_relative 'db/fastadb.rb'
 
 require 'bio'
 require "set"

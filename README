@@ -10,6 +10,8 @@ This tools are designed to deal with polyploid wheat. The first tool is to desig
 
 == Notes
 
-If the SNP is in a gap in the alignmetn to the chromosomes, it is ignored. 
+* If the SNP is in a gap in the alignmetn to the chromosomes, it is ignored. 
 
+BUG: Sometimes the primers are reversed (the first comes second)
+BUG: Blocks with NNNs are picked and treated as semi-specific. 
 

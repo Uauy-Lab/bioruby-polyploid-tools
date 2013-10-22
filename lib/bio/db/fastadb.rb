@@ -113,7 +113,7 @@ module Bio::DB::Fasta
       raise FastaDBException.new(), "No path for the refernce fasta file. " if @fasta_path.nil?
       @fasta_index = Bio::DB::SAM::Tools.fai_load(@fasta_path)
       if @fasta_index.null? then
-        p "Generating index for: " + @fasta_path
+        $stderr.puts "Generating index for: " + @fasta_path
         Bio::DB::SAM::Tools.fai_build(@fasta_path)
         @fasta_index =  Bio::DB::SAM::Tools.fai_load(@fasta_path)
         raise FastaDBException.new(), "Unable to generate fasta index for: " + @fasta_path if @fasta_index.nil? ||  @fasta_index.null?

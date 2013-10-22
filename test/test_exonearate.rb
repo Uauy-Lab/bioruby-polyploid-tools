@@ -13,7 +13,7 @@ class TestPolyploidTools < Test::Unit::TestCase
   def setup
     File.expand_path(File.dirname(__FILE__) + '/data/')
     
-    puts "SEETING UP *******************"
+  
   end
   
   def teardown

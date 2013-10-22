@@ -2,6 +2,22 @@
 module Bio::DB::Primer3
   class Primer3Exception < RuntimeError 
   end
+  
+  def self.run(opts={})
+   puts "Primer3.run running..."
+
+    f_in=opts[:in]
+    f_out=opts[:out]
+    primer_3_in = File.read(f_in)
+    status = systemu "primer3_core", 0=>primer_3_in, 1=>stdout='', 2=>stderr=''
+   # $stderr.puts cmdline
+    if status.exitstatus == 0
+     File.open(f_out, 'w') { |f| f.write(stdout) }
+    else
+      raise Primer3Exception.new(), "Error running exonerate. Command line was 'primer3_core'\nExonerate STDERR was:\n#{stderr}"
+    end
+  end
+  
   class SNP
 
     attr_accessor :gene, :original, :position, :snp, :chromosome, :line_1, :line_2
@@ -502,7 +518,23 @@ module Bio::DB::Primer3
         snp.line_1 = @line_1
         snp.line_2 = @line_2
       end
+    end
 
+    def add_snp(snp_in) 
+       @snp_hash=Hash.new unless @snp_hash
+      snp = SNP.new
+      snp.gene = snp_in.gene
+      snp.original = snp_in.original
+      
+      snp.position = snp_in.position
+      snp.snp = snp_in.snp
+
+      snp.original.upcase!
+      snp.snp.upcase! 
+      snp.line_1 = @line_1
+      snp.line_2 = @line_2 
+      @snp_hash[snp.to_s] = snp
+      snp
     end
 
     def add_primers_file(filename)
@@ -514,12 +546,13 @@ module Bio::DB::Primer3
     end
 
     def print_primers
+      str = ""
       snp_hash.each do |k, snp|
-        puts snp.print_primers
+        str << snp.print_primers << "\n"
       end
-
+      return str
     end
-
+    
   end
 
 end

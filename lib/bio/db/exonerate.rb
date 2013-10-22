@@ -19,27 +19,26 @@ module Bio::DB::Exonerate
 
     cmdline = "exonerate --verbose 0 --showalignment no --bestn #{opts[:bestn]} --showvulgar no  --model #{opts[:model]}   --ryo '#{opts[:ryo]}' #{query} #{target}"
     status, stdout, stderr = systemu cmdline
-    puts cmdline
+    $stderr.puts cmdline
     if status.exitstatus == 0
-      blocks = Array.new unless block_given?
+      alns = Array.new unless block_given?
       stdout.each_line do |line|
-      #  puts line
         aln = Alignment.parse_custom(line) 
         if aln
           if block_given?
             yield aln
           else
-            blocks << aln
+            alns << aln
           end
         end
       end
-      return blocks unless block_given?
+      return alns unless block_given?
     else
       raise ExonerateException.new(), "Error running exonerate. Command line was '#{cmdline}'\nExonerate STDERR was:\n#{stderr}"
     end
-
-
   end
+  
+  
   class ExonerateException < RuntimeError 
   end
 
@@ -136,7 +135,7 @@ module Bio::DB::Exonerate
     end
 
     #This assumes that the gene is the query and the chromosome is the target
-    def exome_on_gene_position(position)
+    def exon_on_gene_position(position)
       @vulgar_block.each do |vulgar|
         if position.between?(vulgar.query_start, vulgar.query_end)
           return vulgar
@@ -147,7 +146,7 @@ module Bio::DB::Exonerate
 
     def tarpostion_from_query_position(position)
       ret = nil
-      vulgar_block = exome_on_gene_position(position)
+      vulgar_block = exon_on_gene_position(position)
       ret
     end
 
