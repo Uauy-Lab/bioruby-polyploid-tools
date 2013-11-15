@@ -71,7 +71,7 @@ module Bio::PolyploidTools
     end
 
     def local_position
-      puts "local_position #{self.position} #{self.covered_region.start}"
+      #puts "local_position #{self.position} #{self.covered_region.start}"
       self.position - self.covered_region.start
     end
 
@@ -344,7 +344,7 @@ module Bio::PolyploidTools
         else
           seq = container.gene_model_sequence(gene_region)
            unless name == self.snp_in
-              puts "Modiging original: #{name} #{self.original}"  
+             # puts "Modiging original: #{name} #{self.original}"  
               seq[local_pos_in_gene] = self.original 
             end
         end
@@ -365,7 +365,7 @@ module Bio::PolyploidTools
     end
 
     def cut_and_pad_sequence_to_primer_region(sequence)
-      p "cut_and_pad_sequence_to_primer_region #{local_position} #{flanking_size}" 
+     # p "cut_and_pad_sequence_to_primer_region #{local_position} #{flanking_size}" 
       ideal_min = self.local_position - flanking_size 
       ideal_max = self.local_position + flanking_size
       left_pad = 0
@@ -571,7 +571,7 @@ module Bio::PolyploidTools
       return @surrounding_exon_sequences if @surrounding_exon_sequences
       @surrounding_exon_sequences =  Bio::Alignment::SequenceHash.new
       self.exon_list.each do |chromosome, exon| 
-        puts "surrounding_exon_sequences #{flanking_size}"
+        #puts "surrounding_exon_sequences #{flanking_size}"
        #puts chromosome
         #puts exon
         flanquing_region  = exon.target_flanking_region_from_position(position,flanking_size)

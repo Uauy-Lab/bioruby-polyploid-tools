@@ -14,4 +14,7 @@ This tools are designed to deal with polyploid wheat. The first tool is to desig
 
 BUG: Sometimes the primers are reversed (the first comes second)
 BUG: Blocks with NNNs are picked and treated as semi-specific. 
+TODO: If reading from a reference file, only get one reference to align when the region is queried several times
+TODO: Add a parameter file file to tweak the alignments. 
+
 

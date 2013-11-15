@@ -160,10 +160,17 @@ module Bio::PolyploidTools
             snp_array = @snp_map[record.query_id]
             if snp_array != nil
               snp_array.each do |snp|                            
-                if snp != nil and snp.position.between?(record.query_start, record.query_end)
-                  exon = record.exon_on_gene_position(snp.position)
-                  snp.add_exon(exon, arm_selection.call(record.target_id))
-                  pos = exon.target_position_from_query(snp.position)
+                if snp != nil and snp.position.between?( (record.query_start + 1) , record.query_end)
+                  begin
+                    exon = record.exon_on_gene_position(snp.position)
+                #    pos = exon.target_position_from_query(snp.position)
+              
+                    snp.add_exon(exon, arm_selection.call(record.target_id))
+              
+                    
+                  rescue Bio::DB::Exonerate::ExonerateException
+                    $stderr.puts "Failed for the rage #{record.query_start}-#{record.query_end} for position #{snp.position}"
+                  end
                 end
               end
             end
