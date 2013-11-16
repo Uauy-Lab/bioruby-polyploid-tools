@@ -348,10 +348,16 @@ module Bio::PolyploidTools
               seq[local_pos_in_gene] = self.original 
             end
         end
+        #puts "local_pos_in_gene #{local_pos_in_gene}"
+        #puts "'#{name}' compared to '#{self.snp_in}'"
+        #puts seq
         seq[local_pos_in_gene] = seq[local_pos_in_gene].upcase
         seq[local_pos_in_gene] = self.snp if name == self.snp_in  
+        #puts seq
+        #puts "__"
         @surrounding_parental_sequences [name] = cut_and_pad_sequence_to_primer_region(seq)
       end
+     # puts "&&&&\n#{surrounding_parental_sequences['A']}\n#{surrounding_parental_sequences['B']}\n&&&&"
       @surrounding_parental_sequences
     end
 
@@ -384,16 +390,20 @@ module Bio::PolyploidTools
 
     def sequences_to_align
       @sequences_to_align = surrounding_parental_sequences.merge(surrounding_exon_sequences) unless @sequences_to_align
+    #  p "sequences_to_align"
+     # p @sequences_to_align.inspect
       @sequences_to_align
     end
 
     def aligned_sequences
-      #puts sequences_to_align.inspect
+     
       return @aligned_sequences if @aligned_sequences
       options = ['--maxiterate', '1000', '--localpair', '--quiet']
       mafft = Bio::MAFFT.new( "mafft" , options)
+      #puts "Before MAFT:#{sequences_to_align.inspect}"
       report = mafft.query_align(sequences_to_align)
       @aligned_sequences = report.alignment
+      #puts "MAFFT: #{report.alignment.inspect}" 
       @aligned_sequences
     end
 
@@ -429,11 +439,15 @@ module Bio::PolyploidTools
       local_pos_in_gene = flanking_size
       local_pos = 0
       started = false
+#TODO: Validate the cases when the alignment has padding on the left on all the chromosomes
 
       while i < parental_strings[0].size  do
         if local_pos_in_gene == local_pos
           pos = i
-          $stderr.puts "WARN: #{self.to_s} doesn't have a SNP in the marked place!" if parental_strings[0][i] == parental_strings[1][i]
+          if parental_strings[0][i] == parental_strings[1][i]
+            $stderr.puts "WARN: #{self.to_s} doesn't have a SNP in the marked place (#{i})! \n#{parental_strings[0]}\n#{parental_strings[1]}"
+          end 
+    
         end
 
         started = true if template_sequence[i] != "-" 
