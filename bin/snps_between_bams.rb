@@ -9,7 +9,8 @@ require 'set'
 
 $: << File.expand_path(File.dirname(__FILE__) + '/../lib')
 $: << File.expand_path('.')
-path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
+path=File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
+$stderr.puts "Loading: #{path}"
 require path
 
 puts  ARGV[0]
@@ -19,6 +20,17 @@ fasta_db.load_fai_entries
 bam1 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[1]})
 bam2 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[2]})
 
+output_prefix = ARGV[3]
+
+block_size=300
+
+main_table="#{output_prefix}_#{block_size}_table.csv"
+
+table_file = File.open(main_table, "w")
+table_file.puts "gene\tlength\t#snps_1\tcalled_1\tsnps_per_1k_1\tsnps_2\tsnps_per_1k_2}\tcalled_2\tsnps_tot\tsnps_per_1k_tot"
+
+hist_1= Hash.new(0)
+hist_2= Hash.new(0)
 fasta_db.index.entries.each do | r |
   #Np r.get_full_region
   #container.process_region( { :region => r.get_full_region.to_s, :output_file => output_file } )
@@ -33,12 +45,35 @@ fasta_db.index.entries.each do | r |
     snps_1 = cons_1.count_ambiguities
     snps_2 = cons_2.count_ambiguities
     
+    called_1 = cons_1.upper_case_count
+    called_2 = cons_2.upper_case_count
+    
     snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
   
-    snps_per_1k_1   = (1000 * snps_1.to_f   ) / region.size
-    snps_per_1k_2   = (1000 * snps_2.to_f   ) / region.size
-    snps_per_1k_tot = (1000 * snps_tot.to_f ) / region.size
+    snps_per_1k_1   = (block_size * snps_1.to_f   ) / called_1
+    snps_per_1k_2   = (block_size * snps_2.to_f   ) / called_2
+    snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
+    
+    hist_1[snps_per_1k_1.to_i] += 1
+    hist_2[snps_per_1k_2.to_i] += 1
   
-    puts "#{r.id}\t#{region.size}\t#{snps_1}\t#{snps_per_1k_1}\t#{snps_2}\t#{snps_per_1k_2}\t#{snps_tot}\t#{snps_per_1k_tot}"
+    table_file.puts "#{r.id}\t#{region.size}\t#{snps_1}\t#{called_1}#{snps_per_1k_1}\t#{snps_2}\t#{snps_per_1k_2}\t#{called_2}\t#{snps_tot}\t#{snps_per_1k_tot}"
   end
 end
+
+hist_table="#{output_prefix}_#{block_size}_hist.csv"
+hist_file = File.open(hist_table, "w")
+
+all_keys = SortedSet.new(hist_1.keys)
+all_keys.merge(hist_2.keys)
+hist_file.puts "SNPs/#{block_size}\thist_1\thist_2\n"
+all_keys.each do |k|
+  hist_file.puts "#{k}\t#{hist_1[k]}\t#{hist_2[k]}"
+  
+end
+
+hist_file.close
+
+
+
+table_file.close

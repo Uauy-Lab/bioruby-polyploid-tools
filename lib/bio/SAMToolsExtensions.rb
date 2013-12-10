@@ -3,6 +3,8 @@ require 'pathname'
 #require_relative 'db/fasta.rb'
 require 'bio'
 
+require_relative 'db/fastadb.rb'
+
 #require "set"
 #require 'systemu'
 #require 'json'

@@ -1,3 +1,5 @@
+
+require_relative "SNP"
 module Bio::PolyploidTools
   class SNPSequenceException < RuntimeError 
   end

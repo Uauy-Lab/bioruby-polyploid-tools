@@ -78,9 +78,9 @@ class Bio::NucleicAcid
 
     'acgt' => 'n'
   }
-  
+
   def self.is_unambiguous(base)
-     "acgtACGT".match(base)
+    "acgtACGT".match(base)
   end
 
   def self.to_IUAPC(bases)    
@@ -99,7 +99,6 @@ class Bio::NucleicAcid
 end
 
 class Bio::Sequence
-  
   def self.snps_between(seq1, seq2)
     snps=0
     for i in (0..seq1.size-1)
@@ -107,14 +106,24 @@ class Bio::Sequence
     end
     snps
   end
+end
+
+class  String
+
   
+
   def count_ambiguities
     snps=0
-    
+
     for i in (0..self.size-1)
-    
-      snps += 1 if !Bio::NucleicAcid.is_unambiguous(self[i]) and self[i] != 'n' and self[i] != 'N'
+
+      snps += 1 if !Bio::NucleicAcid.is_unambiguous(self[i]) and /[[:upper:]]/.match(self[i])  and /[[:upper:]]/.match(self[i])
     end
     snps
   end
+  
+  def upper_case_count
+    match(/[^A-Z]*/).to_s.size
+  end
+  
 end

@@ -173,7 +173,7 @@ class Bio::DB::Sam
   end
 
   def calculate_stats_from_pile(opts={})
-    min_cov = opts[:min_cov]
+    min_cov = opts[:min_cov] ? opts[:min_cov] : 20  
 
 
     opts[:region] = Bio::DB::Fasta::Region.parse_region( opts[:region] .to_s)  unless opts[:region].class == Bio::DB::Fasta::Region
