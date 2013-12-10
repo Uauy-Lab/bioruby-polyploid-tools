@@ -191,7 +191,7 @@ class Bio::DB::Sam
       if pile.coverage > min_cov
         base_ratios[pile.pos - region.start ] = pile.base_ratios
         reference[pile.pos - region.start   ] = pile.consensus_iuap(0.20)
-        coverages[pile.pos - region.start   ]  = pile.coverage.to_i
+        coverages[pile.pos - region.start    ]  = pile.coverage.to_i
         bases[pile.pos - region.start   ]  = pile.bases
       end
       total_cov += pile.coverage
@@ -201,6 +201,7 @@ class Bio::DB::Sam
     region.coverages = coverages
     region.base_ratios = base_ratios
     region.consensus = reference
+
     region.average_coverage = total_cov.to_f/region.size.to_f
     region.bases = bases
     region

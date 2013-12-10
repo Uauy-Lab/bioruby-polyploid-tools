@@ -16,6 +16,8 @@ Dir[File.dirname(__FILE__) + "/bio/*.rb"].each {|file|
 Dir[File.dirname(__FILE__) + "/bio/*/*.rb"].each {|file| 
  # puts file
   require_relative file }
+  
+require_relative File.dirname(__FILE__) + "/../conf/defaults.rb"
 
 
 #require_relative "bio/BFRTools.rb"

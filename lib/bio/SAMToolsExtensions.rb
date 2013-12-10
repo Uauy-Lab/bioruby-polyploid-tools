@@ -251,32 +251,37 @@ class Bio::DB::Sam
 
     opts[:region] = Bio::DB::Fasta::Region.parse_region( opts[:region] .to_s)  unless opts[:region].class == Bio::DB::Fasta::Region
     region = opts[:region]
+    
+    mark_case = true if opts[:case]
+   # puts "Marcase: #{mark_case}"
     reference = self.fetch_reference(region.entry, region.start, region.end).downcase
     #  p "calculationg from pile..." << region.to_s
     base_ratios = Array.new(region.size, BASE_COUNT_ZERO) 
     bases = Array.new(region.size, BASE_COUNT_ZERO) 
     coverages = Array.new(region.size, 0)
     total_cov = 0
-
+    
     self.mpileup_cached(:region=>"#{region.to_s}") do | pile |
       #puts pile
       #puts pile.coverage
       if pile.coverage > min_cov
         base_ratios[pile.pos - region.start ] = pile.base_ratios
-        reference[pile.pos - region.start   ] = pile.consensus_iuap(0.20)
+        reference[pile.pos - region.start  - 1 ] = pile.consensus_iuap(0.20)
         coverages[pile.pos - region.start   ]  = pile.coverage.to_i
         bases[pile.pos - region.start   ]  = pile.bases
       end
       total_cov += pile.coverage
     end
 
+    #puts ">Ref\n#{reference}"
     region = @cached_regions[region.to_s]
     region.coverages = coverages
     region.base_ratios = base_ratios
-    region.consensus = Bio::Sequence.auto(reference)
-     if region.orientation == :reverse
-        region.consensus.reverse_complement!()
-      end
+    region.consensus = Bio::Sequence.new(reference)
+    region.consensus.na
+    if region.orientation == :reverse
+      region.consensus.reverse_complement!()
+    end
     region.average_coverage = total_cov.to_f/region.size.to_f
     region.bases = bases
     region

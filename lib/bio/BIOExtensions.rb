@@ -83,8 +83,7 @@ class Bio::NucleicAcid
      "acgtACGT".match(base)
   end
 
-  def self.to_IUAPC(bases)
-    #puts "TADA"    
+  def self.to_IUAPC(bases)    
     base = IUPAC_CODES[bases.to_s.downcase.chars.sort.uniq.join]
     if base == nil
       p "Invalid base! #{base}"
@@ -97,4 +96,25 @@ class Bio::NucleicAcid
     IUPAC_CODES[code.downcase].chars.include? base.downcase
   end
 
+end
+
+class Bio::Sequence
+  
+  def self.snps_between(seq1, seq2)
+    snps=0
+    for i in (0..seq1.size-1)
+      snps += 1 if seq1[i] != seq2[i] 
+    end
+    snps
+  end
+  
+  def count_ambiguities
+    snps=0
+    
+    for i in (0..self.size-1)
+    
+      snps += 1 if !Bio::NucleicAcid.is_unambiguous(self[i]) and self[i] != 'n' and self[i] != 'N'
+    end
+    snps
+  end
 end
