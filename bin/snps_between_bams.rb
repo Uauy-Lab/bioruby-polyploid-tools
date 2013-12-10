@@ -39,6 +39,7 @@ fasta_db.index.entries.each do | r |
   region=r.get_full_region
   
   
+  begin
 
   cons_1 = bam1.consensus_with_ambiguities({:region=>region, :case=>true})
   cons_2 = bam2.consensus_with_ambiguities({:region=>region, :case=>true})
@@ -64,6 +65,9 @@ fasta_db.index.entries.each do | r |
     fasta_file.puts "#{cons_1}"
     fasta_file.puts ">#{r.id}_2"
     fasta_file.puts "#{cons_2}"
+  end
+  rescue Exception => e
+    $stderr.puts "Unable to process #{region}: #{e.to_s}"
   end
 end
 fasta_file.close
