@@ -14,7 +14,8 @@ require path
 
 #TODO: Use temporary files somewhere in the file system and add traps to delete them/forward them as a result. 
 #TODO: Make all this parameters
-path_to_contigs=path_to_chromosomes
+path_to_contigs="/Users/ramirezr/Documents/PHD/201305_Databases/iwgcs"
+#path_to_contigs=path_to_chromosomes
 snp_in="A"
 original_name="B"
 fasta_reference = nil
