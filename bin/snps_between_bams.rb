@@ -60,7 +60,10 @@ fasta_db.index.entries.each do | r |
       hist_1[snps_per_1k_1.to_i] += 1
       hist_2[snps_per_1k_2.to_i] += 1
 
-      table_file.puts "#{r.id}\t#{region.size}\t#{snps_1}\t#{called_1}#{snps_per_1k_1}\t#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t#{snps_tot}\t#{snps_per_1k_tot}"
+      table_file.print "#{r.id}\t#{region.size}\t"
+      table_file.print "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
+      table_file.print "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
+      table_file.print "#{snps_tot}\t#{snps_per_1k_tot}"
       fasta_file.puts ">#{r.id}_1"
       fasta_file.puts "#{cons_1}"
       fasta_file.puts ">#{r.id}_2"
