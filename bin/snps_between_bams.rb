@@ -13,18 +13,26 @@ path=File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.
 $stderr.puts "Loading: #{path}"
 require path
 
-puts  ARGV[0]
+
 
 fasta_db = Bio::DB::Fasta::FastaFile.new( ARGV[0])
 fasta_db.load_fai_entries
 bam1 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[1]})
 bam2 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[2]})
 
+
 output_prefix = ARGV[3]
 
 block_size=300
 
-main_table="#{output_prefix}_#{block_size}_table.csv"
+min_cov = ARGV[4].to_i ? ARGV[4].to_i : 10
+chunk = ARGV[5].to_i
+chunk_size = ARGV[6].to_i
+
+
+
+
+main_table="#{output_prefix}_#{block_size}_#{min_cov}_table.#{chunk}.csv"
 
 table_file = File.open(main_table, "w")
 table_file.puts "gene\tlength\tsnps_1\tcalled_1\tsnps_per_#{block_size}_1\tsnps_2\tcalled_2\tsnps_per_#{block_size}_2\tsnps_tot\tsnps_per_1k_tot"
@@ -32,8 +40,14 @@ table_file.puts "gene\tlength\tsnps_1\tcalled_1\tsnps_per_#{block_size}_1\tsnps_
 hist_1= Hash.new(0)
 hist_2= Hash.new(0)
 
-fasta_file = File.open("#{output_prefix}.fa", "w")
+fasta_file = File.open("#{output_prefix}_#{min_cov}.#{chunk}.fa", "w")
+i = -1
+min = chunk * chunk_size
+max = min + chunk_size
+
 fasta_db.index.entries.each do | r |
+  i = i  + 1
+  next if i < min or i >= max
   #Np r.get_full_region
   #container.process_region( { :region => r.get_full_region.to_s, :output_file => output_file } )
   region=r.get_full_region
@@ -41,8 +55,8 @@ fasta_db.index.entries.each do | r |
 
   begin
 
-    cons_1 = bam1.consensus_with_ambiguities({:region=>region, :case=>true})
-    cons_2 = bam2.consensus_with_ambiguities({:region=>region, :case=>true})
+    cons_1 = bam1.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
+    cons_2 = bam2.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
     if cons_1 != cons_2
 
       snps_1 = cons_1.count_ambiguities
@@ -63,7 +77,7 @@ fasta_db.index.entries.each do | r |
       table_file.print "#{r.id}\t#{region.size}\t"
       table_file.print "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
       table_file.print "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
-      table_file.print "#{snps_tot}\t#{snps_per_1k_tot}"
+      table_file.print "#{snps_tot}\t#{snps_per_1k_tot}\n"
       fasta_file.puts ">#{r.id}_1"
       fasta_file.puts "#{cons_1}"
       fasta_file.puts ">#{r.id}_2"
@@ -76,7 +90,7 @@ end
 fasta_file.close
 table_file.close
 
-hist_table="#{output_prefix}_#{block_size}_hist.csv"
+hist_table="#{output_prefix}_#{block_size}_#{min_cov}_hist.#{chunk}.csv"
 hist_file = File.open(hist_table, "w")
 
 all_keys = SortedSet.new(hist_1.keys)
