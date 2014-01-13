@@ -142,7 +142,8 @@ container.print_fasta_snp_exones(file)
 file.close
 
 file = File.open(primer_3_input, "w")
-file.puts("PRIMER_PRODUCT_SIZE_RANGE=36-150")
+file.puts("PRIMER_PRODUCT_SIZE_RANGE=50-150")
+file.puts("PRIMER_MAX_SIZE=25")
 file.puts("PRIMER_LIB_AMBIGUITY_CODES_CONSENSUS=1")
 file.puts("PRIMER_LIBERAL_BASE=1")
 file.puts("PRIMER_NUM_RETURN=5")

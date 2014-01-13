@@ -10,6 +10,7 @@ module Bio::PolyploidTools
     attr_accessor :container
     attr_accessor :flanking_size, :ideal_min, :ideal_max
     attr_accessor :template_sequence
+    attr_accessor :use_reference
 
 
     #Format: 
@@ -23,6 +24,7 @@ module Bio::PolyploidTools
       snp.original.upcase!
       snp.snp.upcase!  
       snp.exon_list = Hash.new()
+      snp.use_reference = false
       snp
     end
     
@@ -37,13 +39,26 @@ module Bio::PolyploidTools
 
     def covered_region
       return @covered_region if @covered_region
+      if self.use_reference
+         reg = Bio::DB::Fasta::Region.new()
+         reg.entry = gene
+         reg.orientation = :forward
+         reg.start = self.position - self.flanking_size
+         reg.end = self.position + self.flanking_size
+         
+         reg.start = 1 if reg.start < 1
+         
+         return reg
+      end
+      
       min = @position
       max = @position
      # puts "Calculating covered region for #{self.inspect}"
     #  puts "#{@exon_list.inspect}"
-      raise SNPException.new "Exons haven't been loaded for #{self.inspect}" if @exon_list.size == 0 
+      raise SNPException.new "Exons haven't been loaded for #{self.inspect}" if @exon_list.size == 0
+      
       @exon_list.each do | chromosome, exon |
-        puts exon.inspect
+       # puts exon.inspect
         reg = exon.query_region
         min = reg.start if reg.start < min
         max = reg.end if reg.end > max
@@ -71,7 +86,7 @@ module Bio::PolyploidTools
     end
 
     def local_position
-      #puts "local_position #{self.position} #{self.covered_region.start}"
+#      puts "local_position #{self.position} #{self.covered_region.start}"
       self.position - self.covered_region.start
     end
 
@@ -129,7 +144,7 @@ module Bio::PolyploidTools
       chromosome_seq = "-" * parental.size unless chromosome_seq
       chromosome_seq = chromosome_seq.downcase
       mask = mask_aligned_chromosomal_snp(target_chromosome)
-      puts "'#{mask}'"
+      #puts "'#{mask}'"
 
       pr = PrimerRegion.new
       position_in_region = 0
@@ -326,7 +341,8 @@ module Bio::PolyploidTools
         
         seq[local_pos_in_gene] = self.snp if name == self.snp_in    
         @parental_sequences [name] = seq
-        puts name
+        #puts name
+        #puts seq
       end
       @parental_sequences
     end
@@ -494,7 +510,9 @@ module Bio::PolyploidTools
           names.each do | chr |
             bases << aligned_sequences[chr][i]  if aligned_sequences[chr] and aligned_sequences[chr][i]  != "-"
           end
-          code_reference = Bio::NucleicAcid.to_IUAPC(bases)
+          
+          code_reference = "n"
+          code_reference = Bio::NucleicAcid.to_IUAPC(bases) unless bases == ""
 
           if Bio::NucleicAcid.is_valid(code_reference,   original) and Bio::NucleicAcid.is_valid(code_reference,   snp)
             masked_snps[i] = ":"

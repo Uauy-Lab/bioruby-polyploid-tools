@@ -14,7 +14,7 @@ module Bio::DB::Primer3
     if status.exitstatus == 0
      File.open(f_out, 'w') { |f| f.write(stdout) }
     else
-      raise Primer3Exception.new(), "Error running exonerate. Command line was 'primer3_core'\nExonerate STDERR was:\n#{stderr}"
+      raise Primer3Exception.new(), "Error running primer3. Command line was 'primer3_core'\nExonerate STDERR was:\n#{stderr}"
     end
   end
   
@@ -113,7 +113,7 @@ module Bio::DB::Primer3
       values << gene
       values << "#{original}#{position}#{snp}"
       values << template_length
-
+      #TODO: Sort by length
       if primer3_line_1 and primer3_line_2
         values <<  primer3_line_1.polymorphism
 
@@ -425,6 +425,7 @@ module Bio::DB::Primer3
     
     #CL3339Contig1:T509C AvocetS chromosome_specific exon forward
     def parse_header
+      #puts "Parsing header: '#{self.sequence_id}'"
       @snp, @line, @type, @in, @polymorphism, @orientation  = self.sequence_id.split(" ")  
       @type = @type.to_sym
       if @in
