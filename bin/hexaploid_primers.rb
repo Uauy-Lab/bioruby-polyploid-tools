@@ -163,6 +163,6 @@ snps.each do |snp|
 end
 
 kasp_container.add_primers_file(primer_3_output)
-header = "Marker,SNP,RegionSize,SNP_type,#{snp_in},#{original_name},common,primer_type,orientation,#{snp_in}_TM,#{original_name}_TM,common_TM,selected_from"
+header = "Marker,SNP,RegionSize,SNP_type,#{snp_in},#{original_name},common,primer_type,orientation,#{snp_in}_TM,#{original_name}_TM,common_TM,selected_from,product_size"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 

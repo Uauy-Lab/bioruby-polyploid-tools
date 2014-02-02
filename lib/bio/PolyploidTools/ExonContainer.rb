@@ -169,7 +169,7 @@ module Bio::PolyploidTools
               
                     
                   rescue Bio::DB::Exonerate::ExonerateException
-                    $stderr.puts "Failed for the rage #{record.query_start}-#{record.query_end} for position #{snp.position}"
+                    $stderr.puts "Failed for the range #{record.query_start}-#{record.query_end} for position #{snp.position}"
                   end
                 end
               end
