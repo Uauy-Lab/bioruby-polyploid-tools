@@ -2,7 +2,9 @@ source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
 #   gem "activesupport", ">= 2.3.5"
-#gem "bio", ">= 1.4.2"
+gem "bio", "= 1.4.2"
+gem "samtools", ">= 0.6"
+
 #gem "systemu", ">=2.5.2"
 
 group :development do
