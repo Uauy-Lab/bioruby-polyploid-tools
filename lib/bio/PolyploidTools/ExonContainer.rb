@@ -131,7 +131,7 @@ module Bio::PolyploidTools
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           begin 
-          string = snp.primer_3_string( target_chromosome, parental )
+          string = snp.primer_3_string( snp.chromosome, parental )
           file.puts string if string.size > 0
            rescue Exception=>e
               $stderr.puts e.to_s

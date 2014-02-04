@@ -23,6 +23,10 @@ module Bio::DB::Primer3
     attr_accessor :gene, :original, :position, :snp, :chromosome, :line_1, :line_2
     attr_accessor :primer3_line_1, :primer3_line_2, :template_length
     attr_accessor :primers_line_1, :primers_line_2
+    attr_accessor :used_contigs
+    attr_accessor :snp_from
+    attr_accessor :regions
+    
     def line_1_name
       "#{gene}:#{position}#{original}>#{snp} #{line_1}}"
     end
@@ -30,6 +34,7 @@ module Bio::DB::Primer3
     def initialize
       @primers_line_1 = SortedSet.new
       @primers_line_2 = SortedSet.new
+      @reguibs = SortedSet.new
     end
 
     def line_2_name
@@ -37,7 +42,7 @@ module Bio::DB::Primer3
     end
 
     def to_s
-      "#{gene}:#{original}#{position}#{snp}"
+      "#{gene}:#{original}#{position}#{snp}:#{snp_from.chromosome}"
     end
 
     def find_left_primer_temp(primer)
@@ -74,12 +79,19 @@ module Bio::DB::Primer3
       left_end = 0
       right_start = 0
       right_end = 0
+ #     exons = snp_from.exon_list.values
+      
+#      puts "Exons: #{exon_list.size}"
+      
+#      puts "It has the following exons: #{snp_in.exon_list.to_s}"
       values = Array.new
       #values << "#{gene},,#{template_length},"
       values << gene
       values << "#{original}#{position}#{snp}"
       values << template_length
-      
+      values << snp_from.chromosome
+      values << regions.size
+      values << regions.join("|")
       if primer3_line_1 and primer3_line_2
         values <<  primer3_line_1.polymorphism
 
@@ -407,10 +419,10 @@ module Bio::DB::Primer3
       @snp
     end
 
-    #CL3339Contig1:T509C AvocetS chromosome_specific exon forward
+    #CL3339Contig1:T509C AvocetS chromosome_specific exon 4D forward 
     def parse_header
       #puts "Parsing header: '#{self.sequence_id}'"
-      @snp, @line, @type, @in, @polymorphism, @orientation  = self.sequence_id.split(" ")  
+      @snp, @line, @type, @in, @polymorphism, @chromosome, @orientation   = self.sequence_id.split(" ")  
       @type = @type.to_sym
       if @in
         @in = @in.to_sym == :exon 
@@ -433,6 +445,12 @@ module Bio::DB::Primer3
       @orientation
     end
 
+    def chromosome
+      return @chromosome if @parsed
+      parse_header
+      @chromosome
+    end
+    
     def homeologous?
       return @homeologous if @parsed
       parse_header
@@ -591,6 +609,7 @@ module Bio::DB::Primer3
 
     attr_accessor :line_1, :line_2
     attr_accessor :snp_hash
+   
 
     def add_snp_file(filename)
       @snp_hash=Hash.new unless @snp_hash
@@ -614,13 +633,18 @@ module Bio::DB::Primer3
       snp.snp.upcase! 
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
+      snp.snp_from = snp_in
+      #puts "Kasp container, adding #{snp.to_s} #{snp.class}  #{snp_in.class}"
+      #puts "#{snp.regions}"
+      snp.regions = snp_in.exon_list.values.collect { |x| x.target_region.to_s }
+      #puts "#{snp.regions}"
       @snp_hash[snp.to_s] = snp
       snp
     end
 
     def add_primers_file(filename)
       Primer3Record.parse_file(filename) do | primer3record |
-        current_snp = @snp_hash[primer3record.snp]
+        current_snp = @snp_hash["#{primer3record.snp.to_s}:#{primer3record.chromosome}"]
         current_snp.add_record(primer3record)
         #puts current_snp.inspect
       end

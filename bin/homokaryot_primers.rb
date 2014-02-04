@@ -42,7 +42,7 @@ class HomokaryotContainer < Bio::PolyploidTools::ExonContainer
   def print_primer_3_exons (file, target_chromosome , parental )
     @snp_map.each do | gene, snp_array|
       snp_array.each do |snp|
-        string = snp.primer_3_string( target_chromosome, parental )
+        string = snp.primer_3_string( snp.chromosome, parental )
         file.puts string if string.size > 0
 
       end 
