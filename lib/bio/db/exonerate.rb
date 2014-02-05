@@ -20,7 +20,7 @@ module Bio::DB::Exonerate
 
     cmdline = "exonerate --verbose 0 --showalignment no --bestn #{opts[:bestn]} --showvulgar no  --model #{opts[:model]}   --ryo '#{opts[:ryo]}' #{query} #{target}"
     status, stdout, stderr = systemu cmdline
-    $stderr.puts cmdline
+    #$stderr.puts cmdline
     if status.exitstatus == 0
       alns = Array.new unless block_given?
       stdout.each_line do |line|

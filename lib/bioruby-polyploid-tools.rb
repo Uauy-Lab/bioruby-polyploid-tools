@@ -8,7 +8,7 @@ require 'json'
 #require 'bio/db/primer3'
 #require 'bio/db/fasta'
 
-puts "Loading all... #{Dir[File.dirname(__FILE__) + "/bio/*/*.rb"]}"
+#puts "Loading all... #{Dir[File.dirname(__FILE__) + "/bio/*/*.rb"]}"
 
 Dir[File.dirname(__FILE__) + "/bio/*.rb"].each {|file| 
  # puts file 

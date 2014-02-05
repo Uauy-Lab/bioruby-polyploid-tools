@@ -109,9 +109,6 @@ class Bio::Sequence
 end
 
 class  String
-
-  
-
   def count_ambiguities
     snps=0
 
@@ -125,5 +122,27 @@ class  String
   def upper_case_count
     match(/[^A-Z]*/).to_s.size
   end
-  
+end
+
+class Bio::Blat
+  def self.align(database , query , output)
+    cmdline = "blat #{database} #{query}  #{output}"
+    puts $stderr.puts cmdline
+    status, stdout, stderr = systemu cmdline
+    if status.exitstatus == 0
+      alns = Array.new unless block_given?
+      blat_aln = Bio::Blat::Report.new(Bio::FlatFile.open(output).to_io)
+      #p blat_aln
+      blat_aln.each_hit() do |hit|
+        if block_given?
+          yield hit
+        else
+          alns << hit
+        end
+      end
+      return alns unless block_given?
+    else
+      raise Exception.new(), "Error running exonerate. Command line was '#{cmdline}'\nBlat STDERR was:\n#{stderr}"
+    end
+  end
 end

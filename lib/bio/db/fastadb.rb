@@ -101,7 +101,7 @@ module Bio::DB::Fasta
   #Class that holds the fasta file. It is used as a database. It heavily relies ond samtools. 
   class FastaFile
     
-    attr_reader :index
+    attr_reader :index, :fasta_path
     
     def FastaFile.finalize(id)
       #id.close()
