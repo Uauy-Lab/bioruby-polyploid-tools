@@ -11,6 +11,7 @@ module Bio::PolyploidTools
     attr_accessor :flanking_size, :ideal_min, :ideal_max
     attr_accessor :template_sequence
     attr_accessor :use_reference
+    attr_accessor :genomes_count
 
     attr_reader :chromosome
 
@@ -29,9 +30,21 @@ module Bio::PolyploidTools
       snp
     end
     
+    def initialize
+       @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
+    end
+    
     #We Only want the chromosome, we drop the arm. 
     def chromosome= (chr)
       @chromosome = chr[0,2]
+    end
+    
+    def chromosome_group
+      chromosome[0]
+    end
+    
+    def chromosome_genome
+      chromosome[1]
     end
     
      def to_fasta
@@ -489,13 +502,18 @@ module Bio::PolyploidTools
       local_pos_in_gene = aligned_snp_position
       masked_snps = aligned_sequences[chromosome].downcase if aligned_sequences[chromosome]
       masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[chromosome]
+      #TODO: Make this chromosome specific, even when we have more than one alignment going to the region we want.
       i = 0
       while i < masked_snps.size
         different = 0
         cov = 0
+        from_group = 0
         names.each do | chr |
           if aligned_sequences[chr] and aligned_sequences[chr][i]  != "-"
             cov += 1 
+
+            from_group += 1 if chr[0] == chromosome_group
+            #puts "Comparing #{chromosome_group} and #{chr[0]} as chromosomes"
             if chr != chromosome 
               $stderr.puts "WARN: No base for #{masked_snps} : ##{i}" unless masked_snps[i].upcase
               $stderr.puts "WARN: No base for #{aligned_sequences[chr]} : ##{i}" unless masked_snps[i].upcase
@@ -506,7 +524,10 @@ module Bio::PolyploidTools
         masked_snps[i] = "-" if different == 0
         masked_snps[i] = "-" if cov == 1
         masked_snps[i] = "*" if cov == 0
-        masked_snps[i] = masked_snps[i].upcase if different > 1
+        expected_snps = names.size - 1
+       # puts "Diferences: #{different} to expected: #{ expected_snps } [#{i}] Genome count (#{from_group} == #{genomes_count})"
+        
+        masked_snps[i] = masked_snps[i].upcase if different == expected_snps and from_group == genomes_count
 
         if i == local_pos_in_gene
           masked_snps[i] = "&"
