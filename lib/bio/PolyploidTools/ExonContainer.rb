@@ -115,13 +115,15 @@ module Bio::PolyploidTools
     end
 
     def print_fasta_snp_exones (file)
+      @missing_exons = Set.new unless @missing_exons
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           #file.puts snp.primer_fasta_string 
           begin 
             file.puts snp.aligned_sequences_fasta
           rescue Exception=>e
-            $stderr.puts e.to_s
+            @missing_exons << snp.to_s
+#            $stderr.puts e.to_s
           end
         end
       end
@@ -134,7 +136,8 @@ module Bio::PolyploidTools
           string = snp.primer_3_string( snp.chromosome, parental )
           file.puts string if string.size > 0
            rescue Exception=>e
-              $stderr.puts e.to_s
+             @missing_exons << snp.to_s
+              #$stderr.puts e.to_s
             end
         end 
       end

@@ -26,6 +26,7 @@ module Bio::DB::Primer3
     attr_accessor :used_contigs
     attr_accessor :snp_from
     attr_accessor :regions
+    attr_accessor :primer3_errors
     
     def line_1_name
       "#{gene}:#{position}#{original}>#{snp} #{line_1}}"
@@ -74,7 +75,7 @@ module Bio::DB::Primer3
 
 
     def print_primers
-
+#TODO: Retrieve error messages
       left_start = 0
       left_end = 0
       right_start = 0
@@ -170,8 +171,8 @@ module Bio::DB::Primer3
             values << first_candidate.shortest_pair.right.tm
             values << "first"
             values << first_candidate.shortest_pair.product_size
-          else
-            values << "Pair not found"
+#          else
+#            values << "" 
           end
 
         end
@@ -227,10 +228,14 @@ module Bio::DB::Primer3
       end
     end
 
-    #TODO: make this pick the best primer. At the minute, it just prints the first in the list. 
+    
     def add_record(primer3record)
+      @primer3_errors = Array.new unless @primer3_errors
       @template_length = primer3record.sequence_template.size
-
+       if primer3record.primer_error != nil 
+          primer3_errors << primer3record
+          return
+        end
       case
       when primer3record.line == @line_1
         @line_1_template = primer3record.sequence_template
@@ -240,7 +245,7 @@ module Bio::DB::Primer3
         raise Primer3Exception.new "#{primer3record.line} is not recognized (#{line_1}, #{line_2})"
       end
 
-      if primer3record.primer_left_num_returned.to_i > 0
+      if  primer3record.primer_left_num_returned.to_i > 0 
         case
         when primer3record.line == @line_1
           primers_line_1 << primer3record
@@ -269,11 +274,15 @@ module Bio::DB::Primer3
       @shortest_pair
     end
 
+    def primer_error
+      return @properties[:primer_error] if @properties[:primer_error]
+      return nil
+    end
+    
     def method_missing(method_name, *args)
-
       return @properties[method_name] if @properties[method_name] 
       $stderr.puts "Missing #{method_name}"
-      puts @properties.inspect
+      $stderr.puts @properties.inspect
       raise NoMethodError.new() 
     end
 
