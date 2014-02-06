@@ -5,13 +5,14 @@ module Bio::PolyploidTools
   class SNP
 
     #GENE,ORIGINAL,POS,SNP
-    attr_accessor :gene, :original, :position, :snp, :chromosome, :snp_in, :original_name
+    attr_accessor :gene, :original, :position, :snp, :snp_in, :original_name
     attr_accessor :exon_list
     attr_accessor :container
     attr_accessor :flanking_size, :ideal_min, :ideal_max
     attr_accessor :template_sequence
     attr_accessor :use_reference
 
+    attr_reader :chromosome
 
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
@@ -26,6 +27,11 @@ module Bio::PolyploidTools
       snp.exon_list = Hash.new()
       snp.use_reference = false
       snp
+    end
+    
+    #We Only want the chromosome, we drop the arm. 
+    def chromosome= (chr)
+      @chromosome = chr[0,2]
     end
     
      def to_fasta

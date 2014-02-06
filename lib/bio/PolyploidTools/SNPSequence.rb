@@ -26,6 +26,7 @@ module Bio::PolyploidTools
       #snp.position = snp.position.to_i
       #snp.original.upcase!
       #snp.snp.upcase!  
+      
       snp.parse_sequence_snp
       snp.exon_list = Hash.new()
       snp
