@@ -144,7 +144,7 @@ module Bio::PolyploidTools
     end
 
     def add_alignments(opts=Hash.new) 
-      opts = { :min_identity=>95 }.merge!(opts)
+      opts = { :min_identity=>90 }.merge!(opts)
       exonerate_filename = opts[:exonerate_file]
       arm_selection = opts[:arm_selection]
 
@@ -166,11 +166,7 @@ module Bio::PolyploidTools
                 if snp != nil and snp.position.between?( (record.query_start + 1) , record.query_end)
                   begin
                     exon = record.exon_on_gene_position(snp.position)
-                #    pos = exon.target_position_from_query(snp.position)
-              
                     snp.add_exon(exon, arm_selection.call(record.target_id))
-              
-                    
                   rescue Bio::DB::Exonerate::ExonerateException
                     $stderr.puts "Failed for the range #{record.query_start}-#{record.query_end} for position #{snp.position}"
                   end

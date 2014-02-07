@@ -81,7 +81,7 @@ primer_3_config=File.expand_path(File.dirname(__FILE__) + '/../conf/primer3_conf
 model=options[:model] 
 
 
-min_identity= 92
+min_identity= 90
 snps = Array.new
 
 #0. Load the fasta index 
@@ -186,7 +186,7 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   container.add_snp(snp)
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_embl})
+container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_embl, :min_identity=>min_identity})
 
 file = File.open(exons_filename, "w")
 container.print_fasta_snp_exones(file)

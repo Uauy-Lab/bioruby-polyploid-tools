@@ -9,7 +9,7 @@ module Bio::DB::Exonerate
     opts = {
       :model => 'affine:local' ,
       :ryo => "RESULT:\\t%S\\t%pi\\t%ql\\t%tl\\t%g\\t%V\\n" , 
-      :bestn => 10,
+      :bestn => 20,
       :percentage => 50
     }
     .merge(opts)
