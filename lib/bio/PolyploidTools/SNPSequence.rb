@@ -26,7 +26,7 @@ module Bio::PolyploidTools
       #snp.position = snp.position.to_i
       #snp.original.upcase!
       #snp.snp.upcase!  
-      
+      snp.chromosome.strip!
       snp.parse_sequence_snp
       snp.exon_list = Hash.new()
       snp
@@ -38,7 +38,7 @@ module Bio::PolyploidTools
 
     def parse_sequence_snp
       pos = 0
-      match_data = /(?<pre>\w*)\[(?<org>[ACGT])\/(?<snp>[ACGT])\](?<pos>\w*)/.match(sequence_original)
+      match_data = /(?<pre>\w*)\[(?<org>[ACGT])\/(?<snp>[ACGT])\](?<pos>\w*)/.match(sequence_original.strip)
       if match_data
       @position = Regexp.last_match(:pre).size + 1
       @original = Regexp.last_match(:org)

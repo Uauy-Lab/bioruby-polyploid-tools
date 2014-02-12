@@ -12,7 +12,7 @@ module Bio::PolyploidTools
     attr_accessor :template_sequence
     attr_accessor :use_reference
     attr_accessor :genomes_count
-
+    
     attr_reader :chromosome
 
     #Format: 
@@ -22,9 +22,10 @@ module Bio::PolyploidTools
       reg_str.chomp!
       snp = SNP.new
       snp.gene, snp.original, snp.position, snp.snp, snp.chromosome = reg_str.split(",")
-      snp.position = snp.position.to_i
-      snp.original.upcase!
-      snp.snp.upcase!  
+      snp.position = snp.position.strip!.to_i
+      snp.original.upcase!.strip!
+      snp.snp.upcase!.strip!  
+      snp.chromosome.strip!
       snp.exon_list = Hash.new()
       snp.use_reference = false
       snp
@@ -33,6 +34,7 @@ module Bio::PolyploidTools
     def initialize
        @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
     end
+    
     
     #We Only want the chromosome, we drop the arm. 
     def chromosome= (chr)
@@ -45,6 +47,11 @@ module Bio::PolyploidTools
     
     def chromosome_genome
       chromosome[1]
+    end
+    
+    def chromosome_genome
+      return chromosome[3] if chromosome[3]
+      return nil
     end
     
      def to_fasta
@@ -327,6 +334,10 @@ module Bio::PolyploidTools
 
     def to_s
       "#{gene}:#{original}#{position}#{snp}#{chromosome}"
+    end
+    
+    def short_s
+      "#{original}#{position}#{snp}".upcase
     end
 
     def primer_3_string(target_chromosome, parental) 

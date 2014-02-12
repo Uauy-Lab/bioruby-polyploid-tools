@@ -58,7 +58,7 @@ log "Writing markers: #{fasta_tmp}"
 map.print_fasta_markers(fasta_tmp)
 log "Writing contigs: #{contigs_tmp}"
 map.print_fasta_contigs_from_reference(contigs_tmp)
-log "Aligning markers #{aln_tmp}"
+log "Aligning markers #{aln_tmp}" 
 map.align_markers(aln_tmp)
 log "printing contigs with markers #{contigs_map}"
 map.print_fasta_contigs_for_markers(contigs_map)

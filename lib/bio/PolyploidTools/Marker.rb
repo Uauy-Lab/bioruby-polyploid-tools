@@ -87,15 +87,20 @@ module Bio::PolyploidTools
     end
 
     def print_fasta_contigs_for_markers(contigs_file)
-      fasta=File.open(contigs_file, "w")
+      
+      contigs = Set.new
       markers.each do |k, marker|
 
         if marker.best_hit
-          reg = @reference.index.region_for_entry(marker.best_hit.target_id)
-          fasta.puts ">#{marker.snp_name}\n#{@reference.fetch_sequence(reg.get_full_region)}"
-
+          contigs << marker.best_hit.target_id
         end
       end
+      
+      fasta=File.open(contigs_file, "w")
+        contigs.each do |contig_id|
+             reg = @reference.index.region_for_entry(contig_id)
+           fasta.puts ">#{contig_id}\n#{@reference.fetch_sequence(reg.get_full_region)}"
+        end
       fasta.close
     end
 

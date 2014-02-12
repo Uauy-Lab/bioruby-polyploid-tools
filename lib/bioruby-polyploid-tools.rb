@@ -14,7 +14,7 @@ Dir[File.dirname(__FILE__) + "/bio/*.rb"].each {|file|
  # puts file 
   require_relative file }
 Dir[File.dirname(__FILE__) + "/bio/*/*.rb"].each do |file| 
-  $stderr.puts "loading #{file}"
+#  $stderr.puts "loading #{file}"
   require_relative file 
 end
   

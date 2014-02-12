@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!
 require 'bio'
 require 'rubygems'
 require 'pathname'
