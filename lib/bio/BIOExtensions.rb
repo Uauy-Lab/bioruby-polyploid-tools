@@ -150,22 +150,26 @@ end
 class Bio::Blat::Report::Hit
   
   #Function to parse stuff like: IWGSC_CSS_1AL_scaff_110
+  def wheat_chr_arm
+    @wheat_chr_arm if @wheat_chr_arm
+    @wheat_chr_arm = target_id.split('_')[2]
+  end
+  
   def wheat_chr
-    @wheat_chr if @wheat_chr
-    @wheat_chr = target_id.split('_')[2]
+    wheat_chr_arm[0,2]
   end
   
   def wheat_chr_group 
     raise Exception.new(), "No wheat group for #{target_id} #{self.inspect}"  unless wheat_chr
-    wheat_chr[0]
+    wheat_chr_arm[0]
   end
   
   def wheat_genome
-    wheat_chr[1]
+    wheat_chr_arm[1]
   end
   
   def wheat_arm
-    wheat_chr[2]
+    wheat_chr_arm[2]
   end
   
   def percentage_covered

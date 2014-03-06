@@ -638,8 +638,8 @@ module Bio::DB::Primer3
       snp.position = snp_in.position
       snp.snp = snp_in.snp
 
-      snp.original.upcase!
-      snp.snp.upcase! 
+#      snp.original.upcase!
+#      snp.snp.upcase! 
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
       snp.snp_from = snp_in

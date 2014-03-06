@@ -1,5 +1,6 @@
 module Bio::PolyploidTools
   class Marker
+    include Comparable
     #include Virgola
     attr_reader :template_sequence, :original, :snp
     attr_accessor :best_hit
@@ -29,6 +30,13 @@ module Bio::PolyploidTools
 
     def to_csv
       "#{index_90k},#{snp_id},#{snp_name},#{chr},#{coordinates_chr},#{map_order},#{chr_arm},#{distance_cm},#{sequence},#{contig}"
+    end
+    
+    def <=>(anOter)
+     return 0 if anOter.snp_name == @snp_name 
+     return @chr_arm <=> anOter.chr_arm  if anOter.chr_arm != @chr_arm
+     return @snp_name  <=> anOter.snp_name if anOter.coordinates_chr == @coordinates_chr
+     return @coordinates_chr <=> anOter.coordinates_chr    
     end
 
     def initialize(line)
