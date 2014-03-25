@@ -66,85 +66,11 @@ class Bio::DB::Pileup
   end
 end
 
-module Bio::NucleicAcid::Data
-  IUPAC_CODES = {
 
-    'y'	=> 'ct',
-    'r'	=> 'ag',
-    'w'	=> 'at',
-    's'	=> 'cg',
-    'k'	=> 'gt',
-    'm'	=> 'ac',
-
-    'b'	=> 'cgt',
-    'd'	=> 'agt',
-    'h'	=> 'act',
-    'v'	=> 'acg',
-
-    'n'	=> 'acgt',
-
-    'a'	=> 'a',
-    't'	=> 't',
-    'g'	=> 'g',
-    'c'	=> 'c',
-    'u'	=> 'u',
-
-    'ct' => 'y',
-    'ag' => 'r',
-    'at' => 'w',
-    'cg' => 's',
-    'gt' => 'k',
-    'ac' => 'm',
-
-    'cgt' => 'b',
-    'agt' => 'd',
-    'act' => 'h',
-    'acg' => 'v',
-
-    'acgt' => 'n'
-  }
-
-
-end
 
 class Bio::NucleicAcid
 
-  IUPAC_CODES = {
 
-    'y'	=> 'ct',
-    'r'	=> 'ag',
-    'w'	=> 'at',
-    's'	=> 'cg',
-    'k'	=> 'gt',
-    'm'	=> 'ac',
-
-    'b'	=> 'cgt',
-    'd'	=> 'agt',
-    'h'	=> 'act',
-    'v'	=> 'acg',
-
-    'n'	=> 'acgt',
-
-    'a'	=> 'a',
-    't'	=> 't',
-    'g'	=> 'g',
-    'c'	=> 'c',
-    'u'	=> 'u',
-
-    'ct' => 'y',
-    'ag' => 'r',
-    'at' => 'w',
-    'cg' => 's',
-    'gt' => 'k',
-    'ac' => 'm',
-
-    'cgt' => 'b',
-    'agt' => 'd',
-    'act' => 'h',
-    'acg' => 'v',
-
-    'acgt' => 'n'
-  }
 
   def self.to_IUAPC(bases)
     #puts "TADA"    
@@ -189,8 +115,8 @@ class Bio::DB::Sam
     @cached_regions = Hash.new unless @cached_regions
 
     region = opts[:r] ? opts[:r] : opts[:region]
-    opts[:r] = "'#{region.to_s}'"
-    opts[:region] = "'#{region.to_s}'"
+    opts[:r] = "#{region.to_s}"
+    opts[:region] = "#{region.to_s}"
     opts[:A] = true
     #reg = region.class == Bio::DB::Fasta::Region ? region : Bio::DB::Fasta::Region.parse_region(region.to_s)
 
@@ -262,20 +188,27 @@ class Bio::DB::Sam
     bases = Array.new(region.size, BASE_COUNT_ZERO) 
     coverages = Array.new(region.size, 0)
     total_cov = 0
-    
+
     self.mpileup_cached(:region=>"#{region.to_s}") do | pile |
       #puts pile
       #puts pile.coverage
+      bef=reference[pile.pos - region.start  - 1 ] 
       if pile.coverage > min_cov
+        
+      
         base_ratios[pile.pos - region.start ] = pile.base_ratios
         reference[pile.pos - region.start  - 1 ] = pile.consensus_iuap(0.20).upcase
         coverages[pile.pos - region.start   ]  = pile.coverage.to_i
         bases[pile.pos - region.start   ]  = pile.bases
+        
+       
       end
+      #puts "#{pile.pos}\t#{bef}\t#{reference[pile.pos - region.start  - 1 ]} "
       total_cov += pile.coverage
     end
 
     #puts ">Ref\n#{reference}"
+    #puts ">Original\n#{r}"
     region = @cached_regions[region.to_s]
     region.coverages = coverages
     region.base_ratios = base_ratios
@@ -291,7 +224,7 @@ class Bio::DB::Sam
 
 
 
-  BASE_COUNT_ZERO =  {:A => 0, :C => 0, :G => 0,  :T => 0}
+  #BASE_COUNT_ZERO =  {:A => 0, :C => 0, :G => 0,  :T => 0}
 
   #Gets an array with the proportions of the bases in the region. If there is no coverage, a
   def base_ratios_in_region(opts={})

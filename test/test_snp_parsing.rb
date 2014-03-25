@@ -24,9 +24,10 @@ class TestPolyploidTools < Test::Unit::TestCase
   end
   
   def test_snp_sequence
-    snp = Bio::PolyploidTools::SNPSequence.parse("BS00068396_51,2AS,CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTA[T/C]ATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA")
+    snp = Bio::PolyploidTools::SNPSequence.parse("BS00068396_51,2A,CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTA[T/C]ATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA")
     assert(snp.gene == "BS00068396_51" )
-    assert(snp.chromosome == "2AS")
+    assert(snp.chromosome == "2A")
+   
     assert(snp.sequence_original == "CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTA[T/C]ATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA")
     
     assert_equal(snp.position ,  51, "Position isnt parsed #{snp.position}")
