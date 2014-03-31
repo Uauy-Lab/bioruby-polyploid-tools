@@ -110,7 +110,7 @@ Gem::Specification.new do |s|
     "test/test_exonearate.rb",
     "test/test_snp_parsing.rb"
   ]
-  s.homepage = "http://github.com/homonecloco/bioruby-polyploid-tools"
+  s.homepage = "http://github.com/tgac/bioruby-polyploid-tools"
   s.licenses = ["MIT"]
   s.rubygems_version = "2.2.1"
   s.summary = "Tool to work with polyploids, NGS and molecular biology"

@@ -17,7 +17,7 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
    gem.name = "bio-polyploid-tools"
-  gem.homepage = "http://github.com/homonecloco/bioruby-polyploid-tools"
+  gem.homepage = "http://github.com/tgac/bioruby-polyploid-tools"
   gem.license = "MIT"
   gem.summary = %Q{Tool to work with polyploids, NGS and molecular biology}
   gem.description = %Q{Repository of tools developed in TGAC and Crop Genetics in JIC to work with polyploid wheat}
