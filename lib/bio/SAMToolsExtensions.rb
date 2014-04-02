@@ -100,8 +100,8 @@ class Bio::DB::Sam
   attr_reader :cached_regions
   #attr_accessor :pileup_cache
   @minumum_ratio_for_iup_consensus = 0.20
-
-
+  BASE_COUNT_ZERO =  {:A => 0, :C => 0, :G => 0,  :T => 0}
+  
   #Same as mpilup, but it caches the pileup, so if you want several operations on the same set of regions
   #the pile for different operations, it won't execute the mpilup command several times
   #Whenever you finish using a region, call mpileup_clear_cache to free the cache
@@ -113,10 +113,11 @@ class Bio::DB::Sam
     raise SAMException.new(), "A region must be provided" unless opts[:r] or opts[:region]
     @pileup_cache = Hash.new unless @pileup_cache
     @cached_regions = Hash.new unless @cached_regions
-
+    
     region = opts[:r] ? opts[:r] : opts[:region]
-    opts[:r] = "#{region.to_s}"
-    opts[:region] = "#{region.to_s}"
+    #puts "Region: #{region}"
+    opts[:r] = region
+    opts[:region] = region
     opts[:A] = true
     #reg = region.class == Bio::DB::Fasta::Region ? region : Bio::DB::Fasta::Region.parse_region(region.to_s)
 
@@ -197,7 +198,7 @@ class Bio::DB::Sam
         
       
         base_ratios[pile.pos - region.start ] = pile.base_ratios
-        reference[pile.pos - region.start   ] = pile.consensus_iuap(0.20).upcase
+        reference[pile.pos - region.start   - 1] = pile.consensus_iuap(0.20).upcase
         coverages[pile.pos - region.start   ]  = pile.coverage.to_i
         bases[pile.pos - region.start   ]  = pile.bases
         
