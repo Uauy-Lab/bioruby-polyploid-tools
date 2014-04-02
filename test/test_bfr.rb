@@ -18,7 +18,7 @@ class TestPolyploidTools < Test::Unit::TestCase
     @b=data_path + "/LIB1722.bam"
     @f2_a=data_path + "/LIB1716.bam"
     @f2_b=data_path + "/LIB1719.bam"
-    @fasta_db = Bio::DB::Fasta::FastaFile.new(@ref)
+    @fasta_db = Bio::DB::Fasta::FastaFile.new({:fasta=>@ref})
     @fasta_db.load_fai_entries
     @bam_a =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@a})
     @bam_b =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@b})
@@ -41,6 +41,7 @@ class TestPolyploidTools < Test::Unit::TestCase
     ref_seq=@fasta_db.fetch_sequence(region)
     puts region.to_s
     
+    #puts @bam_a.methods
     cons_1 = @bam_a.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
     cons_2 = @bam_b.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
     
