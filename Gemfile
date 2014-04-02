@@ -3,7 +3,9 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 gem "bio", "= 1.4.2"
-gem "samtools", ">= 0.6"
+gem "bio-samtools", "= 0.6.2"
+gem "rake"
+gem "jeweler"
 
 #gem "systemu", ">=2.5.2"
 
