@@ -42,10 +42,10 @@ class TestPolyploidTools < Test::Unit::TestCase
     assert(aln.ql==101)
     assert(aln.tl==11974)
     assert(aln.g==".")
-    assert(aln.vulgar_block.to_s=="[M	69	69	0	69	7425	7356, G	0	1	69	69	7356	7355, M	32	32	69	101	7355	7323]" )
+    assert(aln.vulgar_block.join(',')=="M	69	69	0	69	7425	7356,G	0	1	69	69	7356	7355,M	32	32	69	101	7355	7323" )
     assert(aln.line==line)
     
-    puts aln.vulgar_block.inspect
+    #puts aln.vulgar_block.inspect
     #puts aln.inspect
   end
 

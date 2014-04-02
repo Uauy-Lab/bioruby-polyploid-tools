@@ -284,8 +284,8 @@ module Bio::BFRTools
       path = Pathname.new(opts[:path])
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
-      @parental_1_name = opts[:name] ? opts[:name] : path.basename(".bam")
-      @parental_1_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.to_path})
+      @parental_1_name = opts[:name] ? opts[:name] : path.basename(".bam").to_s
+      @parental_1_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
       @parental_1_path = path
 
     end 
@@ -296,8 +296,8 @@ module Bio::BFRTools
       path = Pathname.new(opts[:path])
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
-      @parental_2_name = @name = opts[:name] ? opts[:name] : path.basename(".bam")
-      @parental_2_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path})
+      @parental_2_name = @name = opts[:name] ? opts[:name] : path.basename(".bam").to_s
+      @parental_2_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
       @parental_2_path = path
     end
 
@@ -307,8 +307,8 @@ module Bio::BFRTools
       path = Pathname.new(opts[:path])
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
-      @bulk_1_name =  opts[:name] ? opts[:name] : path.basename(".bam")
-      @bulk_1_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path})
+      @bulk_1_name =  opts[:name] ? opts[:name] : path.basename(".bam").to_s
+      @bulk_1_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
       @bulk_1_path = path
     end 
 
@@ -318,8 +318,8 @@ module Bio::BFRTools
       path = Pathname.new(opts[:path])
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
-      @bulk_2_name =  opts[:name] ? opts[:name] : path.basename(".bam")
-      @bulk_2_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path})
+      @bulk_2_name =  opts[:name] ? opts[:name] : path.basename(".bam").to_s
+      @bulk_2_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
       @bulk_2_path = path
     end     
 
@@ -327,7 +327,7 @@ module Bio::BFRTools
     def self.snps_between(seq1, seq2)
       snps=0
       for i in (0..seq1.size)
-        snps += 1 if seq1[i] != seq2[i] and /[[:upper:]]/.match(seq2[i])  and /[[:upper:]]/.match(seq1[i])  
+        snps += 1 if seq1[i] != seq2[i]
       end
       snps
     end
@@ -342,7 +342,7 @@ module Bio::BFRTools
   class BFRRegion < Bio::DB::Fasta::Region
     BASES = [:A, :C, :G, :T]
     attr_reader :parental_1_sequence, :parental_2_sequence, :bulk_1_sequence, :bulk_2_sequence, :snp_count
-    attr_reader :ratios_bulk_1, :ratios_bulk_2, :avg_cov_bulk_1, :avg_cov_bulk_2, :coverages_1, :coverages_2
+    attr_reader :ratios_bulk_1, :ratios_bulk_2, :avg_cov_bulk_1, :avg_cov_bulk_2, :coverages_1, :coverages_2, :bases_bulk_1, :bases_bulk_2
 
     def initialize(opts)
       opts = { :min_cov=>20, :max_snp_1kbp => 5 }.merge!(opts)
@@ -381,13 +381,15 @@ module Bio::BFRTools
     end
 
     def get_bfr_lines(opts = {})
-      # p opts.inspect
+     
       opts = { :min_cov=>20, :max_snp_1kbp => 5 }.merge!(opts)
-
+      p opts.inspect
       region = self
       line  = String.new
       info = Array.new
+      
       for i in (0..region.size-1)
+        
         if region.coverages_1[i] > opts[:min_cov] and region.coverages_2[i] > opts[:min_cov]
           BASES.each do |base|
 
@@ -471,15 +473,16 @@ module Bio::BFRTools
       end
       
       relative_position = self.start +  position + 1
-
+      
       bfr = bfrs[reference][base][position]
       cov_1 = @coverages_1[position]
       cov_2 = @coverages_2[position]
       ratios_1 = @ratios_bulk_1[position][base]
       ratios_2 = @ratios_bulk_2[position][base]
-
-      
-
+      base_1_count = @bases_bulk_1[position][base.to_sym]
+      base_2_count = @bases_bulk_2[position][base.to_sym]
+      #puts "bases_1 #{@bases_bulk_1[position].to_s}"
+      #puts "bases_2 #{@bases_bulk_2[position].to_s}"
       line = String.new
       line << @container.parental_1_name  << "\t" << @container.parental_2_name << "\t" <<  @container.bulk_1_name << "\t" << @container.bulk_2_name << "\t" << self.entry << "\t"
       line << ref_base  << "\t" << relative_position.to_s 
@@ -487,7 +490,8 @@ module Bio::BFRTools
       line << bfr.round(2).to_s << "\t"  
       line << cov_1.to_s << "\t" << cov_2.to_s  << "\t" 
       line << informative 
-      #line << "\t" << ratios_1.round(2).to_s << "\t" << ratios_2.round(2).to_s
+      line << "\t" << ratios_1.round(2).to_s << "\t" << ratios_2.round(2).to_s
+      line << "\t" << base_1_count.to_s << "\t" << base_2_count.to_s
       line
     end
 
@@ -618,7 +622,7 @@ module Bio::BFRTools
     end
 
     def process_region(opts={})        
-      opts = { :min_cov=>20, :max_snp_1kbp => 5 }.merge!(opts)
+      opts = { :min_cov=>20, :max_snp_1kbp => 10 }.merge!(opts)
 
       @proccesed_regions += 1
       output = opts[:output_file] ? opts[:output_file] : $stdout
@@ -630,7 +634,7 @@ module Bio::BFRTools
       #puts region.to_multi_fasta
 
       @total_snp_1kbp += region.snp_1kbp 
-
+     # puts "SNPS: #{region.snp_1kbp}"
       if region.snp_count == 0
         @no_snps += 1 
         print_output = false 
@@ -671,7 +675,7 @@ module Bio::BFRTools
 
 
               for informative in info
-                line = region.get_bfr_line(i, base, informative)
+                line = region.get_bfr_line(i+1, base, informative)
                 output.print  line , "\n"
               end
             end

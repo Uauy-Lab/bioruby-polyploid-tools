@@ -114,7 +114,7 @@ class  String
 
     for i in (0..self.size-1)
 
-      snps += 1 if !Bio::NucleicAcid.is_unambiguous(self[i]) and /[[:upper:]]/.match(self[i])  and /[[:upper:]]/.match(self[i])
+      snps += 1 if !Bio::NucleicAcid.is_unambiguous(self[i])
     end
     snps
   end
