@@ -3,7 +3,7 @@ GEM
   specs:
     addressable (2.3.6)
     atomic (1.1.16)
-    bio (1.4.2)
+    bio (1.4.3)
     bio-samtools (0.6.2)
       bio (>= 1.4.2)
       ffi
@@ -61,7 +61,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bio (= 1.4.2)
+  bio (= 1.4.3)
   bio-samtools (= 0.6.2)
   jeweler
   rake

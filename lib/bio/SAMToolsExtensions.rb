@@ -118,7 +118,7 @@ class Bio::DB::Sam
     #puts "Region: #{region}"
     opts[:r] = region
     opts[:region] = region
-    opts[:A] = true
+   
     #reg = region.class == Bio::DB::Fasta::Region ? region : Bio::DB::Fasta::Region.parse_region(region.to_s)
 
     unless @cached_regions[region.to_s]
@@ -211,6 +211,55 @@ class Bio::DB::Sam
     #puts ">Ref\n#{reference}"
     #puts ">Original\n#{r}"
     region = @cached_regions[region.to_s]
+    region.coverages = coverages
+    region.base_ratios = base_ratios
+    region.consensus = Bio::Sequence.new(reference)
+    region.consensus.na
+    if region.orientation == :reverse
+      region.consensus.reverse_complement!()
+    end
+    region.average_coverage = total_cov.to_f/region.size.to_f
+    region.bases = bases
+    region
+  end
+  
+  
+  def fetch_region(opts={})
+    
+    min_cov = opts[:min_cov] ? opts[:min_cov] : 20  
+    opts[:region] = Bio::DB::Fasta::Region.parse_region( opts[:region] .to_s)  unless opts[:region].class == Bio::DB::Fasta::Region
+    region = opts[:region]
+    
+    mark_case = true if opts[:case]
+  
+    reference = self.fetch_reference(region.entry, region.start, region.end).downcase
+  
+    base_ratios = Array.new(region.size, BASE_COUNT_ZERO) 
+    bases = Array.new(region.size, BASE_COUNT_ZERO) 
+    coverages = Array.new(region.size, 0)
+    total_cov = 0
+    
+    tmp = Array.new
+    @cached_regions[region.to_s].pileup =  tmp
+    #puts "Loading #{region.to_s}"
+    mpileup(opts) do | pile | 
+      #   puts pile
+      tmp << pile
+      bef=reference[pile.pos - region.start  - 1 ] 
+      if pile.coverage > min_cov
+        base_ratios[pile.pos - region.start ] = pile.base_ratios
+        reference[pile.pos - region.start   - 1] = pile.consensus_iuap(0.20).upcase
+        coverages[pile.pos - region.start   ]  = pile.coverage.to_i
+        bases[pile.pos - region.start   ]  = pile.bases
+      end
+      #puts "#{pile.pos}\t#{bef}\t#{reference[pile.pos - region.start  - 1 ]} "
+      total_cov += pile.coverage
+    end
+
+    #puts ">Ref\n#{reference}"
+    #puts ">Original\n#{r}"
+    region = @cached_regions[region.to_s]
+    region.pileup = tmp 
     region.coverages = coverages
     region.base_ratios = base_ratios
     region.consensus = Bio::Sequence.new(reference)

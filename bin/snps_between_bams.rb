@@ -23,7 +23,7 @@ bam2 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[2]})
 
 output_prefix = ARGV[3]
 
-block_size=300
+block_size=1000
 
 min_cov = ARGV[4].to_i ? ARGV[4].to_i : 10
 chunk = ARGV[5].to_i
@@ -62,13 +62,10 @@ fasta_db.index.entries.each do | r |
       snps_1 = cons_1.count_ambiguities
       snps_2 = cons_2.count_ambiguities
 
-      called_1 = cons_1.upper_case_count
-      called_2 = cons_2.upper_case_count
-
       snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
 
-      snps_per_1k_1   = (block_size * snps_1.to_f   ) / called_1
-      snps_per_1k_2   = (block_size * snps_2.to_f   ) / called_2
+      snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
+      snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
       snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
 
       hist_1[snps_per_1k_1.to_i] += 1
