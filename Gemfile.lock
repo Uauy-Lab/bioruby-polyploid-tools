@@ -4,7 +4,7 @@ GEM
     addressable (2.3.6)
     atomic (1.1.16)
     bio (1.4.3.0001)
-    bio-samtools (2.0.1)
+    bio-samtools (2.0.2)
       bio (>= 1.4.2)
       bio-svgenes (>= 0.4.1)
     bio-svgenes (0.4.1)
@@ -61,7 +61,7 @@ PLATFORMS
 
 DEPENDENCIES
   bio (>= 1.4.3)
-  bio-samtools (>= 2.0.1)
+  bio-samtools (>= 2.0.2)
   jeweler
   rake
   systemu (>= 2.5.2)
