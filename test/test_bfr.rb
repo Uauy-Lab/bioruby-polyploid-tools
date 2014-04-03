@@ -49,18 +49,44 @@ class TestPolyploidTools < Test::Unit::TestCase
     cons_1 = reg_a.consensus
     cons_2 = reg_b.consensus
     
+    snps_1 = cons_1.count_ambiguities
+    snps_2 = cons_2.count_ambiguities
+    
+    called_1 = reg_a.called
+    called_2 = reg_b.called
+    
+    snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
+    block_size = 1000
+    snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
+    snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
+    snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
+
+    
+
+    #puts "#{region.entry}\t#{region.size}\t"
+    #puts "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
+    #puts "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
+    #puts "#{snps_tot}\t#{snps_per_1k_tot}\n"
+    
+    
     snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
     snps_to_ref = Bio::Sequence.snps_between(cons_1, ref_seq)
-    puts ">ref\n#{ref_seq}"
-    puts ">a\n#{cons_1}"
-    puts ">b\n#{cons_2}"
-    puts "SNPS between: #{snps_tot}"
-    puts "SNPS ref: #{snps_to_ref}"
+    #puts ">ref\n#{ref_seq}"
+    #puts ">a\n#{cons_1}"
+    #puts ">b\n#{cons_2}"
+    #puts "SNPS between: #{snps_tot}"
+    #puts "SNPS ref: #{snps_to_ref}"
+    #puts "SNPS call: #{snps_to_ref}"
     assert_equal(ref_seq.to_s, "acgcttgaccttaggcctatttaggtgacactatagaacaagtttgtacaaaaaagcaggctggtaccggtccggaattcccgggatatcgtcgacccacgcgtccgcgtccgaccagcacaaacaagactgtactctgggctcctctgactccgtgtcttgctaaaatatctttggtcgactcgttgcgaggttgatcagatggcggaggaagcgaagcaggatgtggcgccacccgcgccggagccgaccgaggacgtcgcggacgagaaggtggcggttccgtcgccggaggagtctaaggccctcgttgtcgccgagaatgacgctgagaagcctgcagctacagggggctcacacgaacgagatgctctgctcacgagggtcgcgaccgagaagaggatttcgctgatcaaggcatgggaggagaacgagaaggccaaagccgagaacaaggccgtgaagttgctggcggacatcacctcgtgggagaactccaaggccgcggaactggaagccgagctcaagaagatgcaagagcagctggagaagaagaaggcgcgctgcgtggagaagctcaagaacagcgccgcgacggtgcacaaagaggcggaangagaagcgtgccgcggcggaagcgcggcacggcgaggagatcgtcgcggcggaggagaccgccgccaagtaccgcgccaagggtgaagcgccgaagaagctgctcttcggcagaagatagatatcgcttcatcttcagcttctctctgtttgaccgnttgcatgtctcctgcccatggcatcacttgtgtatttatctttgggggngatcttagtttgtatggtatcatcaaatgcgtcgtga")
     assert_equal(cons_1.to_s , "acgcttgaccttaggcctatttaggtgacactatagaacaagtttgtacaaaaaagcaggctggtaccggtccggaattcccgggatatcgtcgacccacgcgtccgcgtccgaccagcacaaacaagactgtactctgggctcctctgactccgtgtcttgctaaaatatytttggtcgactcgttgcgaggttgatcagatggcggaggaagcgaagcaggatgtggcgccacccgcgccggagccgaccgaggacgtcgcggacgagaaggcggcggttccgtcgccggaggagtctaaggccctsgttgtcgccgagaatgacgcygagaagcctgcagctacagggggctcacacgaacgagatgctctgctcacgagggtygcgaccgagaagaggatttcgctgatcaaggcatgggaggagaaygagaaggccaaagccgagaacaaggccgtgaagttgctggcggacatcacctcgtgggagaactccaaggccgcggaactggaagccgagctcaagaagatgcaagagcagctggagaagaagaaggcgcgctgcgtggagaagctcaagaacagcgccgcgacggtgcacaaagaggcgraaggagaagcgtgccgcggcggaagygcggcrcggcgaggagatcgtcgcggcggaggagaccgccgccaagtaccgcgccaagggtgaggcgccgaagaagctgctcttcggcagaggatagatatcgcttcatcttcagcttctctctgtttgaccgnttgcatgtctcctgcccatggcatcacttgtgtatttatctttgggggngatcttagtttgtatggtatcatcaaatgcgtcgtga")  
     assert_equal(cons_2.to_s , "acgcttgaccttaggcctatttaggtgacactatagaacaagtttgtacaaaaaagcaggctggtaccggtccggaattcccgggatatcgtcgacccacgcgtccgcgtccgaccagcacaaacaagactgtactctgggctcctctgactccgtgtcttgctaaaatatytttggtcgactcgttgcgaggttgatcagatggcggasgaagcgaagcaggatgtggcgccacccgcgccggagccgaccgaggacgtcgcggacgagaaggcggcggttccgtcgccggaggartcyaaggccctsgttgtcgccgagaatgacgcygagaagcctgcagctacagggggctcacacgaacgagatgctctgctcacgagggtygcgaccgagaagaggatttcgctgatcaaggcatgggaggagaaygagaaggccaaagccgagaacaaggccgtgaagttgctggcggacatcacctcgtgggagaactccaaggccgcggaactggaagccgagctcaagaagatgcaagagcagctggagaagaagaaggcgcgctgcgtggagaagctcaagaacagcgccgcgacggtgcacaaagaggcgraaggagaagcgtgccgcggcggaagygcggcgcggcgaggagatcgtcgcggcggaggagrccgccgccaagtaccgcgccaagggtgaggcgccgaagaagctgctcttcggcagaagatagatatcgcttcatcttcagcttctctctgtttgaccgnttgcatgtctcctgcccatggcatcacttgtgtatttatctttgggggngatcttagtttgtatggtatcatcaaatgcgtcgtga")
     assert_equal(snps_tot , 6)
     assert_equal(snps_to_ref , 12)
+    assert_equal(snps_1,10)
+    assert_equal(snps_2,13)
+    assert_equal(called_1,617)
+    assert_equal(called_2,612)
+     
      
 
   end

@@ -54,35 +54,36 @@ fasta_db.index.entries.each do | r |
 
 
   begin
+    reg_a = @bam_a.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
+    reg_b = @bam_b.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
+    cons_1 = reg_a.consensus
+    cons_2 = reg_b.consensus
+   
 
-    cons_1 = bam1.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
-    cons_2 = bam2.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
-    if cons_1 != cons_2
+    snps_1 = cons_1.count_ambiguities
+    snps_2 = cons_2.count_ambiguities
+    
+    called_1 = reg_a.called
+    called_2 = reg_b.called
 
-      snps_1 = cons_1.count_ambiguities
-      snps_2 = cons_2.count_ambiguities
+    snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
 
-      called_1 = cons_1.upper_case_count
-      called_2 = cons_2.upper_case_count
+    snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
+    snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
+    snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
 
-      snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
+    hist_1[snps_per_1k_1.to_i] += 1
+    hist_2[snps_per_1k_2.to_i] += 1
 
-      snps_per_1k_1   = (block_size * snps_1.to_f   ) / called_1
-      snps_per_1k_2   = (block_size * snps_2.to_f   ) / called_2
-      snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
-
-      hist_1[snps_per_1k_1.to_i] += 1
-      hist_2[snps_per_1k_2.to_i] += 1
-
-      table_file.print "#{r.id}\t#{region.size}\t"
-      table_file.print "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
-      table_file.print "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
-      table_file.print "#{snps_tot}\t#{snps_per_1k_tot}\n"
-      fasta_file.puts ">#{r.id}_1"
-      fasta_file.puts "#{cons_1}"
-      fasta_file.puts ">#{r.id}_2"
-      fasta_file.puts "#{cons_2}"
-    end
+    table_file.print "#{r.id}\t#{region.size}\t"
+    table_file.print "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
+    table_file.print "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
+    table_file.print "#{snps_tot}\t#{snps_per_1k_tot}\n"
+    fasta_file.puts ">#{r.id}_1"
+    fasta_file.puts "#{cons_1}"
+    fasta_file.puts ">#{r.id}_2"
+    fasta_file.puts "#{cons_2}"
+    
   rescue Exception => e
     $stderr.puts "Unable to process #{region}: #{e.to_s}"
   end
