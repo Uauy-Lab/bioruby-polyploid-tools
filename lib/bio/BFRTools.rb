@@ -5,9 +5,11 @@ require 'rubygems'
 #require 'bio/db/vcf'
 require 'pathname'
 #require_relative 'BIOExtensions.rb'
-require_relative 'db/fastadb.rb'
+
 
 require 'bio'
+require 'bio-samtools'
+
 require "set"
 require 'systemu'
 require 'json'
