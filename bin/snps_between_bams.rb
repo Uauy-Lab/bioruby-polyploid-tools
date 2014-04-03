@@ -54,8 +54,8 @@ fasta_db.index.entries.each do | r |
 
 
   begin
-    reg_a = @bam_a.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
-    reg_b = @bam_b.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
+    reg_a = bam1.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
+    reg_b = bam2.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
     cons_1 = reg_a.consensus
     cons_2 = reg_b.consensus
    
