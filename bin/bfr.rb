@@ -89,7 +89,7 @@ bulk_1 = options[:bulk_1]
 bulk_2 = options[:bulk_2]
 
 
-fasta_db = Bio::DB::Fasta::FastaFile.new(reference)
+fasta_db = Bio::DB::Fasta::FastaFile.new({:fasta=>reference})
 fasta_db.load_fai_entries
 
 
