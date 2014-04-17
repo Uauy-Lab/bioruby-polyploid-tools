@@ -114,33 +114,35 @@ module Bio::BFRTools
       self.entry = reg.entry
       self.start = reg.start
       self.end   = reg.end
-
+      opts[:region] = reg
       @container = opts[:container]
 
-      parental_1_sam = @container.parental_1_sam
-      parental_2_sam = @container.parental_2_sam
-      bulk_1_sam = @container.bulk_1_sam
-      bulk_2_sam = @container.bulk_2_sam
+      parental_1_reg = @container.parental_1_sam.fetch_region(opts)
+      parental_2_reg = @container.parental_2_sam.fetch_region(opts)
+      bulk_1_reg = @container.bulk_1_sam.fetch_region(opts)
+      bulk_2_reg = @container.bulk_2_sam.fetch_region(opts)
+      
+    
 
-      @parental_1_sequence = parental_1_sam.consensus_with_ambiguities(opts)
-      @parental_2_sequence = parental_2_sam.consensus_with_ambiguities(opts)
-
-      @bulk_1_sequence = bulk_1_sam.consensus_with_ambiguities(opts)
-      @bulk_2_sequence = bulk_2_sam.consensus_with_ambiguities(opts)
+      @parental_1_sequence = parental_1_reg.consensus
+      @parental_2_sequence = parental_2_reg.consensus
+      
+      @bulk_1_sequence = bulk_1_reg.consensus
+      @bulk_2_sequence = bulk_2_reg.consensus
 
       @snp_count = Container.snps_between( @parental_1_sequence , @parental_2_sequence )
 
-      @ratios_bulk_1 = bulk_1_sam.base_ratios_in_region(opts)
-      @ratios_bulk_2 = bulk_2_sam.base_ratios_in_region(opts)
+      @ratios_bulk_1 = bulk_1_reg.base_ratios
+      @ratios_bulk_2 = bulk_2_reg.base_ratios
 
-      @bases_bulk_1 = bulk_1_sam.bases_in_region(opts)
-      @bases_bulk_2 = bulk_2_sam.bases_in_region(opts)
+      @bases_bulk_1 = bulk_1_reg.bases
+      @bases_bulk_2 = bulk_2_reg.bases
 
-      @avg_cov_bulk_1 = bulk_1_sam.average_coverage_from_pileup(opts)
-      @avg_cov_bulk_2 = bulk_2_sam.average_coverage_from_pileup(opts)
+      @avg_cov_bulk_1 = bulk_1_reg.average_coverage
+      @avg_cov_bulk_2 = bulk_2_reg.average_coverage
 
-      @coverages_1 =  bulk_1_sam.coverages_from_pileup(opts)
-      @coverages_2 =  bulk_2_sam.coverages_from_pileup(opts)
+      @coverages_1 =  bulk_1_reg.coverages
+      @coverages_2 =  bulk_2_reg.coverages
 
     end
 
@@ -236,7 +238,7 @@ module Bio::BFRTools
         raise BFRToolsException.new ("The reference for the line should be :first or :second, but was " + reference.to_s )
       end
       
-      relative_position = self.start +  position + 1
+      relative_position = self.start +  position 
       
       bfr = bfrs[reference][base][position]
       cov_1 = @coverages_1[position]
@@ -386,7 +388,7 @@ module Bio::BFRTools
     end
 
     def process_region(opts={})        
-      opts = { :min_cov=>20, :max_snp_1kbp => 10 }.merge!(opts)
+      opts = { :min_cov=>20, :max_snp_1kbp => 10, :max_per=>0.20 }.merge!(opts)
 
       @proccesed_regions += 1
       output = opts[:output_file] ? opts[:output_file] : $stdout
@@ -439,7 +441,7 @@ module Bio::BFRTools
 
 
               for informative in info
-                line = region.get_bfr_line(i+1, base, informative)
+                line = region.get_bfr_line(i, base, informative)
                 output.print  line , "\n"
               end
             end
