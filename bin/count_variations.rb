@@ -14,7 +14,7 @@ require path
 
 puts  ARGV[0]
 
-fasta_db = Bio::DB::Fasta::FastaFile.new( ARGV[0])
+fasta_db = Bio::DB::Fasta::FastaFile.new( {:fasta=>ARGV[0]})
 fasta_db.load_fai_entries
 bam1 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[1]})
 

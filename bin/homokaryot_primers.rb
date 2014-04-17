@@ -82,7 +82,7 @@ snps = Array.new
 #0. Load the fasta index 
 fasta_reference_db = nil
 if reference_file
-  fasta_reference_db = Bio::DB::Fasta::FastaFile.new(reference_file)
+  fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>reference_file})
   fasta_reference_db.load_fai_entries
   p "Fasta reference: #{reference_file}"
 end

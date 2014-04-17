@@ -43,7 +43,7 @@ snps = Array.new
 #0. Load the fasta index 
 fasta_reference_db = nil
 if fasta_reference
-  fasta_reference_db = Bio::DB::Fasta::FastaFile.new(fasta_reference)
+  fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>fasta_reference})
   fasta_reference_db.load_fai_entries
   p "Fasta reference: #{fasta_reference}"
 end
@@ -99,7 +99,7 @@ Dir.foreach(path_to_contigs) do |filename |
     puts filename
     target="#{path_to_contigs}/#{filename}"
     
-    fasta_file = Bio::DB::Fasta::FastaFile.new(target)
+    fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
     fasta_file.load_fai_entries
     Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
       if aln.identity > min_identity

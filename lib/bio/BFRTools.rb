@@ -31,7 +31,7 @@ module Bio::BFRTools
     BASES = [:A, :C, :G, :T]
     #Sets the reference file
     def reference(path)
-      @reference_db = Bio::DB::Fasta::FastaFile.new(path)
+      @reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
       @reference_path = path
     end
 

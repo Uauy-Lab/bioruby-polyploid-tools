@@ -126,12 +126,12 @@ module Bio::PolyploidTools
     end
 
     def global_reference(reference)
-      @global_reference = Bio::DB::Fasta::FastaFile.new(reference)
+      @global_reference = Bio::DB::Fasta::FastaFile.new({:fasta=>reference})
       @global_reference.load_fai_entries
     end
 
     def reference(reference)
-      @reference = Bio::DB::Fasta::FastaFile.new(reference)
+      @reference = Bio::DB::Fasta::FastaFile.new({:fasta=>reference})
       @reference.load_fai_entries
     end
 

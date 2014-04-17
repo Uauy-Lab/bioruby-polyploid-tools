@@ -23,7 +23,7 @@ bam2 =  Bio::DB::Sam.new({:fasta=>ARGV[0], :bam=>ARGV[2]})
 
 output_prefix = ARGV[3]
 
-block_size=300
+block_size=1000
 
 min_cov = ARGV[4].to_i ? ARGV[4].to_i : 10
 chunk = ARGV[5].to_i
@@ -54,6 +54,7 @@ fasta_db.index.entries.each do | r |
 
 
   begin
+<<<<<<< HEAD
     reg_a = bam1.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
     reg_b = bam2.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
     cons_1 = reg_a.consensus
@@ -84,6 +85,34 @@ fasta_db.index.entries.each do | r |
     fasta_file.puts ">#{r.id}_2"
     fasta_file.puts "#{cons_2}"
     
+=======
+
+    cons_1 = bam1.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
+    cons_2 = bam2.consensus_with_ambiguities({:region=>region, :case=>true, :min_cov=>min_cov})
+    if cons_1 != cons_2
+
+      snps_1 = cons_1.count_ambiguities
+      snps_2 = cons_2.count_ambiguities
+
+      snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
+
+      snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
+      snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
+      snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
+
+      hist_1[snps_per_1k_1.to_i] += 1
+      hist_2[snps_per_1k_2.to_i] += 1
+
+      table_file.print "#{r.id}\t#{region.size}\t"
+      table_file.print "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
+      table_file.print "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
+      table_file.print "#{snps_tot}\t#{snps_per_1k_tot}\n"
+      fasta_file.puts ">#{r.id}_1"
+      fasta_file.puts "#{cons_1}"
+      fasta_file.puts ">#{r.id}_2"
+      fasta_file.puts "#{cons_2}"
+    end
+>>>>>>> 1b60bd09fdb1b087d6cb53c643ff36e536efe4a3
   rescue Exception => e
     $stderr.puts "Unable to process #{region}: #{e.to_s}"
   end
