@@ -3,15 +3,8 @@ GEM
   specs:
     addressable (2.3.6)
     atomic (1.1.16)
-<<<<<<< HEAD
     bio (1.4.3.0001)
     bio-samtools (2.0.2)
-=======
-    bio (1.4.3)
-    bio-samtools (0.6.2)
->>>>>>> 1b60bd09fdb1b087d6cb53c643ff36e536efe4a3
-      bio (>= 1.4.2)
-      bio-svgenes (>= 0.4.1)
     bio-svgenes (0.4.1)
     builder (3.2.2)
     descendants_tracker (0.0.4)
@@ -65,13 +58,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-<<<<<<< HEAD
   bio (>= 1.4.3)
   bio-samtools (>= 2.0.2)
-=======
-  bio (= 1.4.3)
-  bio-samtools (= 0.6.2)
->>>>>>> 1b60bd09fdb1b087d6cb53c643ff36e536efe4a3
   jeweler
   rake
   systemu (>= 2.5.2)
