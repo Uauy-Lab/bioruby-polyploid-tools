@@ -435,9 +435,10 @@ module Bio::PolyploidTools
     end
 
     def sequences_to_align
+       p @sequences_to_align.inspect
       @sequences_to_align = surrounding_parental_sequences.merge(surrounding_exon_sequences) unless @sequences_to_align
     #  p "sequences_to_align"
-     # p @sequences_to_align.inspect
+     
       @sequences_to_align
     end
 
@@ -446,10 +447,10 @@ module Bio::PolyploidTools
       return @aligned_sequences if @aligned_sequences
       options = ['--maxiterate', '1000', '--localpair', '--quiet']
       mafft = Bio::MAFFT.new( "mafft" , options)
-      #puts "Before MAFT:#{sequences_to_align.inspect}"
+    #  puts "Before MAFT:#{sequences_to_align.inspect}"
       report = mafft.query_align(sequences_to_align)
       @aligned_sequences = report.alignment
-      #puts "MAFFT: #{report.alignment.inspect}" 
+   #   puts "MAFFT: #{report.alignment.inspect}" 
       @aligned_sequences
     end
 
@@ -640,7 +641,7 @@ module Bio::PolyploidTools
       @surrounding_exon_sequences =  Bio::Alignment::SequenceHash.new
       self.exon_list.each do |chromosome, exon| 
         #puts "surrounding_exon_sequences #{flanking_size}"
-       #puts chromosome
+        #puts chromosome
         #puts exon
         flanquing_region  = exon.target_flanking_region_from_position(position,flanking_size)
         #TODO: Padd when the exon goes over the regions... 

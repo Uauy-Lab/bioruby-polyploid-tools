@@ -21,7 +21,7 @@ module Bio::PolyploidTools
       @gene_models_path = path
     end
 
-    #Retunrs the sequence for a region in the gene models (exon)
+    #Returns the sequence for a region in the gene models (exon)
     def gene_model_sequence(region)
       seq=@gene_models_db.fetch_sequence(region)
 
@@ -43,7 +43,7 @@ module Bio::PolyploidTools
         left_pad += 1
         region.start = 0
       end
-      str = "-" * left_pad << @chromosomes_db.fetch_sequence({:fasta=>region})
+      str = "-" * left_pad << @chromosomes_db.fetch_sequence(region)
       #str << "n" * (region.size - str.size + 1) if region.size > str.size
       str
     end 
@@ -119,11 +119,12 @@ module Bio::PolyploidTools
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           #file.puts snp.primer_fasta_string 
+       
           begin 
             file.puts snp.aligned_sequences_fasta
           rescue Exception=>e
             @missing_exons << snp.to_s
-#            $stderr.puts e.to_s
+            $stderr.puts e.to_s
           end
         end
       end
