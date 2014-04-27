@@ -121,20 +121,20 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<bio>, [">= 1.4.3"])
-      s.add_runtime_dependency(%q<bio-samtools>, [">= 2.0.2"])
+      s.add_runtime_dependency(%q<bio-samtools>, [">= 2.0.3"])
       s.add_runtime_dependency(%q<rake>, [">= 0"])
       s.add_runtime_dependency(%q<jeweler>, [">= 0"])
       s.add_runtime_dependency(%q<systemu>, [">= 2.5.2"])
     else
       s.add_dependency(%q<bio>, [">= 1.4.3"])
-      s.add_dependency(%q<bio-samtools>, [">= 2.0.2"])
+      s.add_dependency(%q<bio-samtools>, [">= 2.0.3"])
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<systemu>, [">= 2.5.2"])
     end
   else
     s.add_dependency(%q<bio>, [">= 1.4.3"])
-    s.add_dependency(%q<bio-samtools>, [">= 2.0.2"])
+    s.add_dependency(%q<bio-samtools>, [">= 2.0.3"])
     s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<systemu>, [">= 2.5.2"])
