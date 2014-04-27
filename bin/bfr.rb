@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'rubygems'
 #require 'extensions/all'
 require 'bio-samtools'
@@ -70,18 +71,12 @@ chunk_size = options[:chunk_size]
 output_filename =  options[:output_filename] 
 stats_file = options[:stats_file]
 
- 
-#reference = ARGV[6]
-
-
 
 min = chunk * chunk_size
 max = min + chunk_size
 
 
-#AvocetS
 parental_1=options[:parent_1]
-#AvocetS (Yr15)
 parental_2=options[:parent_2]
 
 
@@ -89,7 +84,7 @@ bulk_1 = options[:bulk_1]
 bulk_2 = options[:bulk_2]
 
 
-fasta_db = Bio::DB::Fasta::FastaFile.new(reference)
+fasta_db = Bio::DB::Fasta::FastaFile.new({:fasta=>reference})
 fasta_db.load_fai_entries
 
 

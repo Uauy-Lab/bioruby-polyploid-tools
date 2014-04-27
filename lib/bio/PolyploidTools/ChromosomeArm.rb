@@ -8,7 +8,7 @@ module Bio::PolyploidTools
 
     def initialize(name, path_to_fasta)
       @name = name
-      @fasta_db = Bio::DB::Fasta::FastaFile.new(path_to_fasta)
+      @fasta_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path_to_fasta})
       #$stderr.puts "Loading entries for #{name}"
       
       @genes = Hash.new

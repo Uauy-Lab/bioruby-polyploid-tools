@@ -3,90 +3,7 @@ require 'pathname'
 #require_relative 'db/fasta.rb'
 require 'bio'
 
-require_relative 'db/fastadb.rb'
 
-#require "set"
-#require 'systemu'
-#require 'json'
-
-=begin
-
-Extends the methods to be able to calculate the BFR and a consensus from the pileup
-
-=end
-
-class Bio::DB::Pileup
-
-  #attr_accessor :minumum_ratio_for_iup_consensus
-  #@minumum_ratio_for_iup_consensus = 0.20
-
-  #Returns a hash with the count of bases
-
-  def bases
-    return @bases if @bases
-    @bases = self.non_refs
-    #puts self.ref_count
-    @bases[self.ref_base.upcase.to_sym] = self.ref_count 
-    @bases
-  end
-
-  def base_coverage
-    total = 0
-    @bases.each do |k,v|
-      total += v  
-    end
-    total
-  end
-
-  def base_ratios
-    return @base_ratios if @base_ratios
-    bases = self.bases
-    @base_ratios = Hash.new
-    bases.each do |k,v| 
-      @base_ratios[k] = v.to_f/self.base_coverage.to_f 
-    end
-    @base_ratios
-  end
-
-  # returns the consensus (most frequent) base from the pileup, if there are equally represented bases returns a string of all equally represented bases in alphabetical order   
-  def consensus_iuap(minumum_ratio_for_iup_consensus)
-    minumum_ratio_for_iup_consensus
-    if @consensus_iuap.nil?
-      @consensus_iuap = self.ref_base.downcase
-      bases = self.bases
-      tmp = String.new
-      bases.each do |k,v|
-        tmp << k[0].to_s if v/self.coverage > minumum_ratio_for_iup_consensus
-      end
-      if tmp.length > 0
-        @consensus_iuap = Bio::NucleicAcid.to_IUAPC(tmp)
-      end
-    end 
-    @consensus_iuap
-  end
-end
-
-
-
-class Bio::NucleicAcid
-
-
-
-  def self.to_IUAPC(bases)
-    #puts "TADA"    
-    base = IUPAC_CODES[bases.to_s.downcase.chars.sort.uniq.join]
-    if base == nil
-      p "Invalid base! #{base}"
-      base = 'n' #This is a patch... as one of the scripts failed here. 
-    end
-    base.upcase
-  end
-
-  def self.is_valid(code, base)
-    IUPAC_CODES[code.downcase].chars.include? base.downcase
-  end
-
-end
 
 
 #class Bio::DB::Sam::SAMException < RuntimeError
@@ -96,12 +13,9 @@ end
 class Bio::DB::Sam
 
 
-  attr_accessor :minumum_ratio_for_iup_consensus
-  attr_reader :cached_regions
-  #attr_accessor :pileup_cache
-  @minumum_ratio_for_iup_consensus = 0.20
-  BASE_COUNT_ZERO =  {:A => 0, :C => 0, :G => 0,  :T => 0}
   
+<<<<<<< HEAD
+=======
   #Same as mpilup, but it caches the pileup, so if you want several operations on the same set of regions
   #the pile for different operations, it won't execute the mpilup command several times
   #Whenever you finish using a region, call mpileup_clear_cache to free the cache
@@ -312,23 +226,7 @@ class Bio::DB::Sam
 
 
   end
+>>>>>>> 1b60bd09fdb1b087d6cb53c643ff36e536efe4a3
 
 end
 
-class Bio::DB::Fasta::Region
-  attr_accessor :pileup, :average_coverage, :snps, :reference, :base_ratios, :consensus, :coverages, :bases
-
-  #TODO: Debug, as it hasnt been tested in the actual code. 
-  def base_ratios_for_base(base)
-    @all_ratios = Hash.new unless @all_ratios
-    unless @all_ratios[base]
-      ratios = Array.new
-      for i in (0..region.size-1)
-        ratios << @base_ratios[i][base]
-      end
-      @all_ratios[base] = ratios
-    end
-    @all_ratios[base]
-  end
-
-end

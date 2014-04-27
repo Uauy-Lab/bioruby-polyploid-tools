@@ -3,17 +3,14 @@ GEM
   specs:
     addressable (2.3.6)
     atomic (1.1.16)
-    bio (1.4.3)
-    bio-samtools (0.6.2)
-      bio (>= 1.4.2)
-      ffi
-      systemu (>= 2.5.2)
+    bio (1.4.3.0001)
+    bio-samtools (2.0.2)
+    bio-svgenes (0.4.1)
     builder (3.2.2)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.3)
     git (1.2.6)
     github_api (0.11.3)
       addressable (~> 2.3)
@@ -53,7 +50,7 @@ GEM
     rake (10.2.2)
     rdoc (4.1.1)
       json (~> 1.4)
-    systemu (2.6.0)
+    systemu (2.6.4)
     thread_safe (0.3.1)
       atomic (>= 1.1.7, < 2)
 
@@ -61,7 +58,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bio (= 1.4.3)
-  bio-samtools (= 0.6.2)
+  bio (>= 1.4.3)
+  bio-samtools (>= 2.0.2)
   jeweler
   rake
+  systemu (>= 2.5.2)

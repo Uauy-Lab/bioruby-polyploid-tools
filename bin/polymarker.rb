@@ -87,7 +87,7 @@ snps = Array.new
 #0. Load the fasta index 
 fasta_reference_db = nil
 if fasta_reference
-  fasta_reference_db = Bio::DB::Fasta::FastaFile.new(fasta_reference)
+  fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>fasta_reference})
   fasta_reference_db.load_fai_entries
   p "Fasta reference: #{fasta_reference}"
 end
@@ -141,7 +141,7 @@ filename=path_to_contigs
 puts filename
 target=filename
 
-fasta_file = Bio::DB::Fasta::FastaFile.new(target)
+fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
 fasta_file.load_fai_entries
 
 found_cointigs = Set.new

@@ -16,7 +16,7 @@ module Bio::DB::Exonerate
 
     target=opts[:target]
     query=opts[:query]
- 
+ #
 
     cmdline = "exonerate --verbose 0 --showalignment no --bestn #{opts[:bestn]} --showvulgar no  --model #{opts[:model]}   --ryo '#{opts[:ryo]}' #{query} #{target}"
     status, stdout, stderr = systemu cmdline

@@ -17,7 +17,7 @@ module Bio::PolyploidTools
     end
 
     def gene_models(path)
-      @gene_models_db = Bio::DB::Fasta::FastaFile.new(path)
+      @gene_models_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
       @gene_models_path = path
     end
 
@@ -30,7 +30,7 @@ module Bio::PolyploidTools
 
     #Sets the reference file for the gene models
     def chromosomes(path)
-      @chromosomes_db = Bio::DB::Fasta::FastaFile.new(path)
+      @chromosomes_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
       @chromosomes_path = path
     end
 
@@ -43,7 +43,7 @@ module Bio::PolyploidTools
         left_pad += 1
         region.start = 0
       end
-      str = "-" * left_pad << @chromosomes_db.fetch_sequence(region)
+      str = "-" * left_pad << @chromosomes_db.fetch_sequence({:fasta=>region})
       #str << "n" * (region.size - str.size + 1) if region.size > str.size
       str
     end 
@@ -54,7 +54,7 @@ module Bio::PolyploidTools
       name = opts[:name]
       path = opts[:reference_path]
       path = opts[:alig_path]
-      chromosomes[name] = Bio::DB::Fasta::FastaFile.new(path)
+      chromosomes[name] = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
     end
     
     def add_snp(snp)
