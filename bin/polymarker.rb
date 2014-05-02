@@ -76,15 +76,15 @@ primer_3_input="#{output_folder}/primer_3_input_temp"
 primer_3_output="#{output_folder}/primer_3_output_temp"
 exons_filename="#{output_folder}/exons_genes_and_contigs.fa"
 output_primers="#{output_folder}/primers.csv"
-status_file="#{output_folder}/status.txt"
+@status_file="#{output_folder}/status.txt"
 
 primer_3_config=File.expand_path(File.dirname(__FILE__) + '/../conf/primer3_config')
 model=options[:model] 
 
 
 def write_status(status)
-  f=File.open(status_file, "a")
-  f.puts "#{Time.now.to_s(:db)},#{status}"
+  f=File.open(@status_file, "a")
+  f.puts "#{Time.now.to_s},#{status}"
   f.close
 end
 
@@ -217,7 +217,7 @@ file.puts("PRIMER_NUM_RETURN=5")
 file.puts("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=#{primer_3_config}/")
 container.print_primer_3_exons(file, nil, snp_in)
 file.close
-wr
+
 Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output})
 
 
