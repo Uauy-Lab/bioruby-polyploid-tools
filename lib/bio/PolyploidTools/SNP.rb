@@ -22,7 +22,8 @@ module Bio::PolyploidTools
       reg_str.chomp!
       snp = SNP.new
       snp.gene, snp.original, snp.position, snp.snp, snp.chromosome = reg_str.split(",")
-      snp.position = snp.position.strip!.to_i
+      snp.position.strip!
+      snp.position =  snp.position.to_i
       snp.original.upcase!
       snp.original.strip!
       snp.snp.upcase!
