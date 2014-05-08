@@ -22,15 +22,18 @@ module Bio::PolyploidTools
       reg_str.chomp!
       snp = SNP.new
       snp.gene, snp.original, snp.position, snp.snp, snp.chromosome = reg_str.split(",")
-      snp.position = snp.position.strip!.to_i
-      snp.original.upcase!.strip!
-      snp.snp.upcase!.strip!  
+      snp.position.strip!
+      snp.position =  snp.position.to_i
+      snp.original.upcase!
+      snp.original.strip!
+      snp.snp.upcase!
+      snp.snp.strip!  
       snp.chromosome.strip!
       snp.exon_list = Hash.new()
       snp.use_reference = false
       snp
     end
-    
+
     def initialize
        @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
     end
