@@ -55,7 +55,7 @@ OptionParser.new do |opts|
   end
   
   opts.on("-n", "--chunk FILE", "Sorted BAM file with the alginments from bulk1 2 (corresponding to the phenotype of parental 2)") do |o|
-    options[:chunk] = o.to_1
+    options[:chunk] = o.to_i
   end
   
     
