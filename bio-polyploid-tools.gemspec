@@ -102,6 +102,7 @@ Gem::Specification.new do |s|
     "test/data/S22380157.fa.fai",
     "test/data/Test3Aspecific.csv",
     "test/data/Test3Aspecific_contigs.fa",
+    "test/data/bfr_out_test.csv",
     "test/data/patological_cases5D.csv",
     "test/data/short_primer_design_test.csv",
     "test/data/test_primer3_error.csv",
