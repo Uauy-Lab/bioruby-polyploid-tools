@@ -10,8 +10,23 @@ $: << File.expand_path('.')
 path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
 require path
 
+arm_selection_functions = Hash.new;
 
 
+arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
+  ret = contig_name[0,2]       
+  return ret
+end
+#Function to parse stuff like: IWGSC_CSS_1AL_scaff_110
+arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
+  ret = contig_name.split('_')[2][0,2]
+  return ret
+end
+
+arm_selection_functions[:arm_selection_morex] = lambda do | contig_name |
+  ret = contig_name.split(':')[0].split("_")[1];       
+  return ret
+end
 
 options = {}
 options[:path_to_contigs] = "/tgac/references/external/projects/iwgsc/css/IWGSC_CSS_all_scaff_v1.fa"
@@ -19,6 +34,7 @@ options[:chunks] = 1
 options[:bucket_size] = 0
 options[:bucket] = 1
 options[:model] = "est2genome"
+options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
 
@@ -44,6 +60,10 @@ OptionParser.new do |opts|
   
   opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
      options[:model] = o
+   end
+
+   opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two", "Function to decide the chromome arm") do |o|
+    options[:arm_selection] = arm_selection_functions[o.to_sym];
    end
   
     
@@ -178,15 +198,7 @@ contigs_f.close()
 #Custom arm selection function that only uses the first two characters. Maybe
 #we want to make it a bit more cleaver
 write_status "Reading best alignment on each chromosome"
-arm_selection_first_two = lambda do | contig_name |
-  ret = contig_name[0,2]       
-  return ret
-end
-#Function to parse stuff like: IWGSC_CSS_1AL_scaff_110
-arm_selection_embl = lambda do | contig_name|
-  ret = contig_name.split('_')[2][0,2]
-  return ret
-end
+
 
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=100
@@ -199,7 +211,7 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   container.add_snp(snp)
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_embl, :min_identity=>min_identity})
+container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 
 
 #4.1 generating primer3 file
