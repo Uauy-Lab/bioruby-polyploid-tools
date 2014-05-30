@@ -13,7 +13,7 @@ module Bio::PolyploidTools
     attr_accessor :use_reference
     attr_accessor :genomes_count
     
-    attr_reader :chromosome
+    attr_accessor :chromosome
 
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
@@ -40,9 +40,10 @@ module Bio::PolyploidTools
     
     
     #We Only want the chromosome, we drop the arm. 
-    def chromosome= (chr)
-      @chromosome = chr[0,2]
-    end
+    #We don't use this any more. 
+    #def chromosome= (chr)
+    #  @chromosome = chr
+    #end
     
     def chromosome_group
       chromosome[0]

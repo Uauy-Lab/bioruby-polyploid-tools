@@ -135,8 +135,14 @@ File.open(test_file) do | f |
       snp = Bio::PolyploidTools::SNPSequence.parse(line)  
     elsif options[:snp_list] and options[:reference] #List and fasta file
       snp = Bio::PolyploidTools::SNP.parse(line)
-      region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
-      snp.template_sequence = fasta_reference_db.fetch_sequence(region)
+      entry = fasta_reference_db.index.region_for_entry(snp.gene)
+      if entry
+       region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
+       snp.template_sequence = fasta_reference_db.fetch_sequence(region)
+     else
+        $stderr.puts "Unable to find entry for #{snp.gene}"
+      end
+
     else
       rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
