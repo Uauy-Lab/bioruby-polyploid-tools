@@ -81,11 +81,7 @@ module Bio::PolyploidTools
       end
     end
 
-    def primer_3_input_for_snp(snp)
-      gene_region = snp.covered_region
-      local_pos_in_gene = snp.local_position
-      puts ""
-    end
+   
 
     def fasta_string_for_snp(snp)
       gene_region = snp.covered_region
@@ -110,7 +106,6 @@ module Bio::PolyploidTools
         to_print[local_pos_in_gene] = to_print[local_pos_in_gene].upcase
         ret_str << to_print
       end
-      puts ret_str
       ret_str
     end
 

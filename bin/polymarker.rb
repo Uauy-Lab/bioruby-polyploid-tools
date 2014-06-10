@@ -10,8 +10,23 @@ $: << File.expand_path('.')
 path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
 require path
 
+arm_selection_functions = Hash.new;
 
 
+arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
+  ret = contig_name[0,2]       
+  return ret
+end
+#Function to parse stuff like: IWGSC_CSS_1AL_scaff_110
+arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
+  ret = contig_name.split('_')[2][0,2]
+  return ret
+end
+
+arm_selection_functions[:arm_selection_morex] = lambda do | contig_name |
+  ret = contig_name.split(':')[0].split("_")[1];       
+  return ret
+end
 
 options = {}
 options[:path_to_contigs] = "/tgac/references/external/projects/iwgsc/css/IWGSC_CSS_all_scaff_v1.fa"
@@ -19,6 +34,7 @@ options[:chunks] = 1
 options[:bucket_size] = 0
 options[:bucket] = 1
 options[:model] = "est2genome"
+options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
 
@@ -44,6 +60,10 @@ OptionParser.new do |opts|
   
   opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
      options[:model] = o
+   end
+
+   opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two", "Function to decide the chromome arm") do |o|
+    options[:arm_selection] = arm_selection_functions[o.to_sym];
    end
   
     
@@ -76,14 +96,22 @@ primer_3_input="#{output_folder}/primer_3_input_temp"
 primer_3_output="#{output_folder}/primer_3_output_temp"
 exons_filename="#{output_folder}/exons_genes_and_contigs.fa"
 output_primers="#{output_folder}/primers.csv"
+@status_file="#{output_folder}/status.txt"
 
 primer_3_config=File.expand_path(File.dirname(__FILE__) + '/../conf/primer3_config')
 model=options[:model] 
 
 
+def write_status(status)
+  f=File.open(@status_file, "a")
+  f.puts "#{Time.now.to_s},#{status}"
+  f.close
+end
+
 min_identity= 90
 snps = Array.new
 
+write_status "Loading Reference"
 #0. Load the fasta index 
 fasta_reference_db = nil
 if fasta_reference
@@ -93,9 +121,12 @@ if fasta_reference
 end
 
 
+
+
 #1. Read all the SNP files 
 #All the SNPs should be on the same chromosome as the first SNP. 
 #chromosome = nil
+write_status "Reading SNPs"
 File.open(test_file) do | f |
   f.each_line do | line |
     # p line.chomp!
@@ -104,8 +135,14 @@ File.open(test_file) do | f |
       snp = Bio::PolyploidTools::SNPSequence.parse(line)  
     elsif options[:snp_list] and options[:reference] #List and fasta file
       snp = Bio::PolyploidTools::SNP.parse(line)
-      region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
-      snp.template_sequence = fasta_reference_db.fetch_sequence(region)
+      entry = fasta_reference_db.index.region_for_entry(snp.gene)
+      if entry
+       region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
+       snp.template_sequence = fasta_reference_db.fetch_sequence(region)
+     else
+        $stderr.puts "Unable to find entry for #{snp.gene}"
+      end
+
     else
       rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
@@ -121,7 +158,7 @@ end
 #1.1 Close fasta file
 #fasta_reference_db.close() if fasta_reference_db
 #2. Generate all the fasta files
-
+write_status "Writing sequences to align"
 written_seqs = Set.new
 file = File.open(temp_fasta_query, "w")
 snps.each do |snp|
@@ -135,6 +172,7 @@ file.close
 #3. Run exonerate on each of the possible chromosomes for the SNP
 #puts chromosome
 #chr_group = chromosome[0]
+write_status "Searching markers in genome"
 exo_f = File.open(exonerate_file, "w")
 contigs_f = File.open(temp_contigs, "w")
 filename=path_to_contigs 
@@ -165,15 +203,8 @@ contigs_f.close()
 #4. Load all the results from exonerate and get the input filename for primer3
 #Custom arm selection function that only uses the first two characters. Maybe
 #we want to make it a bit more cleaver
-arm_selection_first_two = lambda do | contig_name |
-  ret = contig_name[0,2]       
-  return ret
-end
-#Function to parse stuff like: IWGSC_CSS_1AL_scaff_110
-arm_selection_embl = lambda do | contig_name|
-  ret = contig_name.split('_')[2][0,2]
-  return ret
-end
+write_status "Reading best alignment on each chromosome"
+
 
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=100
@@ -186,8 +217,11 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   container.add_snp(snp)
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_embl, :min_identity=>min_identity})
+container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 
+
+#4.1 generating primer3 file
+write_status "Running primer3"
 file = File.open(exons_filename, "w")
 container.print_fasta_snp_exones(file)
 file.close
@@ -204,7 +238,9 @@ file.close
 
 Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output})
 
+
 #5. Pick the best primer and make the primer3 output
+write_status "Selecting best primers"
 kasp_container=Bio::DB::Primer3::KASPContainer.new
 kasp_container.line_1=snp_in
 kasp_container.line_2=original_name
@@ -217,3 +253,4 @@ kasp_container.add_primers_file(primer_3_output)
 header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{snp_in},#{original_name},common,primer_type,orientation,#{snp_in}_TM,#{original_name}_TM,common_TM,selected_from,product_size"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 
+write_status "DONE"
