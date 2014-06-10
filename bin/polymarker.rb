@@ -35,6 +35,17 @@ options[:bucket_size] = 0
 options[:bucket] = 1
 options[:model] = "est2genome"
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
+
+options[:primer_3_preferences] = {
+      :primer_product_size_range => "50-150" ,
+      :primer_max_size => 25 , 
+      :primer_lib_ambiguity_codes_consensus => 1,
+      :primer_liberal_base => 1, 
+      :primer_num_return=>5,
+      :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
+
+    }
+
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
 
@@ -66,6 +77,9 @@ OptionParser.new do |opts|
     options[:arm_selection] = arm_selection_functions[o.to_sym];
    end
   
+  opts.on("-p", "--primer_3_preferences FILE", "file with preferences to be sent to primer3") do |o|
+    options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
+  end
     
 end.parse!
 
@@ -227,12 +241,14 @@ container.print_fasta_snp_exones(file)
 file.close
 
 file = File.open(primer_3_input, "w")
-file.puts("PRIMER_PRODUCT_SIZE_RANGE=50-150")
-file.puts("PRIMER_MAX_SIZE=25")
-file.puts("PRIMER_LIB_AMBIGUITY_CODES_CONSENSUS=1")
-file.puts("PRIMER_LIBERAL_BASE=1")
-file.puts("PRIMER_NUM_RETURN=5")
-file.puts("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=#{primer_3_config}/")
+#file.puts("PRIMER_PRODUCT_SIZE_RANGE=50-150")
+#file.puts("PRIMER_MAX_SIZE=25")
+#file.puts("PRIMER_LIB_AMBIGUITY_CODES_CONSENSUS=1")
+#file.puts("PRIMER_LIBERAL_BASE=1")
+#file.puts("PRIMER_NUM_RETURN=5")
+#file.puts("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=#{primer_3_config}/")
+
+Bio::DB::Primer3.prepare_input_file(file, options[:primer_3_preferences])
 container.print_primer_3_exons(file, nil, snp_in)
 file.close
 

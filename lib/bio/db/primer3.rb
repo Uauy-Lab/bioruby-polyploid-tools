@@ -3,7 +3,20 @@ module Bio::DB::Primer3
   class Primer3Exception < RuntimeError 
   end
 
-  def self.prepare_input_file(filename, opts={})
+  def self.read_primer_preferences(file, defaults)
+
+    File.open(file) do |f|
+      f.each_line do | line | 
+        line.chomp!
+        arr = line.split("=")
+        defaults[arr[0].downcase.to_sym] = arr[1];
+      end
+    end
+
+    return defaults
+  end
+
+  def self.prepare_input_file(file, opts2={})
     #file.puts("PRIMER_PRODUCT_SIZE_RANGE=50-150")
 #file.puts("PRIMER_MAX_SIZE=25")
 #file.puts("PRIMER_LIB_AMBIGUITY_CODES_CONSENSUS=1")
@@ -16,16 +29,14 @@ module Bio::DB::Primer3
       :primer_lib_ambiguity_codes_consensus => 1,
       :primer_liberal_base => 1, 
       :primer_num_return=>5,
-      :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../../conf/primer3_config')
+      :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../../../conf/primer3_config/') + '/'
 
-    }
-    .merge(opts)
-    file = File.open(filename, "w")
+    }.merge(opts2)
+    
     opts.each do |key,value|
         file.puts "#{key.to_s.upcase}=#{value}\n"
     end
-     file.puts "="
-     file.close
+    # file.puts "="
   end
 
   def self.run(opts={})
@@ -35,10 +46,6 @@ module Bio::DB::Primer3
     f_out=opts[:out]
     opts.delete(:in)
     opts.delete(:out)
-    
-
-
-
     primer_3_in = File.read(f_in)
     status = systemu "primer3_core", 0=>primer_3_in, 1=>stdout='', 2=>stderr=''
     # $stderr.puts cmdline
