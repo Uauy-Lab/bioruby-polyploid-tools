@@ -138,7 +138,6 @@ end
 
 
 #1. Read all the SNP files 
-#All the SNPs should be on the same chromosome as the first SNP. 
 #chromosome = nil
 write_status "Reading SNPs"
 File.open(test_file) do | f |
@@ -154,7 +153,7 @@ File.open(test_file) do | f |
        region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
        snp.template_sequence = fasta_reference_db.fetch_sequence(region)
      else
-        $stderr.puts "Unable to find entry for #{snp.gene}"
+        $stderr.puts "ERROR: Unable to find entry for #{snp.gene}"
       end
 
     else
@@ -163,7 +162,12 @@ File.open(test_file) do | f |
     rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
     snp.snp_in = snp_in
     snp.original_name = original_name
-    snps << snp
+    if snp.position 
+      snps << snp
+    else
+      $stderr.puts "ERROR: #{snp.gene} doesn't contain a SNP"
+    end
+
 #    chromosome = snp.chromosome unless chromosome
   #  raise Bio::DB::Exonerate::ExonerateException.new "All the snps should come from the same chromosome" if chromosome != snp.chromosome
   end
