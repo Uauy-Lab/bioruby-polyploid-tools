@@ -35,7 +35,7 @@ options[:bucket_size] = 0
 options[:bucket] = 1
 options[:model] = "est2genome"
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
-
+options[:flanking_size] = 100;
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -45,6 +45,8 @@ options[:primer_3_preferences] = {
       :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
 
     }
+
+
 
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
@@ -82,6 +84,15 @@ OptionParser.new do |opts|
   end
     
 end.parse!
+
+if options[:primer_3_preferences][:primer_product_size_range]
+  range = options[:primer_3_preferences][:primer_product_size_range]
+  range_arr = range.split("-")
+  min = range_arr[0].to_i
+  max = range_arr[1].to_i
+  raise  Bio::DB::Exonerate::ExonerateException.new "Ragne #{range} is invalid!" unless max > min
+  options[:flanking_size] = max
+end
 
 p options
 p ARGV
@@ -225,7 +236,7 @@ write_status "Reading best alignment on each chromosome"
 
 
 container= Bio::PolyploidTools::ExonContainer.new
-container.flanking_size=100
+container.flanking_size=options[:flanking_size] 
 container.gene_models(temp_fasta_query)
 container.chromosomes(temp_contigs)
 container.add_parental({:name=>snp_in})
