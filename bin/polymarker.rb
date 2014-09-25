@@ -136,6 +136,8 @@ end
 min_identity= 90
 snps = Array.new
 
+begin
+  
 write_status "Loading Reference"
 #0. Load the fasta index 
 fasta_reference_db = nil
@@ -285,3 +287,10 @@ header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 
 write_status "DONE"
+rescue StandardError => e
+  write_status "ERROR\t#{e.message}"
+  raise e 
+rescue Exception => e
+  write_status "ERROR\t#{e.message}"
+  raise e  
+end

@@ -23,6 +23,7 @@ end
 markers = nil
 
 options = {}
+options[:flanking_size] = 100
 OptionParser.new do |opts|
   
   opts.banner = "Usage: snp_postion_to_polymarker.rb [options]"
@@ -36,6 +37,7 @@ OptionParser.new do |opts|
   opts.on("-o", "--out CSV", "Output file ") do |o|
     options[:output] = o
   end
+  opts.on()("-f", "--flanking_size INT", "Flanking size around the SNP")
   
 end.parse!
 #reference="/Users/ramirezr/Documents/TGAC/references/Triticum_aestivum.IWGSP1.21.dna_rm.genome.fa"
@@ -54,7 +56,8 @@ File.open(options[:snp_file]) do | f |
     	if entry
        		region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
        		snp.template_sequence = fasta_reference_db.fetch_sequence(region)
-       		out.puts "#{snp.gene},#{snp.chromosome},#{snp.to_polymarker_sequence}"
+
+       		out.puts "#{snp.gene}_#{snp.snp_id_in_seq},#{snp.chromosome},#{snp.to_polymarker_sequence(options[:flanking_size])}"
     	else
     	   $stderr.puts "ERROR: Unable to find entry for #{snp.gene}"
     	end

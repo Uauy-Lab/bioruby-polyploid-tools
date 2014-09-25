@@ -33,6 +33,7 @@ class TestPolyploidTools < Test::Unit::TestCase
     assert_equal(snp.position ,  51, "Position isnt parsed #{snp.position}")
     assert_equal(snp.original , "T", "ORiginal base not parsed, is #{snp.original}")
     assert_equal(snp.snp , "C")
+    
     assert(snp.template_sequence == "CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTAYATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA", "#{snp.template_sequence}!=CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTAYATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA")
     #true
   end

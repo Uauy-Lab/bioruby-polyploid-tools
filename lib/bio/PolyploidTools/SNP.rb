@@ -37,7 +37,16 @@ module Bio::PolyploidTools
     def initialize
        @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
     end
+
+    def to_polymarker_sequence
+      out = template_sequence.clone
+      out[position-1]  = "[#{original}/#{snp}]"
+      out
+    end
     
+    def snp_id_in_seq
+      "#{original}#{position}#{snp}"
+    end
     
     #We Only want the chromosome, we drop the arm. 
     #We don't use this any more. 
