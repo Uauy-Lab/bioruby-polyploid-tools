@@ -17,12 +17,6 @@ module Bio::DB::Primer3
   end
 
   def self.prepare_input_file(file, opts2={})
-    #file.puts("PRIMER_PRODUCT_SIZE_RANGE=50-150")
-#file.puts("PRIMER_MAX_SIZE=25")
-#file.puts("PRIMER_LIB_AMBIGUITY_CODES_CONSENSUS=1")
-#file.puts("PRIMER_LIBERAL_BASE=1")
-#file.puts("PRIMER_NUM_RETURN=5")
-#file.puts("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=#{primer_3_config}/")
      opts = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 

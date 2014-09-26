@@ -199,9 +199,7 @@ module Bio::DB::Exonerate
       reg.start = target_snp_pos - flanking_size
       reg.end = target_snp_pos + flanking_size
       raise  ExonerateException.new "Target Query out of bounds!" unless position.between?(query_start, query_end)
-      #puts "Flanking region for #{position} in exon between ( #{query_id}:#{query_start}-#{query_end}), the target in #{target_snp_pos} ( #{target_id}:#{target_start}-#{target_end}) "
-
-
+    
       reg
     end
 
@@ -226,7 +224,6 @@ module Bio::DB::Exonerate
       end
       #THis is in case the position is on a gap. 
       if @target_length == 0 and label == :G
-        #puts "Returning nil"
         @snp_in_gap = true
         ret = target_start
       end

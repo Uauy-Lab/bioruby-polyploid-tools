@@ -44,6 +44,7 @@ module Bio::PolyploidTools
       @position = Regexp.last_match(:pre).size + 1
       @original = Regexp.last_match(:org)
       @snp = Regexp.last_match(:snp)
+      
       amb_base = Bio::NucleicAcid.to_IUAPC("#{@original}#{@snp}")
       
       @template_sequence = "#{Regexp.last_match(:pre)}#{amb_base}#{Regexp.last_match(:pos)}"

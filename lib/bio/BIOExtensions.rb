@@ -60,3 +60,5 @@ class Hash
     map {|e| e.join(keyvaldelim) }.join(entrydelim)
   end
 end
+
+

@@ -12,7 +12,7 @@ module Bio::PolyploidTools
     attr_accessor :template_sequence
     attr_accessor :use_reference
     attr_accessor :genomes_count
-    
+    attr_accessor :primer_3_min_seq_length 
     attr_accessor :chromosome
 
     #Format: 
@@ -35,13 +35,18 @@ module Bio::PolyploidTools
     end
 
     def initialize
-       @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
+      @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
+      @primer_3_min_seq_length = 50
     end
 
-    def to_polymarker_sequence
+    def to_polymarker_sequence(flanking_size)
       out = template_sequence.clone
       out[position-1]  = "[#{original}/#{snp}]"
-      out
+
+      start = position - flanking_size - 1
+      start = 0 if start < 0
+      total = flanking_size * 2 + 6
+      out[start , total ]
     end
     
     def snp_id_in_seq
@@ -283,6 +288,8 @@ module Bio::PolyploidTools
       primer_3_propertes = Array.new
 
       seq_original = String.new(pr.sequence)
+      put seq_original.size << "-" << primer_3_min_seq_length
+      return primer_3_propertes if seq_original.size < primer_3_min_seq_length
       seq_original[pr.snp_pos] = self.original
       seq_original_reverse = reverse_complement_string(seq_original)
 
@@ -407,16 +414,10 @@ module Bio::PolyploidTools
               seq[local_pos_in_gene] = self.original 
             end
         end
-        #puts "local_pos_in_gene #{local_pos_in_gene}"
-        #puts "'#{name}' compared to '#{self.snp_in}'"
-        #puts seq
         seq[local_pos_in_gene] = seq[local_pos_in_gene].upcase
         seq[local_pos_in_gene] = self.snp if name == self.snp_in  
-        #puts seq
-        #puts "__"
         @surrounding_parental_sequences [name] = cut_and_pad_sequence_to_primer_region(seq)
       end
-     # puts "&&&&\n#{surrounding_parental_sequences['A']}\n#{surrounding_parental_sequences['B']}\n&&&&"
       @surrounding_parental_sequences
     end
 
@@ -430,7 +431,6 @@ module Bio::PolyploidTools
     end
 
     def cut_and_pad_sequence_to_primer_region(sequence)
-     # p "cut_and_pad_sequence_to_primer_region #{local_position} #{flanking_size}" 
       ideal_min = self.local_position - flanking_size 
       ideal_max = self.local_position + flanking_size
       left_pad = 0
@@ -448,10 +448,7 @@ module Bio::PolyploidTools
     end
 
     def sequences_to_align
-       p @sequences_to_align.inspect
       @sequences_to_align = surrounding_parental_sequences.merge(surrounding_exon_sequences) unless @sequences_to_align
-    #  p "sequences_to_align"
-     
       @sequences_to_align
     end
 

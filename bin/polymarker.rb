@@ -266,10 +266,10 @@ file = File.open(primer_3_input, "w")
 #file.puts("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=#{primer_3_config}/")
 
 Bio::DB::Primer3.prepare_input_file(file, options[:primer_3_preferences])
-container.print_primer_3_exons(file, nil, snp_in)
+added_exons = container.print_primer_3_exons(file, nil, snp_in)
 file.close
 
-Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output})
+Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output}) if added_exons > 0
 
 
 #5. Pick the best primer and make the primer3 output
@@ -282,7 +282,7 @@ snps.each do |snp|
   kasp_container.add_snp(snp) 
 end
 
-kasp_container.add_primers_file(primer_3_output)
+kasp_container.add_primers_file(primer_3_output) if added_exons > 0
 header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{snp_in},#{original_name},common,primer_type,orientation,#{snp_in}_TM,#{original_name}_TM,common_TM,selected_from,product_size"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 

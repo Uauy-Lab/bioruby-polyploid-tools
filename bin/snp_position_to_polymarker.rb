@@ -37,7 +37,9 @@ OptionParser.new do |opts|
   opts.on("-o", "--out CSV", "Output file ") do |o|
     options[:output] = o
   end
-  opts.on()("-f", "--flanking_size INT", "Flanking size around the SNP")
+  opts.on("-f", "--flanking_size INT", "Flanking size around the SNP") do |o|
+    options[:flanking_size] = o.to_i
+  end
   
 end.parse!
 #reference="/Users/ramirezr/Documents/TGAC/references/Triticum_aestivum.IWGSP1.21.dna_rm.genome.fa"

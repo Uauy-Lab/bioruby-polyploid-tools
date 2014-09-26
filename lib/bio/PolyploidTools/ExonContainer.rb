@@ -5,7 +5,7 @@ module Bio::PolyploidTools
     attr_reader :parental_1_name, :parental_2_name, :gene_models_db
     attr_reader :chromosomes, :snp_map
     attr_reader :parents
-    attr_accessor :flanking_size
+    attr_accessor :flanking_size , :primer_3_min_seq_length
 
     BASES = [:A, :C, :G, :T]
     #Sets the reference file for the gene models
@@ -14,6 +14,7 @@ module Bio::PolyploidTools
       @parents=Hash.new
       @snp_map = Hash.new 
       @snp_contigs
+      @primer_3_min_seq_length = 50
     end
 
     def gene_models(path)
@@ -126,17 +127,24 @@ module Bio::PolyploidTools
     end
 
     def print_primer_3_exons (file, target_chromosome , parental )
+      added = 0
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
+          string = ""
           begin 
-          string = snp.primer_3_string( snp.chromosome, parental )
-          file.puts string if string.size > 0
+            primer_3_min_seq_length
+            string = snp.primer_3_string( snp.chromosome, parental )
+            if string.size > 0
+              file.puts string
+              added += 1
+            end 
            rescue Exception=>e
              @missing_exons << snp.to_s
               #$stderr.puts e.to_s
             end
         end 
       end
+      return added
     end
 
     def add_alignments(opts=Hash.new) 
