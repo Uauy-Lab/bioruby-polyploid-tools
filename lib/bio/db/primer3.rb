@@ -1,4 +1,4 @@
-
+require 'pp'
 module Bio::DB::Primer3
   class Primer3Exception < RuntimeError 
   end
@@ -158,12 +158,16 @@ module Bio::DB::Primer3
           values << "second"
           values << primer3_line_2.shortest_pair.product_size
         else
+
           first_candidate = find_primer_pair_first
           second_candidate = find_primer_pair_second
 
           if first_candidate
+
+            #puts "input to search #{first_candidate.left_coordinates}"
             primer_2 = primer3_line_2.left_primer_with_coordinates(first_candidate.left_coordinates, first_candidate.orientation)
             primer_2_tm = find_left_primer_temp(primer_2)
+            #puts "In the funky if #{primer_2}"
           end
           if second_candidate
             primer_1 = primer3_line_1.left_primer_with_coordinates(second_candidate.left_coordinates, second_candidate.orientation) 
@@ -283,7 +287,7 @@ module Bio::DB::Primer3
           primers_line_1 << primer3record
           @primer3_line_1 = primer3record if not @primer3_line_1  or @primer3_line_1 > primer3record
         when primer3record.line == @line_2
-          primers_line_1 << primer3record
+          primers_line_2 << primer3record
           @primer3_line_2 = primer3record if not @primer3_line_2 or @primer3_line_2 > primer3record
         else
           raise Primer3Exception.new "#{primer3record.line} is not recognized (#{line_1}, #{line_2})"
@@ -419,13 +423,14 @@ module Bio::DB::Primer3
       else
         raise Primer3Exception.new "#{tmp_primer} doesnt end in a base in the SNP #{snp.to_s}"
       end
+      #puts "tmp_primer: #{tmp_primer}"
       return tmp_primer
     end
 
     def left_primer_with_coordinates(coordinates, other_orientation)
 
       seq = self.sequence_template
-
+      #puts "Left coordinates: #{seq}"
       seq = reverse_complement_string(seq) if self.orientation != other_orientation
 
       seq[coordinates[0],coordinates[1]] 
@@ -687,7 +692,7 @@ module Bio::DB::Primer3
       Primer3Record.parse_file(filename) do | primer3record |
         current_snp = @snp_hash["#{primer3record.snp.to_s}:#{primer3record.chromosome}"]
         current_snp.add_record(primer3record)
-        #puts current_snp.inspect
+
       end
     end
 

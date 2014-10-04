@@ -128,7 +128,7 @@ module Bio::PolyploidTools
 
     def print_primer_3_exons (file, target_chromosome , parental )
       added = 0
-     
+      
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           string = ""
