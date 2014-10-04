@@ -28,5 +28,6 @@ best_aln = Hash.new
 load_blat_alignments( blat_file,best_aln)
 puts "QUERY\tTARGET"
 best_aln.each do |k, hit|
-  puts "#{k}\t#{hit.target_id}"
+  #puts "#{k}\t#{hit.target_id}"
+   puts hit.data.join("\t")
 end

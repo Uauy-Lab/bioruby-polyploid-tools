@@ -288,7 +288,7 @@ module Bio::PolyploidTools
       primer_3_propertes = Array.new
 
       seq_original = String.new(pr.sequence)
-      put seq_original.size << "-" << primer_3_min_seq_length
+      #puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s
       return primer_3_propertes if seq_original.size < primer_3_min_seq_length
       seq_original[pr.snp_pos] = self.original
       seq_original_reverse = reverse_complement_string(seq_original)

@@ -128,6 +128,7 @@ module Bio::PolyploidTools
 
     def print_primer_3_exons (file, target_chromosome , parental )
       added = 0
+     
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           string = ""
@@ -140,7 +141,8 @@ module Bio::PolyploidTools
             end 
            rescue Exception=>e
              @missing_exons << snp.to_s
-              #$stderr.puts e.to_s
+
+              $stderr.puts e.to_s
             end
         end 
       end
