@@ -285,6 +285,7 @@ module Bio::DB::Primer3
         case
         when primer3record.line == @line_1
           primers_line_1 << primer3record
+          puts primer3record.inspect
           @primer3_line_1 = primer3record if not @primer3_line_1  or @primer3_line_1 > primer3record
         when primer3record.line == @line_2
           primers_line_2 << primer3record
@@ -299,6 +300,8 @@ module Bio::DB::Primer3
   class Primer3Record
     include Comparable
     attr_accessor :properties, :polymorphism
+    attr_accessor :socres
+
 
     def shortest_pair
       return @shortest_pair if @shortest_pair
@@ -335,44 +338,16 @@ module Bio::DB::Primer3
       return nil
     end
 
+    def score
+      ret = 0
+      ret += @scores[type]
+      ret += @scores[:exon] if exon?
+      ret -= product_length
+      ret
+    end
+
     def <=>(anOther)
-      ret = snp <=> anOther.snp
-      return ret if ret != 0
-
-
-      #Sorting by the types. 
-      if type == :chromosome_specific 
-        if anOther.type != :chromosome_specific
-          return -1
-        end
-      elsif type == :chromosome_semispecific
-        if anOther.type == :chromosome_specific
-          return 1
-        else anOther.type == :chromosome_nonspecific
-          return -1
-        end
-      elsif type == :chromosome_nonspecific
-        if anOther.type != :chromosome_nonspecific
-          return 1
-        end
-      end
-
-      #Sorting if it is in intron or not This will give priority 
-      #to the cases when we know for sure the sequence from the line
-      #and reduce the chances of getting messed with a short indel
-      if self.exon?
-        unless anOther.exon? 
-          return -1
-        end
-      else
-        if anOther.exon?
-          return 1
-        end
-      end
-
-      #Sorting for how long the product is, the shorter, the better 
-      return  product_length <=> anOther.product_length
-
+      return  anOther.score <=> score
     end
 
     def parse_coordinates(str)
@@ -457,6 +432,12 @@ module Bio::DB::Primer3
 
     def initialize
       @properties = Hash.new
+      @scores = Hash.new
+      @scores[:chromosome_specific] = 1000
+      @scores[:chromosome_semispecific] = 100
+      @scores[:chromosome_nonspecific] = 0
+      @scores[:exon] = 50
+    
     end
 
     def snp

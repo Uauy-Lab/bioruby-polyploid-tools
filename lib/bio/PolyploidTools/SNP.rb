@@ -265,7 +265,7 @@ module Bio::PolyploidTools
       str << "=\n"
 
 
-      #In case that we don't have a right primer, wi do both orientation
+      #In case that we don't have a right primer, we do both orientations
       unless opts[:right_pos]
         sequence =  opts[:sequence]    
         left = sequence.size - left - 1
