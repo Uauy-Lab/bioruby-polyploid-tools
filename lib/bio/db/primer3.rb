@@ -141,11 +141,11 @@ module Bio::DB::Primer3
           values << primer3_line_1.right_primer 
           values << primer3_line_1.type.to_s 
           values << primer3_line_1.orientation.to_s 
-          values << primer3_line_1.shortest_pair.left.tm 
+          values << primer3_line_1.best_pair.left.tm 
           values << primer_2_tm
-          values << primer3_line_1.shortest_pair.right.tm
+          values << primer3_line_1.best_pair.right.tm
           values << "first" 
-          values << primer3_line_1.shortest_pair.product_size
+          values << primer3_line_1.best_pair.product_size
         elsif  primer_1_tm != "NA"
           values << primer_1
           values << primer3_line_2.left_primer
@@ -153,60 +153,62 @@ module Bio::DB::Primer3
           values << primer3_line_2.type.to_s
           values << primer3_line_2.orientation.to_s
           values << primer_1_tm
-          values << primer3_line_2.shortest_pair.left.tm
-          values << primer3_line_2.shortest_pair.right.tm
+          values << primer3_line_2.best_pair.left.tm
+          values << primer3_line_2.best_pair.right.tm
           values << "second"
-          values << primer3_line_2.shortest_pair.product_size
+          values << primer3_line_2.best_pair.product_size
         else
 
           first_candidate = find_primer_pair_first
           second_candidate = find_primer_pair_second
 
           if first_candidate
-
-            #puts "input to search #{first_candidate.left_coordinates}"
             primer_2 = primer3_line_2.left_primer_with_coordinates(first_candidate.left_coordinates, first_candidate.orientation)
             primer_2_tm = find_left_primer_temp(primer_2)
-            #puts "In the funky if #{primer_2}"
           end
           if second_candidate
+            #puts "input to search #{first_candidate.left_coordinates}"
             primer_1 = primer3_line_1.left_primer_with_coordinates(second_candidate.left_coordinates, second_candidate.orientation) 
             primer_1_tm = find_left_primer_temp(primer_1)
+            #puts "In the other funky if #{primer_2}"
           end
 
           if first_candidate and second_candidate and first_candidate < second_candidate 
+            #puts "A"
             values << first_candidate.left_primer
             values << primer_2
             values << first_candidate.right_primer 
             values << first_candidate.type.to_s 
             values << first_candidate.orientation.to_s 
-            values << first_candidate.shortest_pair.left.tm 
+            values << first_candidate.best_pair.left.tm 
             values << primer_2_tm
-            values << first_candidate.shortest_pair.right.tm
+            values << first_candidate.best_pair.right.tm
             values << "first" 
-            values << first_candidate.shortest_pair.product_size
+            values << first_candidate.best_pair.product_size
           elsif  second_candidate 
+            #puts "B"
             values << primer_1
             values << second_candidate.left_primer
             values << second_candidate.right_primer
             values << second_candidate.type.to_s
             values << second_candidate.orientation.to_s
             values << primer_1_tm
-            values << second_candidate.shortest_pair.left.tm
-            values << second_candidate.shortest_pair.right.tm
+            values << second_candidate.best_pair.left.tm
+            values << second_candidate.best_pair.right.tm
             values << "second"
-            values << second_candidate.shortest_pair.product_size
+            values << second_candidate.best_pair.product_size
           elsif  first_candidate 
-            values << primer_2
+            #puts "C"
             values << first_candidate.left_primer
+            values << primer_2
             values << first_candidate.right_primer
             values << first_candidate.type.to_s
             values << first_candidate.orientation.to_s
             values << primer_2_tm
-            values << first_candidate.shortest_pair.left.tm
-            values << first_candidate.shortest_pair.right.tm
+            values << first_candidate.best_pair.left.tm
+            values << first_candidate.best_pair.right.tm
             values << "first"
-            values << first_candidate.shortest_pair.product_size
+            values << first_candidate.best_pair.product_size
 #          else
 #            values << "" 
           end
@@ -220,12 +222,12 @@ module Bio::DB::Primer3
         values << primer3_line_1.right_primer 
         values << primer3_line_1.type.to_s 
         values << primer3_line_1.orientation.to_s      
-        values << primer3_line_1.shortest_pair.left.tm 
+        values << primer3_line_1.best_pair.left.tm 
         values << "NA"
-        values << primer3_line_1.shortest_pair.right.tm
+        values << primer3_line_1.best_pair.right.tm
 
         values << "first+"
-        values << primer3_line_1.shortest_pair.product_size
+        values << primer3_line_1.best_pair.product_size
       elsif primer3_line_2 
         values << primer3_line_2.polymorphism
         values << primer3_line_2.left_primer_snp(self) 
@@ -234,10 +236,10 @@ module Bio::DB::Primer3
         values << primer3_line_2.type.to_s
         values << primer3_line_2.orientation.to_s
         values << "NA"
-        values << primer3_line_2.shortest_pair.left.tm
-        values << primer3_line_2.shortest_pair.right.tm
+        values << primer3_line_2.best_pair.left.tm
+        values << primer3_line_2.best_pair.right.tm
         values << "second+"
-        values << primer3_line_2.shortest_pair.product_size
+        values << primer3_line_2.best_pair.product_size
 
       end 
       values.join(",")
@@ -274,7 +276,9 @@ module Bio::DB::Primer3
         end
       case
       when primer3record.line == @line_1
+
         @line_1_template = primer3record.sequence_template
+
       when primer3record.line == @line_2
         @line_2_template = primer3record.sequence_template
       else
@@ -283,11 +287,11 @@ module Bio::DB::Primer3
 
       if  primer3record.primer_left_num_returned.to_i > 0 
         case
-        when primer3record.line == @line_1
-          primers_line_1 << primer3record
-          puts primer3record.inspect
-          @primer3_line_1 = primer3record if not @primer3_line_1  or @primer3_line_1 > primer3record
         when primer3record.line == @line_2
+          primers_line_1 << primer3record
+          #puts primer3record.inspect
+          @primer3_line_1 = primer3record if not @primer3_line_1  or @primer3_line_1 > primer3record
+        when primer3record.line == @line_1
           primers_line_2 << primer3record
           @primer3_line_2 = primer3record if not @primer3_line_2 or @primer3_line_2 > primer3record
         else
@@ -303,14 +307,15 @@ module Bio::DB::Primer3
     attr_accessor :socres
 
 
-    def shortest_pair
-      return @shortest_pair if @shortest_pair
-      @shortest_pair = nil
-      @primerPairs.each do | primer |
-        @shortest_pair = primer if @shortest_pair == nil
-        @shortest_pair = primer if primer.size < @shortest_pair.size
-      end
-      @shortest_pair
+    def best_pair
+      return @best_pair if @best_pair
+      #@best_pair = nil
+      #@primerPairs.each do | primer |
+      #  @best_pair = primer if @best_pair == nil
+      #  @best_pair = primer if primer.size < @best_pair.size
+      #end
+      @best_pair = @primerPairs.first
+      @best_pair
     end
 
     def primer_error
@@ -360,13 +365,13 @@ module Bio::DB::Primer3
 
     def left_coordinates
       #@left_coordinates = parse_coordinates(self.primer_left_0) unless @left_coordinates 
-      @left_coordinates = shortest_pair.left.coordinates
+      @left_coordinates = best_pair.left.coordinates
       @left_coordinates 
     end
 
     def right_coordinates
       unless @right_coordinates 
-        @right_coordinates = shortest_pair.right.coordinates
+        @right_coordinates = best_pair.right.coordinates
         @right_coordinates[0] = @right_coordinates[0] - @right_coordinates[1] + 1
       end
       @right_coordinates 
@@ -374,7 +379,7 @@ module Bio::DB::Primer3
 
     def left_primer
       #@left_primer = self.sequence_template[left_coordinates[0],left_coordinates[1]] unless @left_primer
-      @left_primer = shortest_pair.left.sequence
+      @left_primer = best_pair.left.sequence
       @left_primer
     end
 
@@ -423,11 +428,11 @@ module Bio::DB::Primer3
     end
     
     def right_primer
-      return shortest_pair.right.sequence
+      return best_pair.right.sequence
     end
 
     def product_length
-      return shortest_pair.size
+      return best_pair.size
     end
 
     def initialize
@@ -568,7 +573,7 @@ module Bio::DB::Primer3
   end
 
   class PrimerPair
-
+    include Comparable
     attr_reader :record
     attr_reader :left, :right
     
@@ -581,6 +586,10 @@ module Bio::DB::Primer3
 
     def size
       return product_size.to_i
+    end
+
+    def <=>(anOther)
+      penalty.to_f <=> anOther.penalty.to_f
     end
 
     def initialize(record, index)
