@@ -99,8 +99,12 @@ module Bio::PolyploidTools
       max = @position
      # puts "Calculating covered region for #{self.inspect}"
     #  puts "#{@exon_list.inspect}"
-      raise SNPException.new "Exons haven't been loaded for #{self.to_s}" if @exon_list.size == 0
-      
+      #raise SNPException.new "Exons haven't been loaded for #{self.to_s}" if @exon_list.size == 0
+      if @exon_list.size == 0
+        min = self.position - self.flanking_size
+        min = 1 if min < 1
+        max =  self.position + self.flanking_size
+      end
       @exon_list.each do | chromosome, exon |
        # puts exon.inspect
         reg = exon.query_region

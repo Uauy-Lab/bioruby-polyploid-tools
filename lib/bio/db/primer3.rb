@@ -287,11 +287,11 @@ module Bio::DB::Primer3
 
       if  primer3record.primer_left_num_returned.to_i > 0 
         case
-        when primer3record.line == @line_2
+        when primer3record.line == @line_1
           primers_line_1 << primer3record
           #puts primer3record.inspect
           @primer3_line_1 = primer3record if not @primer3_line_1  or @primer3_line_1 > primer3record
-        when primer3record.line == @line_1
+        when primer3record.line == @line_2
           primers_line_2 << primer3record
           @primer3_line_2 = primer3record if not @primer3_line_2 or @primer3_line_2 > primer3record
         else
@@ -309,12 +309,12 @@ module Bio::DB::Primer3
 
     def best_pair
       return @best_pair if @best_pair
-      #@best_pair = nil
-      #@primerPairs.each do | primer |
-      #  @best_pair = primer if @best_pair == nil
-      #  @best_pair = primer if primer.size < @best_pair.size
-      #end
-      @best_pair = @primerPairs.first
+      @best_pair = nil
+      @primerPairs.each do | primer |
+        @best_pair = primer if @best_pair == nil
+        @best_pair = primer if primer.size < @best_pair.size
+      end
+      #@best_pair = @primerPairs.min
       @best_pair
     end
 
@@ -680,6 +680,8 @@ module Bio::DB::Primer3
 
     def add_primers_file(filename)
       Primer3Record.parse_file(filename) do | primer3record |
+      #  puts "#{primer3record.snp.to_s}:#{primer3record.chromosome}"
+       # puts @snp_hash.keys.to_s
         current_snp = @snp_hash["#{primer3record.snp.to_s}:#{primer3record.chromosome}"]
         current_snp.add_record(primer3record)
 

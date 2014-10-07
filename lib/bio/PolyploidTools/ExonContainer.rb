@@ -24,6 +24,7 @@ module Bio::PolyploidTools
 
     #Returns the sequence for a region in the gene models (exon)
     def gene_model_sequence(region)
+      #puts region
       seq=@gene_models_db.fetch_sequence(region)
 
 

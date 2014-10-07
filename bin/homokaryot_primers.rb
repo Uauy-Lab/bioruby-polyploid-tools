@@ -21,14 +21,22 @@ class HomokaryotContainer < Bio::PolyploidTools::ExonContainer
     flanking_size = 100
      File.open(filename) do | f |
        f.each_line do | line |
+        if ARGV.size == 1 #List with Sequence
+        snp = Bio::PolyploidTools::SNPSequence.parse(line)  
+        snp.use_reference = false
+        elsif ARGV.size == 2 #List and fasta file
          snp = Bio::PolyploidTools::SNP.parse(line)
+         snp.use_reference = true
+        end
+         #snp = Bio::PolyploidTools::SNP.parse(line)
+        # puts snp.gene
          snp.flanking_size = flanking_size
          if snp.position > 0
            snp.container = self
            snp.chromosome = chromosome
            snp.snp_in = snp_in
            snp.original_name = original_name
-           snp.use_reference = true
+           
            snp.container = self
            @snp_map[snp.gene] = Array.new unless   @snp_map[snp.gene] 
            @snp_map[snp.gene] << snp   
@@ -95,6 +103,7 @@ File.open(snp_file) do | f |
     snp = nil
     if ARGV.size == 1 #List with Sequence
       snp = Bio::PolyploidTools::SNPSequence.parse(line)  
+
     elsif ARGV.size == 2 #List and fasta file
       snp = Bio::PolyploidTools::SNP.parse(line)
       region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
@@ -112,13 +121,32 @@ File.open(snp_file) do | f |
 end
 
 
+output_folder="#{snp_file}_primer_design_#{Time.now.strftime('%Y%m%d-%H%M%S')}/"
+Dir.mkdir(output_folder)
+seqs_file= output_folder + "sequences.fa"
+written_seqs = Set.new
+reference_file = seqs_file unless reference_file
+  
+
+file = File.open(seqs_file, "w")
+snps.each do |snp|
+  unless written_seqs.include?(snp.gene)
+    written_seqs << snp.gene 
+    file.puts snp.to_fasta
+  end
+end
+file.close
+
+
 container = HomokaryotContainer.new
 container.add_parental({:name=>snp_in})
 container.add_parental({:name=>original_name})
-container.gene_models(reference_file)
+container.gene_models(reference_file) if reference_file
 
-output_folder="#{snp_file}_primer_design_#{Time.now.strftime('%Y%m%d-%H%M%S')}/"
-Dir.mkdir(output_folder)
+
+
+
+
 primer_3_input="#{output_folder}primer_3_input_temp"
 primer_3_output="#{output_folder}primer_3_output_temp"
 container.add_snp_file(snp_file, "PST130",  snp_in, original_name)
