@@ -103,8 +103,9 @@ p ARGV
 
 path_to_contigs=options[:path_to_contigs]
 
-snp_in="A"
-original_name="B"
+original_name="A"
+snp_in="B"
+
 fasta_reference = nil
 #test_file="/Users/ramirezr/Dropbox/JIC/PrimersToTest/test_primers_nick_and_james_1.csv"
 test_file=options[:marker_list]
@@ -275,15 +276,15 @@ Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output}) if added_exon
 #5. Pick the best primer and make the primer3 output
 write_status "Selecting best primers"
 kasp_container=Bio::DB::Primer3::KASPContainer.new
-kasp_container.line_1=snp_in
-kasp_container.line_2=original_name
+kasp_container.line_1= original_name
+kasp_container.line_2= snp_in
 
 snps.each do |snp|
   kasp_container.add_snp(snp) 
 end
 
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
-header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{snp_in},#{original_name},common,primer_type,orientation,#{snp_in}_TM,#{original_name}_TM,common_TM,selected_from,product_size"
+header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 
 write_status "DONE"
