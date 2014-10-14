@@ -302,9 +302,9 @@ module Bio::DB::Primer3
           raise Primer3Exception.new "#{primer3record.line} is not recognized (#{line_1}, #{line_2})"
         end
       else
-        primer3_errors << "#{primer3record.line}(#{primer3record.orientation}):#{primer3record.primer_left_explain}"
-        primer3_errors << "common(#{primer3record.orientation}#{primer3record.type}):#{primer3record.primer_right_explain}"
-        primer3_errors << "pair(#{primer3record.orientation}#{primer3record.type}):#{primer3record.primer_pair_explain}"
+        primer3_errors << "#{primer3record.line}(#{primer3record.orientation}):#{primer3record.primer_left_explain.gsub!(',',';')}"
+        primer3_errors << "common(#{primer3record.orientation}#{primer3record.type}):#{primer3record.primer_right_explain.gsub!(',',';')}"
+        primer3_errors << "pair(#{primer3record.orientation}#{primer3record.type}):#{primer3record.primer_pair_explain.gsub!(',',';')}"
       end
     end
   end
