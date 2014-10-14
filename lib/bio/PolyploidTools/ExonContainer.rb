@@ -136,12 +136,13 @@ module Bio::PolyploidTools
           begin 
             primer_3_min_seq_length
             string = snp.primer_3_string( snp.chromosome, parental )
+            #puts "print_primer_3_exons: #{string.size}"
             if string.size > 0
               file.puts string
               added += 1
             end 
            rescue Exception=>e
-             @missing_exons << snp.to_s
+              @missing_exons << snp.to_s
 
               $stderr.puts e.to_s
             end

@@ -35,18 +35,16 @@ options[:bucket_size] = 0
 options[:bucket] = 1
 options[:model] = "est2genome"
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
-options[:flanking_size] = 100;
+options[:flanking_size] = 150;
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
       :primer_lib_ambiguity_codes_consensus => 1,
       :primer_liberal_base => 1, 
       :primer_num_return=>5,
+      :primer_explain_flag => 1,
       :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
-
     }
-
-
 
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
@@ -81,6 +79,7 @@ OptionParser.new do |opts|
   
   opts.on("-p", "--primer_3_preferences FILE", "file with preferences to be sent to primer3") do |o|
     options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
+
   end
     
 end.parse!
@@ -214,12 +213,12 @@ target=filename
 fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
 fasta_file.load_fai_entries
 
-found_cointigs = Set.new
+found_contigs = Set.new
 Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
   if aln.identity > min_identity
     exo_f.puts aln.line
-    unless found_cointigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
-      found_cointigs.add(aln.target_id)
+    unless found_contigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
+      found_contigs.add(aln.target_id)
       entry = fasta_file.index.region_for_entry(aln.target_id)
       raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
       region = entry.get_full_region
@@ -259,12 +258,6 @@ container.print_fasta_snp_exones(file)
 file.close
 
 file = File.open(primer_3_input, "w")
-#file.puts("PRIMER_PRODUCT_SIZE_RANGE=50-150")
-#file.puts("PRIMER_MAX_SIZE=25")
-#file.puts("PRIMER_LIB_AMBIGUITY_CODES_CONSENSUS=1")
-#file.puts("PRIMER_LIBERAL_BASE=1")
-#file.puts("PRIMER_NUM_RETURN=5")
-#file.puts("PRIMER_THERMODYNAMIC_PARAMETERS_PATH=#{primer_3_config}/")
 
 Bio::DB::Primer3.prepare_input_file(file, options[:primer_3_preferences])
 added_exons = container.print_primer_3_exons(file, nil, snp_in)
@@ -284,7 +277,7 @@ snps.each do |snp|
 end
 
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
-header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size"
+header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 
 write_status "DONE"

@@ -22,9 +22,9 @@ module Bio::DB::Primer3
       :primer_max_size => 25 , 
       :primer_lib_ambiguity_codes_consensus => 1,
       :primer_liberal_base => 1, 
-      :primer_num_return=>5,
-      :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../../../conf/primer3_config/') + '/'
-
+      :primer_num_return => 5,
+      :primer_explain_flag => 1,
+      :primer_thermodynamic_parameters_path => File.expand_path(File.dirname(__FILE__) + '../../../../conf/primer3_config/') + '/'
     }.merge(opts2)
     
     opts.each do |key,value|
@@ -67,7 +67,8 @@ module Bio::DB::Primer3
     def initialize
       @primers_line_1 = SortedSet.new
       @primers_line_2 = SortedSet.new
-      @reguibs = SortedSet.new
+      @regions = SortedSet.new
+       @primer3_errors = Set.new
     end
 
     def line_2_name
@@ -112,11 +113,7 @@ module Bio::DB::Primer3
       left_end = 0
       right_start = 0
       right_end = 0
- #     exons = snp_from.exon_list.values
-      
-#      puts "Exons: #{exon_list.size}"
-      
-#      puts "It has the following exons: #{snp_in.exon_list.to_s}"
+      total_columns_before_messages=17
       values = Array.new
       #values << "#{gene},,#{template_length},"
       values << gene
@@ -242,6 +239,12 @@ module Bio::DB::Primer3
         values << primer3_line_2.best_pair.product_size
 
       end 
+      if values.size < total_columns_before_messages
+        values[total_columns_before_messages] = primer3_errors.to_a.join("|")
+      else
+        values << nil
+      end
+
       values.join(",")
     end
 
@@ -268,13 +271,14 @@ module Bio::DB::Primer3
 
     
     def add_record(primer3record)
-      @primer3_errors = Array.new unless @primer3_errors
+      @primer3_errors = Set.new unless @primer3_errors
       @template_length = primer3record.sequence_template.size
        if primer3record.primer_error != nil 
-          primer3_errors << primer3record
+          primer3_errors << primer3record.primer_error
           return
         end
       case
+
       when primer3record.line == @line_1
 
         @line_1_template = primer3record.sequence_template
@@ -297,6 +301,10 @@ module Bio::DB::Primer3
         else
           raise Primer3Exception.new "#{primer3record.line} is not recognized (#{line_1}, #{line_2})"
         end
+      else
+        primer3_errors << "#{primer3record.line}(#{primer3record.orientation}):#{primer3record.primer_left_explain}"
+        primer3_errors << "common(#{primer3record.orientation}#{primer3record.type}):#{primer3record.primer_right_explain}"
+        primer3_errors << "pair(#{primer3record.orientation}#{primer3record.type}):#{primer3record.primer_pair_explain}"
       end
     end
   end
@@ -327,7 +335,8 @@ module Bio::DB::Primer3
       return @properties[method_name] if @properties[method_name] 
       $stderr.puts "Missing #{method_name}"
       $stderr.puts @properties.inspect
-      raise NoMethodError.new() 
+      return "" #if a property is missing, return blank. 
+      #raise NoMethodError.new() 
     end
 
     def find_left_tm(primer)
@@ -665,26 +674,18 @@ module Bio::DB::Primer3
       snp.position = snp_in.position
       snp.snp = snp_in.snp
 
-#      snp.original.upcase!
-#      snp.snp.upcase! 
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
       snp.snp_from = snp_in
-      #puts "Kasp container, adding #{snp.to_s} #{snp.class}  #{snp_in.class}"
-      #puts "#{snp.regions}"
       snp.regions = snp_in.exon_list.values.collect { |x| x.target_region.to_s }
-      #puts "#{snp.regions}"
       @snp_hash[snp.to_s] = snp
       snp
     end
 
     def add_primers_file(filename)
       Primer3Record.parse_file(filename) do | primer3record |
-      #  puts "#{primer3record.snp.to_s}:#{primer3record.chromosome}"
-       # puts @snp_hash.keys.to_s
         current_snp = @snp_hash["#{primer3record.snp.to_s}:#{primer3record.chromosome}"]
         current_snp.add_record(primer3record)
-
       end
     end
 
@@ -695,8 +696,6 @@ module Bio::DB::Primer3
       end
       return str
     end
-
   end
-
 end
 
