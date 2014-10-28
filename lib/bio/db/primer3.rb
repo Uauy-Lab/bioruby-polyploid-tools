@@ -471,10 +471,10 @@ module Bio::DB::Primer3
         @exon = false
       end
 
-      if @polymorphism.to_sym == :homeologous
-        @homeologous = true
+      if @polymorphism.to_sym == :homoeologous
+        @homoeologous = true
       else
-        @homeologous = false
+        @homoeologous = false
       end
       @parsed = true
       @orientation = @orientation.to_sym
@@ -492,10 +492,10 @@ module Bio::DB::Primer3
       @chromosome
     end
     
-    def homeologous?
-      return @homeologous if @parsed
+    def homoeologous?
+      return @homoeologous if @parsed
       parse_header
-      @homeologous
+      @homoeologous
     end
 
     def type

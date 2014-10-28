@@ -203,11 +203,11 @@ module Bio::PolyploidTools
           when mask[i] == '&'
             #This is the SNP we take the parental
             pr.snp_pos = position_in_region
-            pr.homeologous = false
+            pr.homoeologous = false
           when mask[i] == ':'
             #This is the SNP we take the parental
             pr.snp_pos = position_in_region
-            pr.homeologous = true
+            pr.homoeologous = true
           when mask[i] == '-'
             #When the mask doesnt detect a SNP, so we take the parental
             parental[i] = chromosome_seq[i] unless Bio::NucleicAcid::is_unambiguous(parental[i])
@@ -304,10 +304,10 @@ module Bio::PolyploidTools
 
       rev_pos = seq_snp.size - position
 
-      if pr.homeologous
-        snp_type = "homeologous"
+      if pr.homoeologous
+        snp_type = "homoeologous"
       else
-        snp_type = "non-homeologous"
+        snp_type = "non-homoeologous"
       end
 
       pr.chromosome_specific.each do |pos|

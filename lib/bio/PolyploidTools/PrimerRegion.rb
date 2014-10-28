@@ -1,6 +1,6 @@
 module Bio::PolyploidTools
   class PrimerRegion
-    attr_accessor :snp_pos, :sequence, :chromosome_specific, :almost_chromosome_specific, :crhomosome_specific_intron , :almost_crhomosome_specific_intron, :homeologous
+    attr_accessor :snp_pos, :sequence, :chromosome_specific, :almost_chromosome_specific, :crhomosome_specific_intron , :almost_crhomosome_specific_intron, :homoeologous
 
     def initialize
 

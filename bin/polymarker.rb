@@ -79,8 +79,9 @@ OptionParser.new do |opts|
   
   opts.on("-p", "--primer_3_preferences FILE", "file with preferences to be sent to primer3") do |o|
     options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
-
   end
+
+  
     
 end.parse!
 
