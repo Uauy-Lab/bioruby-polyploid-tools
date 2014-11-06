@@ -36,6 +36,7 @@ options[:bucket] = 1
 options[:model] = "est2genome"
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
 options[:flanking_size] = 150;
+options[:variation_free_region] = 0 
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -81,8 +82,10 @@ OptionParser.new do |opts|
     options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
   end
 
+  opts.on("-v", "--variation_free_region INT ", "If present, avoid generating the common primer if there are homoeologous SNPs within the specified distance") do |o|
+    options[:variation_free_region] = o.to_i
+  end
   
-    
 end.parse!
 
 if options[:primer_3_preferences][:primer_product_size_range]
@@ -247,6 +250,7 @@ container.add_parental({:name=>original_name})
 snps.each do |snp|
   snp.container = container
   snp.flanking_size = container.flanking_size
+  snp.variation_free_region = options[:variation_free_region]
   container.add_snp(snp)
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})

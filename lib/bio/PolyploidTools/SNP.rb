@@ -14,6 +14,7 @@ module Bio::PolyploidTools
     attr_accessor :genomes_count
     attr_accessor :primer_3_min_seq_length 
     attr_accessor :chromosome
+    attr_accessor :variation_free_region
 
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
@@ -37,6 +38,7 @@ module Bio::PolyploidTools
     def initialize
       @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
       @primer_3_min_seq_length = 50
+      @variation_free_region = 0
     end
 
     def to_polymarker_sequence(flanking_size)
@@ -260,7 +262,13 @@ module Bio::PolyploidTools
           sequence = reverse_complement_string(sequence)
           orientation = "reverse"
         end
+        if @variation_free_region > 0
+          check_str = sequence[right+1, @variation_free_region]
+          return nil if check_str != check_str.downcase
+        end
+
       end
+
 
       str = "SEQUENCE_ID=#{opts[:name]} #{orientation}\n"
       str << "SEQUENCE_FORCE_LEFT_END=#{left}\n"
@@ -279,8 +287,6 @@ module Bio::PolyploidTools
         str << "SEQUENCE_FORCE_LEFT_END=#{left}\n"
         str << "SEQUENCE_TEMPLATE=#{sequence}\n"
         str << "=\n"
-      else
-
       end
 
       str

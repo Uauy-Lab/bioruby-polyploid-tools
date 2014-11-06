@@ -28,7 +28,7 @@ OptionParser.new do |opts|
   
   opts.banner = "Usage: snp_postion_to_polymarker.rb [options]"
 
-  opts.on("-s", "--sno_file CSV", "CSV file with the following columnns:\nID,Allele_1,position,Allele_1,target_chromosome") do |o|
+  opts.on("-s", "--snp_file CSV", "CSV file with the following columnns:\nID,Allele_1,position,Allele_1,target_chromosome") do |o|
     options[:snp_file] = o
   end
   opts.on("-r", "--reference FASTA", "reference with the genes/contings/marker seuqnece") do |o|
