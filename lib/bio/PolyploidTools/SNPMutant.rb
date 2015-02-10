@@ -5,38 +5,42 @@ module Bio::PolyploidTools
   class SNPSequenceException < RuntimeError 
   end
 
-  class SNPSequence < SNP
+  class SNPMutant < SNP
 
     attr_accessor :sequence_original
+    attr_accessor :library, :chr
     #Format: 
-    #snp name,chromsome from contig,microarray sequence
-    #BS00068396_51,2AS,CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTA[T/C]ATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA
+    #seqid,library,position,wt_base,mut_base
+    #IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T
     def self.parse(reg_str)
       reg_str.chomp!
-      snp = SNPSequence.new
+      snp = SNPMutant.new
 
       arr = reg_str.split(",")
       
-      if arr.size == 3
-        snp.gene, snp.chromosome, snp.sequence_original = reg_str.split(",")
-      elsif arr.size == 2
-       snp.gene, snp.sequence_original = arr
-     else
-       throw SNPSequenceException.new "Need two or three fields to parse, and got #{arr.size} in #{reg_str}"
-      end
-      #snp.position = snp.position.to_i
-      #snp.original.upcase!
-      #snp.snp.upcase!  
-      snp.chromosome. strip!
-      snp.parse_sequence_snp
+      throw SNPSequenceException.new "Need five fields to parse, and got #{arr.size} in #{reg_str}" unless arr.size == 5
+      
+      snp.gene, snp.library, snp.position, snp.original, snp.snp = reg_str.split(",")
+      snp.chromosome = snp.gene
+      snp.chr = contig_name.split('_')[2][0,2] #This parses the default from the IWGSC. We may want to make this a lambda
       snp.exon_list = Hash.new()
       snp
     end
     
-    def parse_snp
-      
-    end
 
+    def chromosome_group
+      chr[0]
+    end
+    
+    def chromosome_genome
+      chr[1]
+    end
+    
+    def chromosome_genome
+      return chr[3] if chr[3]
+      return nil
+    end
+      
     def parse_sequence_snp
       pos = 0
       match_data = /(?<pre>\w*)\[(?<org>[ACGT])\/(?<snp>[ACGT])\](?<pos>\w*)/.match(sequence_original.strip)

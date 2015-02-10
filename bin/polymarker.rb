@@ -37,6 +37,7 @@ options[:model] = "est2genome"
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
 options[:flanking_size] = 150;
 options[:variation_free_region] = 0 
+options[:extract_found_contigs] = False
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -61,6 +62,11 @@ OptionParser.new do |opts|
   opts.on("-s", "--snp_list FILE", "File with the list of snps to search from, requires --reference to get the sequence using a position") do |o|
     options[:snp_list] = o
   end
+
+  opts.on("-t", "--mutant_list FILE", "File with the list of positions with mutation and the mutation line.\n\
+    requires --reference to get the sequence using a position") do |o|
+    options[:snp_list] = o
+  end
   
   opts.on("-r", "--reference FILE", "Fasta file with the sequence for the markers (to complement --snp_list)") do |o|
     options[:reference] = o
@@ -82,7 +88,11 @@ OptionParser.new do |opts|
     options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
   end
 
-  opts.on("-v", "--variation_free_region INT ", "If present, avoid generating the common primer if there are homoeologous SNPs within the specified distance") do |o|
+  opts.on("-v", "--variation_free_region INT", "If present, avoid generating the common primer if there are homoeologous SNPs within the specified distance") do |o|
+    options[:variation_free_region] = o.to_i
+  end
+
+  opts.on("-x", "--extract_found_contigs", "If present, save in a separate file the contigs with matches. Useful to debug.") do |o|
     options[:variation_free_region] = o.to_i
   end
   
@@ -119,7 +129,7 @@ output_folder= options[:output_folder] if  options[:output_folder]
 Dir.mkdir(output_folder)
 #TODO Make this tmp files
 temp_fasta_query="#{output_folder}/to_align.fa"
-temp_contigs="#{output_folder}/contigs_tmp.fa"
+#temp_contigs="#{output_folder}/contigs_tmp.fa"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 primer_3_input="#{output_folder}/primer_3_input_temp"
 primer_3_output="#{output_folder}/primer_3_output_temp"
@@ -209,7 +219,7 @@ file.close
 #chr_group = chromosome[0]
 write_status "Searching markers in genome"
 exo_f = File.open(exonerate_file, "w")
-contigs_f = File.open(temp_contigs, "w")
+#contigs_f = File.open(temp_contigs, "w")
 filename=path_to_contigs 
 puts filename
 target=filename
@@ -227,13 +237,13 @@ Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>mod
       raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
       region = entry.get_full_region
       seq = fasta_file.fetch_sequence(region)
-      contigs_f.puts(">#{aln.target_id}\n#{seq}")
+#      contigs_f.puts(">#{aln.target_id}\n#{seq}")
     end
   end  
 end
  
 exo_f.close()
-contigs_f.close()
+#contigs_f.close()
 
 #4. Load all the results from exonerate and get the input filename for primer3
 #Custom arm selection function that only uses the first two characters. Maybe
@@ -244,7 +254,7 @@ write_status "Reading best alignment on each chromosome"
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=options[:flanking_size] 
 container.gene_models(temp_fasta_query)
-container.chromosomes(temp_contigs)
+container.chromosomes(fasta_reference)
 container.add_parental({:name=>snp_in})
 container.add_parental({:name=>original_name})
 snps.each do |snp|
