@@ -65,7 +65,7 @@ OptionParser.new do |opts|
 
   opts.on("-t", "--mutant_list FILE", "File with the list of positions with mutation and the mutation line.\n\
     requires --reference to get the sequence using a position") do |o|
-    options[:snp_list] = o
+    options[:mutant_list] = o
   end
   
   opts.on("-r", "--reference FILE", "Fasta file with the sequence for the markers (to complement --snp_list)") do |o|
@@ -93,7 +93,7 @@ OptionParser.new do |opts|
   end
 
   opts.on("-x", "--extract_found_contigs", "If present, save in a separate file the contigs with matches. Useful to debug.") do |o|
-    options[:variation_free_region] = o.to_i
+    options[:extract_found_contigs] = true
   end
   
 end.parse!
@@ -121,15 +121,16 @@ snp_in="B"
 
 fasta_reference = nil
 #test_file="/Users/ramirezr/Dropbox/JIC/PrimersToTest/test_primers_nick_and_james_1.csv"
-test_file=options[:marker_list]
+test_file=options[:marker_list]  if options[:marker_list]
 test_file=options[:snp_list] if options[:snp_list]
+test_file=options[:mutant_list] if options[:mutant_list]
 fasta_reference = options[:reference]
 output_folder="#{test_file}_primer_design_#{Time.now.strftime('%Y%m%d-%H%M%S')}" 
 output_folder= options[:output_folder] if  options[:output_folder]
 Dir.mkdir(output_folder)
 #TODO Make this tmp files
 temp_fasta_query="#{output_folder}/to_align.fa"
-#temp_contigs="#{output_folder}/contigs_tmp.fa"
+temp_contigs="#{output_folder}/contigs_tmp.fa"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 primer_3_input="#{output_folder}/primer_3_input_temp"
 primer_3_output="#{output_folder}/primer_3_output_temp"
@@ -139,7 +140,6 @@ output_primers="#{output_folder}/primers.csv"
 
 primer_3_config=File.expand_path(File.dirname(__FILE__) + '/../conf/primer3_config')
 model=options[:model] 
-
 
 def write_status(status)
   f=File.open(@status_file, "a")
@@ -177,7 +177,16 @@ File.open(test_file) do | f |
        region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
        snp.template_sequence = fasta_reference_db.fetch_sequence(region)
      else
-        $stderr.puts "ERROR: Unable to find entry for #{snp.gene}"
+        write_status "WARN: Unable to find entry for #{snp.gene}"
+      end
+    elsif options[:mutant_list] and options[:reference] #List and fasta file
+      snp = Bio::PolyploidTools::SNPMutant.parse(line)
+      entry = fasta_reference_db.index.region_for_entry(snp.gene)
+      if entry
+       region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
+       snp.full_sequence = fasta_reference_db.fetch_sequence(region)
+     else
+        write_status "WARN: Unable to find entry for #{snp.gene}"
       end
     else
       rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
@@ -216,7 +225,7 @@ file.close
 #chr_group = chromosome[0]
 write_status "Searching markers in genome"
 exo_f = File.open(exonerate_file, "w")
-contigs_f = File.open(temp_contigs, "w")
+contigs_f = File.open(temp_contigs, "w") if options[:extract_found_contigs]
 filename=path_to_contigs 
 puts filename
 target=filename
@@ -234,13 +243,13 @@ Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>mod
       raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
       region = entry.get_full_region
       seq = fasta_file.fetch_sequence(region)
-      contigs_f.puts(">#{aln.target_id}\n#{seq}")
+      contigs_f.puts(">#{aln.target_id}\n#{seq}") if options[:extract_found_contigs]
     end
   end  
 end
  
-exo_f.close()
-contigs_f.close()
+exo_f.close() 
+contigs_f.close() if options[:extract_found_contigs]
 
 #4. Load all the results from exonerate and get the input filename for primer3
 #Custom arm selection function that only uses the first two characters. Maybe
@@ -259,6 +268,7 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   snp.variation_free_region = options[:variation_free_region]
   container.add_snp(snp)
+  p snp
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 

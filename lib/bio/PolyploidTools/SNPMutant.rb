@@ -22,7 +22,12 @@ module Bio::PolyploidTools
       snp.gene, snp.library, snp.position, snp.original, snp.snp = reg_str.split(",")
       snp.position = snp.position.to_i
       snp.chromosome = snp.gene
-      snp.chr = snp.gene.split('_')[2][0,2] #This parses the default from the IWGSC. We may want to make this a lambda
+      begin
+        snp.chr = snp.gene.split('_')[2][0,2] #This parses the default from the IWGSC. We may want to make this a lambda  
+      rescue Exception => e
+        $stderr.puts "WARN: snp.chr couldnt be set, the sequence id to parse was #{snp.gene}"
+      end
+      
       snp.exon_list = Hash.new()
       snp.flanking_size=100
       snp

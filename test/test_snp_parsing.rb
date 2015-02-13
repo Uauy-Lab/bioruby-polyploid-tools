@@ -60,6 +60,8 @@ class TestPolyploidTools < Test::Unit::TestCase
     assert_equal(snp.position, 101)
     assert_equal(snp.original, "C")
     assert_equal(snp.snp, "T")
+    
+    
   end
 
   
