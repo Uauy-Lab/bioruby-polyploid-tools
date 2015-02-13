@@ -5,9 +5,8 @@ module Bio::PolyploidTools
   class SNPSequenceException < RuntimeError 
   end
 
-  class SNPMutant < SNP
+  class SNPMutant < SNPSequence
 
-    attr_accessor :sequence_original
     attr_accessor :library, :chr
     #Format: 
     #seqid,library,position,wt_base,mut_base
@@ -25,9 +24,19 @@ module Bio::PolyploidTools
       snp.chromosome = snp.gene
       snp.chr = snp.gene.split('_')[2][0,2] #This parses the default from the IWGSC. We may want to make this a lambda
       snp.exon_list = Hash.new()
+      snp.flanking_size=100
       snp
     end
     
+    def full_sequence=(seq)
+      self.template_sequence = seq
+      self.sequence_original = self.to_polymarker_sequence(self.flanking_size)
+      self.parse_sequence_snp
+    end
+
+    def full_sequence()
+      self.template_sequence
+    end
 
     def chromosome_group
       chr[0]
