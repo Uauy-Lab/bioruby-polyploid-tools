@@ -37,7 +37,7 @@ options[:model] = "est2genome"
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
 options[:flanking_size] = 150;
 options[:variation_free_region] = 0 
-options[:extract_found_contigs] = False
+options[:extract_found_contigs] = false
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -78,9 +78,9 @@ OptionParser.new do |opts|
   
   opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
      options[:model] = o
-   end
+  end
 
-   opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two", "Function to decide the chromome arm") do |o|
+  opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two", "Function to decide the chromome arm") do |o|
     options[:arm_selection] = arm_selection_functions[o.to_sym];
    end
   
@@ -161,9 +161,6 @@ if fasta_reference
   p "Fasta reference: #{fasta_reference}"
 end
 
-
-
-
 #1. Read all the SNP files 
 #chromosome = nil
 write_status "Reading SNPs"
@@ -182,11 +179,11 @@ File.open(test_file) do | f |
      else
         $stderr.puts "ERROR: Unable to find entry for #{snp.gene}"
       end
-
     else
       rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
     rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
+  
     snp.snp_in = snp_in
     snp.original_name = original_name
     if snp.position 
@@ -219,7 +216,7 @@ file.close
 #chr_group = chromosome[0]
 write_status "Searching markers in genome"
 exo_f = File.open(exonerate_file, "w")
-#contigs_f = File.open(temp_contigs, "w")
+contigs_f = File.open(temp_contigs, "w")
 filename=path_to_contigs 
 puts filename
 target=filename
@@ -237,13 +234,13 @@ Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>mod
       raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
       region = entry.get_full_region
       seq = fasta_file.fetch_sequence(region)
-#      contigs_f.puts(">#{aln.target_id}\n#{seq}")
+      contigs_f.puts(">#{aln.target_id}\n#{seq}")
     end
   end  
 end
  
 exo_f.close()
-#contigs_f.close()
+contigs_f.close()
 
 #4. Load all the results from exonerate and get the input filename for primer3
 #Custom arm selection function that only uses the first two characters. Maybe

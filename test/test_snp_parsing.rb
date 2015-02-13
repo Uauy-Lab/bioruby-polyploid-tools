@@ -55,9 +55,11 @@ class TestPolyploidTools < Test::Unit::TestCase
     region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
     snp.full_sequence = fasta_reference_db.fetch_sequence(region)
 
-    p snp.template_sequence
-    p snp.sequence_original
-
+    assert_equal(snp.template_sequence, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctcYttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga")
+    assert_equal(snp.sequence_original, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga")
+    assert_equal(snp.position, 101)
+    assert_equal(snp.original, "C")
+    assert_equal(snp.snp, "T")
   end
 
   
