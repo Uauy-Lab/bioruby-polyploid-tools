@@ -181,9 +181,9 @@ File.open(test_file) do | f |
       end
     elsif options[:mutant_list] and options[:reference] #List and fasta file
       snp = Bio::PolyploidTools::SNPMutant.parse(line)
-      entry = fasta_reference_db.index.region_for_entry(snp.gene)
+      entry = fasta_reference_db.index.region_for_entry(snp.contig)
       if entry
-       region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
+       region = fasta_reference_db.index.region_for_entry(snp.contig).get_full_region
        snp.full_sequence = fasta_reference_db.fetch_sequence(region)
      else
         write_status "WARN: Unable to find entry for #{snp.gene}"

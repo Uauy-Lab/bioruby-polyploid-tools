@@ -1,5 +1,5 @@
 
-require_relative "SNP"
+require_relative "SNPSequence"
 require 'bio-samtools'
 module Bio::PolyploidTools
   class SNPSequenceException < RuntimeError 
@@ -7,7 +7,7 @@ module Bio::PolyploidTools
 
   class SNPMutant < SNPSequence
 
-    attr_accessor :library, :chr
+    attr_accessor :library, :contig
     #Format: 
     #seqid,library,position,wt_base,mut_base
     #IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T
@@ -19,13 +19,21 @@ module Bio::PolyploidTools
       
       throw SNPSequenceException.new "Need five fields to parse, and got #{arr.size} in #{reg_str}" unless arr.size == 5
       
-      snp.gene, snp.library, snp.position, snp.original, snp.snp = reg_str.split(",")
+      snp.contig, snp.library, snp.position, snp.original, snp.snp = reg_str.split(",")
       snp.position = snp.position.to_i
-      snp.chromosome = snp.gene
+      snp.gene = "EMPTY"
       begin
-        snp.chr = snp.gene.split('_')[2][0,2] #This parses the default from the IWGSC. We may want to make this a lambda  
+        toks = snp.contig.split('_')
+        #1AL_1455974_Kronos2281_127C
+        #snp.chr = contig.split('_')[2][0,2] #This parses the default from the IWGSC. We may want to make this a lambda  
+        #snp.chr = toks[2][0,2]
+        name = toks[2] + "_" + toks[4] + "_" + snp.library + "_" + snp.position.to_s 
+        snp.gene = name
+        snp.chromosome = toks[2][0,2]
+        
       rescue Exception => e
-        $stderr.puts "WARN: snp.chr couldnt be set, the sequence id to parse was #{snp.gene}"
+        $stderr.puts "WARN: snp.chr couldnt be set, the sequence id to parse was #{snp.contig}. We expect something like: IWGSC_CSS_1AL_scaff_1455974"
+        snp.gene = "Error"
       end
       
       snp.exon_list = Hash.new()
