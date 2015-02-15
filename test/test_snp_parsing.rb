@@ -10,6 +10,7 @@ class TestPolyploidTools < Test::Unit::TestCase
 
   #Set up the paths
   def setup
+    @data = File.expand_path(File.dirname(__FILE__) + "/data")
     
   end
   
@@ -37,5 +38,31 @@ class TestPolyploidTools < Test::Unit::TestCase
     assert(snp.template_sequence == "CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTAYATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA", "#{snp.template_sequence}!=CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTAYATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA")
     #true
   end
+
+  def test_mutant_snp
+
+    ref=@data + "/IWGSC_CSS_1AL_scaff_1455974_aln_contigs.fa"
+    
+    fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>ref})
+    fasta_reference_db.load_fai_entries 
+    
+    snp = Bio::PolyploidTools::SNPMutant.parse("IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T")
+    assert_equal(snp.gene , "1AL_1455974_Kronos2281_127", "The original name was not parsed: #{snp.gene}")
+    assert_equal(snp.contig, "IWGSC_CSS_1AL_scaff_1455974")
+    assert_equal(snp.chromosome, "1A", "The chromosome wasnt parsed: #{snp.chromosome}")
+    assert_equal(snp.position, 127, "The position is not parsed: #{snp.position}")
+    
+    region = fasta_reference_db.index.region_for_entry(snp.contig).get_full_region
+    snp.full_sequence = fasta_reference_db.fetch_sequence(region)
+
+    assert_equal(snp.template_sequence, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctcYttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga")
+    assert_equal(snp.sequence_original, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga")
+    assert_equal(snp.position, 101)
+    assert_equal(snp.original, "C")
+    assert_equal(snp.snp, "T")
+    
+    
+  end
+
   
 end

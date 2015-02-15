@@ -41,14 +41,14 @@ module Bio::PolyploidTools
       pos = 0
       match_data = /(?<pre>\w*)\[(?<org>[ACGT])\/(?<snp>[ACGT])\](?<pos>\w*)/.match(sequence_original.strip)
       if match_data
-      @position = Regexp.last_match(:pre).size + 1
-      @original = Regexp.last_match(:org)
-      @snp = Regexp.last_match(:snp)
-      
-      amb_base = Bio::NucleicAcid.to_IUAPC("#{@original}#{@snp}")
-      
-      @template_sequence = "#{Regexp.last_match(:pre)}#{amb_base}#{Regexp.last_match(:pos)}"
-      
+        @position = Regexp.last_match(:pre).size + 1
+        @original = Regexp.last_match(:org)
+        @snp = Regexp.last_match(:snp)
+        
+        amb_base = Bio::NucleicAcid.to_IUAPC("#{@original}#{@snp}")
+        
+        @template_sequence = "#{Regexp.last_match(:pre)}#{amb_base}#{Regexp.last_match(:pos)}"
+        
      end 
     end
     
