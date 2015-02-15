@@ -17,18 +17,18 @@ module Bio::DB::Primer3
   end
 
   def self.prepare_input_file(file, opts2={})
-     opts = {
-      :primer_product_size_range => "50-150" ,
-      :primer_max_size => 25 , 
-      :primer_lib_ambiguity_codes_consensus => 1,
-      :primer_liberal_base => 1, 
-      :primer_num_return => 5,
-      :primer_explain_flag => 1,
-      :primer_thermodynamic_parameters_path => File.expand_path(File.dirname(__FILE__) + '../../../../conf/primer3_config/') + '/'
+   opts = {
+    :primer_product_size_range => "50-150" ,
+    :primer_max_size => 25 , 
+    :primer_lib_ambiguity_codes_consensus => 1,
+    :primer_liberal_base => 1, 
+    :primer_num_return => 5,
+    :primer_explain_flag => 1,
+    :primer_thermodynamic_parameters_path => File.expand_path(File.dirname(__FILE__) + '../../../../conf/primer3_config/') + '/'
     }.merge(opts2)
     
     opts.each do |key,value|
-        file.puts "#{key.to_s.upcase}=#{value}\n"
+      file.puts "#{key.to_s.upcase}=#{value}\n"
     end
     # file.puts "="
   end
@@ -68,7 +68,7 @@ module Bio::DB::Primer3
       @primers_line_1 = SortedSet.new
       @primers_line_2 = SortedSet.new
       @regions = SortedSet.new
-       @primer3_errors = Set.new
+      @primer3_errors = Set.new
     end
 
     def line_2_name
@@ -106,24 +106,23 @@ module Bio::DB::Primer3
       nil
     end
 
-
-    def print_primers
-#TODO: Retrieve error messages
+    def values
+      return @values if @values
       left_start = 0
       left_end = 0
       right_start = 0
       right_end = 0
       total_columns_before_messages=17
-      values = Array.new
-      #values << "#{gene},,#{template_length},"
-      values << gene
-      values << "#{original}#{position}#{snp}"
-      values << template_length
-      values << snp_from.chromosome
-      values << regions.size
-      values << regions.join("|")
+      @values = Array.new
+      #@values << "#{gene},,#{template_length},"
+      @values << gene
+      @values << "#{original}#{position}#{snp}"
+      @values << template_length
+      @values << snp_from.chromosome
+      @values << regions.size
+      @values << regions.join("|")
       if primer3_line_1 and primer3_line_2
-        values <<  primer3_line_1.polymorphism
+        @values <<  primer3_line_1.polymorphism
 
         #Block that searches both if both pairs have a TM
         primer_2 = primer3_line_2.left_primer_with_coordinates(primer3_line_1.left_coordinates, primer3_line_1.orientation)
@@ -133,27 +132,27 @@ module Bio::DB::Primer3
         #  $stderr.puts primer_1
         #  $stderr.puts primer_2
         if primer3_line_1 < primer3_line_2 and primer_2_tm != "NA"
-          values << primer3_line_1.left_primer
-          values << primer_2
-          values << primer3_line_1.right_primer 
-          values << primer3_line_1.type.to_s 
-          values << primer3_line_1.orientation.to_s 
-          values << primer3_line_1.best_pair.left.tm 
-          values << primer_2_tm
-          values << primer3_line_1.best_pair.right.tm
-          values << "first" 
-          values << primer3_line_1.best_pair.product_size
+          @values << primer3_line_1.left_primer
+          @values << primer_2
+          @values << primer3_line_1.right_primer 
+          @values << primer3_line_1.type.to_s 
+          @values << primer3_line_1.orientation.to_s 
+          @values << primer3_line_1.best_pair.left.tm 
+          @values << primer_2_tm
+          @values << primer3_line_1.best_pair.right.tm
+          @values << "first" 
+          @values << primer3_line_1.best_pair.product_size
         elsif  primer_1_tm != "NA"
-          values << primer_1
-          values << primer3_line_2.left_primer
-          values << primer3_line_2.right_primer
-          values << primer3_line_2.type.to_s
-          values << primer3_line_2.orientation.to_s
-          values << primer_1_tm
-          values << primer3_line_2.best_pair.left.tm
-          values << primer3_line_2.best_pair.right.tm
-          values << "second"
-          values << primer3_line_2.best_pair.product_size
+          @values << primer_1
+          @values << primer3_line_2.left_primer
+          @values << primer3_line_2.right_primer
+          @values << primer3_line_2.type.to_s
+          @values << primer3_line_2.orientation.to_s
+          @values << primer_1_tm
+          @values << primer3_line_2.best_pair.left.tm
+          @values << primer3_line_2.best_pair.right.tm
+          @values << "second"
+          @values << primer3_line_2.best_pair.product_size
         else
 
           first_candidate = find_primer_pair_first
@@ -172,80 +171,99 @@ module Bio::DB::Primer3
 
           if first_candidate and second_candidate and first_candidate < second_candidate 
             #puts "A"
-            values << first_candidate.left_primer
-            values << primer_2
-            values << first_candidate.right_primer 
-            values << first_candidate.type.to_s 
-            values << first_candidate.orientation.to_s 
-            values << first_candidate.best_pair.left.tm 
-            values << primer_2_tm
-            values << first_candidate.best_pair.right.tm
-            values << "first" 
-            values << first_candidate.best_pair.product_size
+            @values << first_candidate.left_primer
+            @values << primer_2
+            @values << first_candidate.right_primer 
+            @values << first_candidate.type.to_s 
+            @values << first_candidate.orientation.to_s 
+            @values << first_candidate.best_pair.left.tm 
+            @values << primer_2_tm
+            @values << first_candidate.best_pair.right.tm
+            @values << "first" 
+            @values << first_candidate.best_pair.product_size
           elsif  second_candidate 
             #puts "B"
-            values << primer_1
-            values << second_candidate.left_primer
-            values << second_candidate.right_primer
-            values << second_candidate.type.to_s
-            values << second_candidate.orientation.to_s
-            values << primer_1_tm
-            values << second_candidate.best_pair.left.tm
-            values << second_candidate.best_pair.right.tm
-            values << "second"
-            values << second_candidate.best_pair.product_size
+            @values << primer_1
+            @values << second_candidate.left_primer
+            @values << second_candidate.right_primer
+            @values << second_candidate.type.to_s
+            @values << second_candidate.orientation.to_s
+            @values << primer_1_tm
+            @values << second_candidate.best_pair.left.tm
+            @values << second_candidate.best_pair.right.tm
+            @values << "second"
+            @values << second_candidate.best_pair.product_size
           elsif  first_candidate 
             #puts "C"
-            values << first_candidate.left_primer
-            values << primer_2
-            values << first_candidate.right_primer
-            values << first_candidate.type.to_s
-            values << first_candidate.orientation.to_s
-            values << primer_2_tm
-            values << first_candidate.best_pair.left.tm
-            values << first_candidate.best_pair.right.tm
-            values << "first"
-            values << first_candidate.best_pair.product_size
-#          else
-#            values << "" 
+            @values << first_candidate.left_primer
+            @values << primer_2
+            @values << first_candidate.right_primer
+            @values << first_candidate.type.to_s
+            @values << first_candidate.orientation.to_s
+            @values << primer_2_tm
+            @values << first_candidate.best_pair.left.tm
+            @values << first_candidate.best_pair.right.tm
+            @values << "first"
+            @values << first_candidate.best_pair.product_size
           end
-
         end
 
       elsif primer3_line_1 
-        values << primer3_line_1.polymorphism
-        values << primer3_line_1.left_primer
-        values << primer3_line_1.left_primer_snp(self) 
-        values << primer3_line_1.right_primer 
-        values << primer3_line_1.type.to_s 
-        values << primer3_line_1.orientation.to_s      
-        values << primer3_line_1.best_pair.left.tm 
-        values << "NA"
-        values << primer3_line_1.best_pair.right.tm
+        @values << primer3_line_1.polymorphism
+        @values << primer3_line_1.left_primer
+        @values << primer3_line_1.left_primer_snp(self) 
+        @values << primer3_line_1.right_primer 
+        @values << primer3_line_1.type.to_s 
+        @values << primer3_line_1.orientation.to_s      
+        @values << primer3_line_1.best_pair.left.tm 
+        @values << "NA"
+        @values << primer3_line_1.best_pair.right.tm
 
-        values << "first+"
-        values << primer3_line_1.best_pair.product_size
+        @values << "first+"
+        @values << primer3_line_1.best_pair.product_size
       elsif primer3_line_2 
-        values << primer3_line_2.polymorphism
-        values << primer3_line_2.left_primer_snp(self) 
-        values << primer3_line_2.left_primer
-        values << primer3_line_2.right_primer
-        values << primer3_line_2.type.to_s
-        values << primer3_line_2.orientation.to_s
-        values << "NA"
-        values << primer3_line_2.best_pair.left.tm
-        values << primer3_line_2.best_pair.right.tm
-        values << "second+"
-        values << primer3_line_2.best_pair.product_size
+        @values << primer3_line_2.polymorphism
+        @values << primer3_line_2.left_primer_snp(self) 
+        @values << primer3_line_2.left_primer
+        @values << primer3_line_2.right_primer
+        @values << primer3_line_2.type.to_s
+        @values << primer3_line_2.orientation.to_s
+        @values << "NA"
+        @values << primer3_line_2.best_pair.left.tm
+        @values << primer3_line_2.best_pair.right.tm
+        @values << "second+"
+        @values << primer3_line_2.best_pair.product_size
 
       end 
-      if values.size < total_columns_before_messages
-        values[total_columns_before_messages] = primer3_errors.to_a.join("|")
+      if @values.size < total_columns_before_messages
+        @values[total_columns_before_messages] = primer3_errors.to_a.join("|")
       else
-        values << nil
+        @values << nil
       end
+      return @values
+    end
 
-      values.join(",")
+    def print_primers
+      self.values.join(",")
+    end
+
+    def found_primers?
+      return self.values[7] && self.values[7] != nil
+    end
+
+    def first_primer
+      return self.values[7] if self.values[7] && self.values[7] != nil
+      return ""
+    end
+
+    def second_primer
+      return self.values[8] if self.values[8] && self.values[8] != nil
+      return ""
+    end
+
+    def common_primer
+      return self.values[9] if self.values[9]&& self.values[9] != nil
+      return ""
     end
 
     def self.parse(reg_str)
@@ -273,10 +291,10 @@ module Bio::DB::Primer3
     def add_record(primer3record)
       @primer3_errors = Set.new unless @primer3_errors
       @template_length = primer3record.sequence_template.size
-       if primer3record.primer_error != nil 
-          primer3_errors << primer3record.primer_error
-          return
-        end
+      if primer3record.primer_error != nil 
+        primer3_errors << primer3record.primer_error
+        return
+      end
       case
 
       when primer3record.line == @line_1
@@ -451,7 +469,7 @@ module Bio::DB::Primer3
       @scores[:chromosome_semispecific] = 100
       @scores[:chromosome_nonspecific] = 0
       @scores[:exon] = 50
-    
+
     end
 
     def snp
@@ -654,7 +672,7 @@ module Bio::DB::Primer3
 
     attr_accessor :line_1, :line_2
     attr_accessor :snp_hash
-   
+
 
     def add_snp_file(filename)
       @snp_hash=Hash.new unless @snp_hash
@@ -696,6 +714,19 @@ module Bio::DB::Primer3
       end
       return str
     end
+
+    def print_primers_with_tails(tail_a: "GAAGGTCGGAGTCAACGGATT", tail_b: "GAAGGTGACCAAGTTCATGCT")
+      str = ""
+      snp_hash.each do |k, snp|  
+        if snp.found_primers?
+          str << snp.gene << snp.original << "\t" << tail_a << snp.first_primer << "\n"
+          str << snp.gene << snp.snp      << "\t" << tail_b << snp.second_primer << "\n"
+          str << snp.gene                 << "\t"           << snp.common_primer << "\n"
+        end
+      end
+      return str
+    end
+
   end
 end
 
