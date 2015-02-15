@@ -7,7 +7,7 @@ module Bio::PolyploidTools
 
   class SNPMutant < SNPSequence
 
-    attr_accessor :library, :contig
+    attr_accessor :library, :contig, :chr
     #Format: 
     #seqid,library,position,wt_base,mut_base
     #IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T
@@ -30,10 +30,12 @@ module Bio::PolyploidTools
         name = toks[2] + "_" + toks[4] + "_" + snp.library + "_" + snp.position.to_s 
         snp.gene = name
         snp.chromosome = toks[2][0,2]
+        snp.chr = snp.chromosome
         
       rescue Exception => e
         $stderr.puts "WARN: snp.chr couldnt be set, the sequence id to parse was #{snp.contig}. We expect something like: IWGSC_CSS_1AL_scaff_1455974"
         snp.gene = "Error"
+        $stderr.puts e
       end
       
       snp.exon_list = Hash.new()
@@ -71,9 +73,7 @@ module Bio::PolyploidTools
         @position = Regexp.last_match(:pre).size + 1
         @original = Regexp.last_match(:org)
         @snp = Regexp.last_match(:snp)
-        
         amb_base = Bio::NucleicAcid.to_IUAPC("#{@original}#{@snp}")
-        
         @template_sequence = "#{Regexp.last_match(:pre)}#{amb_base}#{Regexp.last_match(:pos)}"
         
      end 

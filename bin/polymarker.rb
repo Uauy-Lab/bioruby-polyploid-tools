@@ -95,6 +95,12 @@ OptionParser.new do |opts|
   opts.on("-x", "--extract_found_contigs", "If present, save in a separate file the contigs with matches. Useful to debug.") do |o|
     options[:extract_found_contigs] = true
   end
+
+  opts.on("-P", "--primers_to_order")do
+    #TODO: have a string with the tails, optional. 
+    options[:primers_to_order] = true
+  end
+
   
 end.parse!
 
@@ -136,6 +142,7 @@ primer_3_input="#{output_folder}/primer_3_input_temp"
 primer_3_output="#{output_folder}/primer_3_output_temp"
 exons_filename="#{output_folder}/exons_genes_and_contigs.fa"
 output_primers="#{output_folder}/primers.csv"
+output_to_order="#{output_folder}/primers_to_order.csv"
 @status_file="#{output_folder}/status.txt"
 
 primer_3_config=File.expand_path(File.dirname(__FILE__) + '/../conf/primer3_config')
@@ -268,7 +275,6 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   snp.variation_free_region = options[:variation_free_region]
   container.add_snp(snp)
-  p snp
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 
@@ -301,6 +307,8 @@ end
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
 header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
+
+File.open(output_to_order, "w") { |io|  io.write(kasp_container.print_primers_with_tails()) }
 
 write_status "DONE"
 rescue StandardError => e
