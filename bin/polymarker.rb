@@ -28,6 +28,19 @@ arm_selection_functions[:arm_selection_morex] = lambda do | contig_name |
   return ret
 end
 
+def validate_files(o)
+
+  [
+    o[:path_to_contigs], 
+    o[:marker_list], 
+    o[:snp_list], 
+    o[:mutant_list],
+    o[:reference]
+  ].flatten.compact.each do |f|  
+        raise IOError "Unable to read #{f}" unless File.exists? f 
+    end
+end 
+
 options = {}
 options[:path_to_contigs] = "/tgac/references/external/projects/iwgsc/css/IWGSC_CSS_all_scaff_v1.fa"
 options[:chunks] = 1
@@ -103,6 +116,8 @@ OptionParser.new do |opts|
 
   
 end.parse!
+
+validate_files(options)
 
 if options[:primer_3_preferences][:primer_product_size_range]
   range = options[:primer_3_preferences][:primer_product_size_range]
