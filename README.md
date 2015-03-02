@@ -21,7 +21,9 @@ The code has been developed on ruby 2.1.0, but it should work on 1.9.3 and above
 To run poolymerker with the CSS wheat contigs, you need to unzip the 
 reference file [Triticum_aestivum.IWGSP1.22.dna_rm.genome.fa.gz{ftp://ftp.ensemblgenomes.org/pub/release-22/plants/fasta/triticum_aestivum/dna/}. 
 
+```sh
 polymarker.rb --contigs Triticum_aestivum.IWGSP1.22.dna_rm.genome.fa --marker_list snp_list.csv --output output_folder
+```
 
 The snp_list file must follow the convention
 <ID>,<Chromosome>,<SEQUENCE>
