@@ -282,7 +282,7 @@ write_status "Reading best alignment on each chromosome"
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=options[:flanking_size] 
 container.gene_models(temp_fasta_query)
-container.chromosomes(fasta_reference)
+container.chromosomes(target)
 container.add_parental({:name=>snp_in})
 container.add_parental({:name=>original_name})
 snps.each do |snp|
