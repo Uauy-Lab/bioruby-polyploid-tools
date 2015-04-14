@@ -18,8 +18,8 @@ module Bio::DB::Exonerate
     query=opts[:query]
  #
 
-    cmdline = "exonerate --verbose 0 --showalignment no --bestn #{opts[:bestn]} --showvulgar no  --model #{opts[:model]}   --ryo '#{opts[:ryo]}' #{query} #{target}"
-    status, stdout, stderr = systemu cmdline
+ cmdline = "exonerate --verbose 0 --showalignment no --bestn #{opts[:bestn]} --showvulgar no  --model #{opts[:model]}   --ryo '#{opts[:ryo]}' #{query} #{target}"
+ status, stdout, stderr = systemu cmdline
     #$stderr.puts cmdline
     if status.exitstatus == 0
       alns = Array.new unless block_given?
@@ -67,44 +67,80 @@ module Bio::DB::Exonerate
       end
     end
 
-    def identity
-      @pi
+    def query
+     unless @query
+       @query = Bio::DB::Fasta::Region.new()
+       @query.entry = query_id 
+       @query.start = query_start + 1
+       @query.end = query_end
+       @query
+     end
+     @query
+   end
+
+   def target
+    unless @target
+      @target = Bio::DB::Fasta::Region.new()
+      @target.entry = target_id 
+      @target.start = target_start + 1
+      @target.end = target_end
+    end
+    @target
+  end
+
+  def identity
+    @pi
+  end
+  def query_length
+    @ql
+  end
+  def query_coverage
+    total_m = 0
+    vulgar_block.each do |v|  
+      #p v.label
+      if v.label == :M
+        total_m += v.query_length
+      end
+    end
+   #puts "Total m #{total_m}"
+   #puts "ql #{query_length}"
+    return 100.00 * total_m.to_f / query_length.to_f 
+  end
+
+  def parse_sugar(sugar_str)
+    @query_id, @query_start, @query_end, @query_strand, @target_id, @target_start, @target_end, @target_strand, @score = sugar_str.split(/\s+/)
+
+    @query_start  = @query_start.to_i
+    @query_end = @query_end.to_i
+    @target_start = @target_start.to_i
+    @target_end = @target_end.to_i
+    @score = @score.to_f
+
+    if @target_strand == "+"
+      @target_strand = :forward
+    elsif @target_strand == "-"
+      @target_strand = :reverse
+    else
+      raise  ExonerateException.new(), "Ivalid target orientation #{@target_strand} for line:\n#{sugar_str}"
     end
 
-    def parse_sugar(sugar_str)
-      @query_id, @query_start, @query_end, @query_strand, @target_id, @target_start, @target_end, @target_strand, @score = sugar_str.split(/\s+/)
 
-      @query_start  = @query_start.to_i
-      @query_end = @query_end.to_i
-      @target_start = @target_start.to_i
-      @target_end = @target_end.to_i
-      @score = @score.to_f
-
-      if @target_strand == "+"
-        @target_strand = :forward
-      elsif @target_strand == "-"
-        @target_strand = :reverse
-      else
-        raise  ExonerateException.new(), "Ivalid target orientation #{@target_strand} for line:\n#{sugar_str}"
-      end
-
-
-      if @query_strand == "+"
-        @query_strand = :forward
-      elsif @query_strand == "-"
-        @query_strand = :reverse
-      else
-        raise  ExonerateException.new(), "Ivalid query orientation #{@query_strand} for line:\n#{sugar_str}"
-      end
-
-      raise  ExonerateException.new(), "Inconsistent orientation (forward, query)" if @query_strand == :forward and @query_start > @query_end
-      raise  ExonerateException.new(), "Inconsistent orientation (reverse, query)" if @query_strand == :reverse and @query_start < @query_end
-      raise  ExonerateException.new(), "Inconsistent orientation (forward, target)" if @target_strand == :forward and @target_start > @target_end
-      raise  ExonerateException.new(), "Inconsistent orientation (reverse, target)" if @target_strand == :reverse and @target_start < @target_end
-
-
-      self
+    if @query_strand == "+"
+      @query_strand = :forward
+    elsif @query_strand == "-"
+      @query_strand = :reverse
+    else
+      raise  ExonerateException.new(), "Ivalid query orientation #{@query_strand} for line:\n#{sugar_str}"
     end
+
+    raise  ExonerateException.new(), "Inconsistent orientation (forward, query)" if @query_strand == :forward and @query_start > @query_end
+    raise  ExonerateException.new(), "Inconsistent orientation (reverse, query)" if @query_strand == :reverse and @query_start < @query_end
+    raise  ExonerateException.new(), "Inconsistent orientation (forward, target)" if @target_strand == :forward and @target_start > @target_end
+    raise  ExonerateException.new(), "Inconsistent orientation (reverse, target)" if @target_strand == :reverse and @target_start < @target_end
+
+
+    self
+  end
 
 
     #The vulgar has to be parsed AFTER the sugar, otherwise it is impossible to determine the orientations
@@ -199,7 +235,7 @@ module Bio::DB::Exonerate
       reg.start = target_snp_pos - flanking_size
       reg.end = target_snp_pos + flanking_size
       raise  ExonerateException.new "Target Query out of bounds!" unless position.between?(query_start, query_end)
-    
+
       reg
     end
 
