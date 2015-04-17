@@ -124,7 +124,7 @@ if options[:primer_3_preferences][:primer_product_size_range]
   range_arr = range.split("-")
   min = range_arr[0].to_i
   max = range_arr[1].to_i
-  raise  Bio::DB::Exonerate::ExonerateException.new "Ragne #{range} is invalid!" unless max > min
+  raise  Bio::DB::Exonerate::ExonerateException.new "Range #{range} is invalid!" unless max > min
   options[:flanking_size] = max
 end
 

@@ -43,7 +43,7 @@ options[:identity] = 95
 options[:covered] = 60
 OptionParser.new do |opts|
   
-  opts.banner = "Usage: polymarker.rb [options]"
+  opts.banner = "Usage: filter_blat_by_target_coverage.rb [options]"
 
   opts.on("-p", "--psl FILE", "PSL file") do |o|
     options[:blat_file] = o.upcase

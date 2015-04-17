@@ -73,6 +73,11 @@ module Bio::DB::Exonerate
        @query.entry = query_id 
        @query.start = query_start + 1
        @query.end = query_end
+       @query.orientation = query_strand
+       if @query.orientation == :reverse
+        @query.end = query_start 
+        @query.start = query_end + 1
+       end
        @query
      end
      @query
@@ -84,6 +89,11 @@ module Bio::DB::Exonerate
       @target.entry = target_id 
       @target.start = target_start + 1
       @target.end = target_end
+      @target.orientation = target_strand
+      if @target.orientation == :reverse
+        @target.end = target_start 
+        @target.start = target_end + 1
+      end
     end
     @target
   end
