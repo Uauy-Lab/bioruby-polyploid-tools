@@ -51,6 +51,7 @@ options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
 options[:flanking_size] = 150;
 options[:variation_free_region] = 0 
 options[:extract_found_contigs] = false
+options[:genomes_count] = 3
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -70,6 +71,10 @@ OptionParser.new do |opts|
   
   opts.on("-m", "--marker_list FILE", "File with the list of markers to search from") do |o|
     options[:marker_list] = o
+  end
+
+  opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
+    options[:genomes_count] = o.to_i
   end
   
   opts.on("-s", "--snp_list FILE", "File with the list of snps to search from, requires --reference to get the sequence using a position") do |o|
@@ -214,7 +219,8 @@ File.open(test_file) do | f |
       rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
     rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
-  
+
+    snp.genomes_count = options[:genomes_count]
     snp.snp_in = snp_in
     snp.original_name = original_name
     if snp.position 
