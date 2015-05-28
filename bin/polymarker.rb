@@ -17,9 +17,18 @@ arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
   ret = contig_name[0,2]       
   return ret
 end
-#Function to parse stuff like: IWGSC_CSS_1AL_scaff_110
+
+#Function to parse stuff like: "IWGSC_CSS_1AL_scaff_110"
+#Or the first two characters in the contig name, to deal with 
+#pseudomolecules that start with headers like: "1A"
+#And with the cases when 3B is named with the prefix: v443
 arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
-  ret = contig_name.split('_')[2][0,2]
+  
+  arr = contig_name.split('_')
+  ret = "U"
+  ret = arr[2][0,2] if arr.size >= 3
+  ret = "3B" if arr.size == 2 and arr[0] == "v443"
+  ret = arr[0][0,2] if arr.size == 1   
   return ret
 end
 
