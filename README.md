@@ -1,8 +1,7 @@
 #bio-polyploid-tools
 
 ##Introduction
-This tools are designed to deal with polyploid wheat. The first tool is to design KASP primers, 
-making them as specific as possible. 
+This tools are designed to deal with polyploid wheat. The first tool is to design KASP primers, making them as specific as possible. 
 
 
 ##Installation
@@ -17,12 +16,9 @@ You need to have in your ```$PATH``` the following programs:
 
 The code has been developed on ruby 2.1.0, but it should work on 1.9.3 and above. 
 
-
 #PolyMarker
 
-To run poolymerker with the CSS wheat contigs, you need to unzip the 
-[reference file](ftp://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz
-).
+To run poolymerker with the CSS wheat contigs, you need to unzip the reference file from  [ensembl](http://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz).
 
 
 
@@ -30,9 +26,7 @@ To run poolymerker with the CSS wheat contigs, you need to unzip the
 polymarker.rb --contigs Triticum_aestivum.IWGSC2.25.dna.genome.fa --marker_list snp_list.csv --output output_folder
 ```
 
-The ```snp_list``` file must follow the convention
-```<ID>,<Chromosome>,<SEQUENCE>```
-with the SNP inside the sequence in the format [A/T]. As a reference, look at test/data/short_primer_design_test.csv
+The ```snp_list``` file must follow the convention ```ID,Chromosome,SEQUENCE``` with the SNP inside the sequence in the format [A/T]. As a reference, look at test/data/short_primer_design_test.csv
 
 If you want to use the web interface, visit the [PolyMarker webservice at TGAC](http://polymarker.tgac.ac.uk)
 
