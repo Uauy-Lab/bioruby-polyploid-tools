@@ -61,6 +61,8 @@ options[:flanking_size] = 150;
 options[:variation_free_region] = 0 
 options[:extract_found_contigs] = false
 options[:genomes_count] = 3
+options[:min_identity] = 90
+
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -98,6 +100,10 @@ OptionParser.new do |opts|
   opts.on("-r", "--reference FILE", "Fasta file with the sequence for the markers (to complement --snp_list)") do |o|
     options[:reference] = o
   end
+
+  opts.on("-i" "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
+    options[:min_identity] = o.to_i
+  end
   
   opts.on("-o", "--output FOLDER", "Output folder") do |o|
     options[:output_folder] = o
@@ -123,13 +129,14 @@ OptionParser.new do |opts|
     options[:extract_found_contigs] = true
   end
 
-  opts.on("-P", "--primers_to_order")do
+  opts.on("-P", "--primers_to_order", "If present, save a separate file with the primers with the KASP tails")do
     #TODO: have a string with the tails, optional. 
     options[:primers_to_order] = true
   end
 
   
 end.parse!
+
 
 validate_files(options)
 
@@ -172,6 +179,8 @@ primer_3_output="#{output_folder}/primer_3_output_temp"
 exons_filename="#{output_folder}/exons_genes_and_contigs.fa"
 output_primers="#{output_folder}/primers.csv"
 output_to_order="#{output_folder}/primers_to_order.csv"
+min_identity= options[:min_identity]
+
 @status_file="#{output_folder}/status.txt"
 
 primer_3_config=File.expand_path(File.dirname(__FILE__) + '/../conf/primer3_config')
@@ -183,7 +192,7 @@ def write_status(status)
   f.close
 end
 
-min_identity= 90
+
 snps = Array.new
 
 begin
