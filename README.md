@@ -61,7 +61,7 @@ Usage: polymarker.rb [options]
 By default, the contigs and pseudomolecules from [ensembl](ftp://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz
 ) are used. However, it is possible to use a custom reference. To define the chromosome where each contig belongs the argument ```arm_selection``` is used.  The defailt uses ids like: ```IWGSC_CSS_1AL_scaff_110```, where the third field, separated by underscores is used. A simple way to add costum references is to rename the fasta file to follow that convention. Another way is to use the option ```--arm_selection arm_selection_first_two```, where only the first two characters in each contig is used as identifier, useful when pseudomolecules are named after the chromosomes (ie: ">1A" in the fasta file). 
 
-If your contigs follow a different convention, in ```polymarker.rb``` it is possible to define new parsers, by adding at the begining, with the rest of the parsers a new lambda like:
+If your contigs follow a different convention, in the file ```polymarker.rb``` it is possible to define new parsers, by adding at the begining, with the rest of the parsers a new lambda like:
 
 ```rb
 arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
