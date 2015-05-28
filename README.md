@@ -43,6 +43,7 @@ Usage: polymarker.rb [options]
     -r, --reference FILE             Fasta file with the sequence for the markers (to complement --snp_list)
     -o, --output FOLDER              Output folder
     -e, --exonerate_model MODEL      Model to be used in exonerate to search for the contigs
+    -i, --min_identity INT           Minimum identity to consider a hit (default 90)
     -a, --arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two
                     Function to decide the chromome arm
     -p, --primer_3_preferences FILE  file with preferences to be sent to primer3
@@ -74,12 +75,15 @@ The function should return a 2 character string, when the first is the chromosom
 
 ##Release Notes
 
+###0.7.2
+* FEATURE: Added a flag ```min_identity``` to set the minimum identity to consider a hit. The default is 90
+
 ###0.7.1
 * BUGFIX: Now the parser for ```arm_selection_embl``` works with the mixture of contigs and pseudomolecules
 *  DOC: Added documentation on how to use custom references.  
 
 ###0.7.0
-* Added flag ```gebines_count``` for number of genomes, to be used on tetraploids, etc. 
+* Added flag ```genomes_count``` for number of genomes, to be used on tetraploids, etc. 
 
 ###0.6.1
 

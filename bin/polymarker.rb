@@ -101,7 +101,7 @@ OptionParser.new do |opts|
     options[:reference] = o
   end
 
-  opts.on("-i" "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
+  opts.on("-i", "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
     options[:min_identity] = o.to_i
   end
   
