@@ -37,6 +37,11 @@ arm_selection_functions[:arm_selection_morex] = lambda do | contig_name |
   return ret
 end
 
+arm_selection_functions[:scaffold] = lambda do | contig_name |
+  ret = contig_name;       
+  return ret
+end
+
 def validate_files(o)
 
   [
@@ -113,7 +118,7 @@ OptionParser.new do |opts|
      options[:model] = o
   end
 
-  opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two", "Function to decide the chromome arm") do |o|
+  opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two|scaffold", "Function to decide the chromome arm") do |o|
     options[:arm_selection] = arm_selection_functions[o.to_sym];
    end
   

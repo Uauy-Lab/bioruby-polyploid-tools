@@ -24,7 +24,7 @@ markers = nil
 options = {}
 OptionParser.new do |opts|
   
-  opts.banner = "Usage: polymarker.rb [options]"
+  opts.banner = "Usage: markers_in_region.rb [options]"
 
   opts.on("-c", "--chromosome CHR", "chromosome (1A, 3B, etc)") do |o|
     options[:chromosome] = o.upcase
