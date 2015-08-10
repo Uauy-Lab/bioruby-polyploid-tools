@@ -69,11 +69,15 @@ arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
 end
 ```
 
-The function should return a 2 character string, when the first is the chromosome number and the second the chromosome group. The symbol in the hash is the name to be used in the argument ```--arm_selection```.  If you want your parser to be added to the distribution, feel free to fork and make a pull request. 
+The function should return a 2 character string, when the first is the chromosome number and the second the chromosome group. The symbol in the hash is the name to be used in the argument ```--arm_selection```.  If you want your parser to be added to the distribution, feel free to fork and make a pull request.  
 
 
 
 ##Release Notes
+
+###0.7.3
+* FEATURE: ```polymarker.rb``` Added to the flag ```--arm_selection``` the option ```scaffold```, which now supports a scaffold specific primer.
+* FEATURE: ```snp_position_to_polymarker``` Added the option ```--mutant_list```  to prepare files for PolyMarker from files with the following columns ```ID,Allele_1,position,Allele_1,target_chromosome```. 
 
 ###0.7.2
 * FEATURE: Added a flag ```min_identity``` to set the minimum identity to consider a hit. The default is 90
