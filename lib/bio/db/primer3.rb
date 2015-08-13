@@ -337,7 +337,7 @@ module Bio::DB::Primer3
       return @best_pair if @best_pair
       @best_pair = nil
       @primerPairs.each do | primer |
-        @best_pair = primer if @best_pair == nil
+        @best_pair = primer if @best_pair.nil?
         @best_pair = primer if primer.size < @best_pair.size
       end
       #@best_pair = @primerPairs.min
