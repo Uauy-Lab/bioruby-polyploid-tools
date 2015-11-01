@@ -330,7 +330,7 @@ module Bio::DB::Primer3
   class Primer3Record
     include Comparable
     attr_accessor :properties, :polymorphism
-    attr_accessor :socres
+    attr_accessor :scores
 
 
     def best_pair
@@ -547,9 +547,10 @@ module Bio::DB::Primer3
 
     end
 
-    def self.parse_file(filename)
+    def self.parse_file(filename, scores: nil)
       File.open(filename) do | f |
         record = Primer3Record.new
+        record.scores = scores if scores
         f.each_line do | line |
           line.chomp!
           if line == "="
@@ -557,6 +558,7 @@ module Bio::DB::Primer3
             record.parse_blocks
             yield record
             record = Primer3Record.new
+            record.scores = scores if scores
           else
             tokens = line.split("=")
             i = 0
@@ -672,7 +674,7 @@ module Bio::DB::Primer3
 
     attr_accessor :line_1, :line_2
     attr_accessor :snp_hash
-
+    attr_accessor :scores
 
     def add_snp_file(filename)
       @snp_hash=Hash.new unless @snp_hash
@@ -701,8 +703,11 @@ module Bio::DB::Primer3
     end
 
     def add_primers_file(filename)
-      Primer3Record.parse_file(filename) do | primer3record |
+      #primer3record.scores = @scores if @scores
+      Primer3Record.parse_file(filename, scores: @scores) do | primer3record |
+        
         current_snp = @snp_hash["#{primer3record.snp.to_s}:#{primer3record.chromosome}"]
+
         current_snp.add_record(primer3record)
       end
     end

@@ -51,7 +51,7 @@ def validate_files(o)
     o[:mutant_list],
     o[:reference]
   ].flatten.compact.each do |f|  
-        raise IOError "Unable to read #{f}" unless File.exists? f 
+        raise IOError.new "Unable to read #{f}" unless File.exists? f 
     end
 end 
 
@@ -67,6 +67,7 @@ options[:variation_free_region] = 0
 options[:extract_found_contigs] = false
 options[:genomes_count] = 3
 options[:min_identity] = 90
+options[:scoring] = :genome_specific
 
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
@@ -138,6 +139,12 @@ OptionParser.new do |opts|
     #TODO: have a string with the tails, optional. 
     options[:primers_to_order] = true
   end
+
+  opts.on("-H", "--het_dels", "If present, change the socring to give priority to: semi-specific, specific, non-specific")  do
+    options[:scoring] = :het_dels
+  end
+
+
 
   
 end.parse!
@@ -319,6 +326,8 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   snp.variation_free_region = options[:variation_free_region]
   container.add_snp(snp)
+
+
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 
@@ -341,11 +350,23 @@ Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output}) if added_exon
 #5. Pick the best primer and make the primer3 output
 write_status "Selecting best primers"
 kasp_container=Bio::DB::Primer3::KASPContainer.new
+
+
+
 kasp_container.line_1= original_name
 kasp_container.line_2= snp_in
 
+if options[:scoring] == :het_dels
+  kasp_container.scores = Hash.new
+  kasp_container.scores[:chromosome_specific] = 0
+  kasp_container.scores[:chromosome_semispecific] = 1000
+  kasp_container.scores[:chromosome_nonspecific] = 100    
+end
+
 snps.each do |snp|
-  kasp_container.add_snp(snp) 
+  snpk = kasp_container.add_snp(snp) 
+   
+
 end
 
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
