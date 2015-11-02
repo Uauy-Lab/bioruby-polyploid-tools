@@ -54,14 +54,13 @@ min_identity= options[:min_identity]
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 temp_contigs="#{output_folder}/contigs_tmp.fa"
 
-exo_f = File.open(exonerate_file, "w")
-contigs_f = File.open(temp_contigs, "w") if options[:extract_found_contigs]
-
 fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>reference})
 fasta_file.load_fai_entries
 
 log "Searching markers in genome"
 found_contigs = Set.new
+exo_f = File.open(exonerate_file, "w")
+contigs_f = File.open(temp_contigs, "w") if options[:extract_found_contigs]
 Bio::DB::Exonerate.align({:query=>sequences, :target=>reference, :model=>model}) do |aln|
 	if aln.identity > min_identity
     exo_f.puts aln.line
@@ -75,5 +74,24 @@ Bio::DB::Exonerate.align({:query=>sequences, :target=>reference, :model=>model})
     end
   end  
 end
+exo_f.close() 
+contigs_f.close() if options[:extract_found_contigs]
+
+
+log "Reading best alignment on each chromosome"
+
+container= Bio::PolyploidTools::ExonContainer.new
+container.flanking_size=options[:flanking_size] 
+container.gene_models(temp_fasta_query)
+container.chromosomes(target)
+container.add_parental({:name=>"A"})
+container.add_parental({:name=>"B"})
+snps.each do |snp|
+  snp.container = container
+  snp.flanking_size = container.flanking_size
+  snp.variation_free_region = options[:variation_free_region]
+  container.add_snp(snp)
+end
+container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 
 
