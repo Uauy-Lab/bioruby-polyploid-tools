@@ -705,9 +705,7 @@ module Bio::DB::Primer3
     def add_primers_file(filename)
       #primer3record.scores = @scores if @scores
       Primer3Record.parse_file(filename, scores: @scores) do | primer3record |
-        
         current_snp = @snp_hash["#{primer3record.snp.to_s}:#{primer3record.chromosome}"]
-
         current_snp.add_record(primer3record)
       end
     end

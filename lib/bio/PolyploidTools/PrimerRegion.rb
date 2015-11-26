@@ -1,6 +1,10 @@
 module Bio::PolyploidTools
   class PrimerRegion
-    attr_accessor :snp_pos, :sequence, :chromosome_specific, :almost_chromosome_specific, :crhomosome_specific_intron , :almost_crhomosome_specific_intron, :homoeologous
+    attr_accessor :snp_pos, :almost_chromosome_specific_in_mask 
+    attr_accessor :chromosome_specific_in_mask, :sequence 
+    attr_accessor :chromosome_specific, :almost_chromosome_specific
+    attr_accessor :crhomosome_specific_intron , :almost_crhomosome_specific_intron
+    attr_accessor :homoeologous, :position_in_mask_from_template
 
     def initialize
 
@@ -8,6 +12,10 @@ module Bio::PolyploidTools
       @almost_chromosome_specific = Array.new
       @crhomosome_specific_intron  = Array.new
       @almost_crhomosome_specific_intron = Array.new
+      #For deletions
+      @chromosome_specific_in_mask = Array.new
+      @almost_chromosome_specific_in_mask = Array.new
+      @position_in_mask_from_template = Hash.new
     end
 
     def tail_candidates

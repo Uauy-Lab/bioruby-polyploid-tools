@@ -17,7 +17,7 @@ module Bio::PolyploidTools
 
       arr = reg_str.split(",")
       
-      throw SNPSequenceException.new "Need five fields to parse, and got #{arr.size} in #{reg_str}" unless arr.size == 5
+      throw SNPSequenceException.new "Need five fields to parse, and got #{arr.size} in #{reg_str}" if arr.size < 5
       
       snp.contig, snp.library, snp.position, snp.original, snp.snp = reg_str.split(",")
       snp.position = snp.position.to_i

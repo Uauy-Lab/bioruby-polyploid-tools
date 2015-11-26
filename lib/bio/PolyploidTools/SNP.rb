@@ -466,6 +466,8 @@ module Bio::PolyploidTools
     def aligned_sequences
      
       return @aligned_sequences if @aligned_sequences
+     
+      
       options = ['--maxiterate', '1000', '--localpair', '--quiet']
       mafft = Bio::MAFFT.new( "mafft" , options)
     #  puts "Before MAFT:#{sequences_to_align.inspect}"

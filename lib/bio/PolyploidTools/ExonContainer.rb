@@ -143,8 +143,10 @@ module Bio::PolyploidTools
             end 
            rescue Exception=>e
               @missing_exons << snp.to_s
+             # $stderr.puts ""
 
-              $stderr.puts e.to_s
+              $stderr.puts "print_primer_3_exons: #{e.to_s}"
+              $stderr.puts e.backtrace
             end
         end 
       end
