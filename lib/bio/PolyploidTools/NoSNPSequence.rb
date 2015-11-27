@@ -92,13 +92,33 @@ module Bio::PolyploidTools
       masked_snps
     end
 
+    def count_deletions_around(position,target_chromosome)
+      first_aligned = aligned_sequences[target_chromosome]
+
+      pos_start = position - flanking_size
+      pos_end = position + flanking_size
+      pos_start = 0 if pos_start < 0
+      pos_end = first_aligned.size - 1 if pos_end >= first_aligned.size
+      count = 0
+      for i in pos_start..pos_end
+        has_del = false
+
+        aligned_sequences.each_pair do |name, val|  
+          has_del = true if val[i] == '-'
+          print "#{val[i]}\t"
+        end
+        count += 1 if has_del
+        print "#{count}\n"
+      end
+      return count
+    end
 
     def primer_region(target_chromosome, parental_chr )
       chromosome_seq = aligned_sequences[target_chromosome]
       #chromosome_seq = "-" * parental.size unless chromosome_seq
       if aligned_sequences.size == 0
-        puts aligned_sequences.inspect
-        puts surrounding_exon_sequences.inspect
+        #puts aligned_sequences.inspect
+        #puts surrounding_exon_sequences.inspect
         #puts self.inspect
         chromosome_seq = surrounding_exon_sequences[target_chromosome]
 
@@ -126,12 +146,12 @@ module Bio::PolyploidTools
               pr.crhomosome_specific_intron << position_in_region
             elsif Bio::NucleicAcid.is_valid(parental[i], mask[i])
               parental[i] = mask[i]
-              pr.chromosome_specific << position_in_region
+              pr.chromosome_specific << position_in_region if count_deletions_around(1,target_chromosome) < 3
               pr.chromosome_specific_in_mask << i
             end
+
           when /[[:lower:]]/.match(mask[i])
             #this is not that good candidate, but sitll gives specificity
-
             if parental[i] == '-'
               parental[i] = mask[i]
               pr.almost_crhomosome_specific_intron << position_in_region

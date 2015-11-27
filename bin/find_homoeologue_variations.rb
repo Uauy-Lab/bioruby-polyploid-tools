@@ -88,7 +88,6 @@ class Bio::DB::Primer3::Primer3Record
 
 #CL3339Contig1:T509C AvocetS chromosome_specific exon 4D forward 
   def parse_header
-    puts "Parsing header: '#{self.sequence_id}'"
     @snp, @line, @type, @in, @polymorphism, @chromosome, @orientation   = self.sequence_id.split(" ")  
     @type = @type.to_sym
     if @in
@@ -302,7 +301,7 @@ container.add_parental({:name=>"A"})
 container.add_parental({:name=>"B"})
 exons.each do |exon|
   exon.container = container
-  exon.flanking_size = 300
+  exon.flanking_size = 50
   exon.variation_free_region = options[:variation_free_region]
 #  puts exon.inspect
   container.add_snp(exon)
@@ -344,6 +343,17 @@ end
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
 header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
+
+kasp_container.snp_hash.each_pair do |name, kaspSNP|  
+  #puts kaspSNP.snp_from.surrounding_exon_sequences.inspect
+  #puts kaspSNP.first_product
+  #puts kaspSNP.realigned_primers
+
+  out_fasta_products = "#{output_folder}/#{name}.fa"
+  File.open(out_fasta_products, 'w') { |f| f.write(kaspSNP.realigned_primers_fasta) }
+
+
+end
 
 File.open(output_to_order, "w") { |io|  io.write(kasp_container.print_primers_with_tails()) }
 

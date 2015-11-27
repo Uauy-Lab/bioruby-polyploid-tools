@@ -261,10 +261,75 @@ module Bio::DB::Primer3
       return ""
     end
 
-    def common_primer
-      return self.values[9] if self.values[9]&& self.values[9] != nil
+    def common_primer 
+      return self.values[9] if self.values[9] && self.values[9] != nil
       return ""
     end
+
+    def product_size
+      return self.values[16].to_i if self.values[16]&& self.values[16] != nil 
+      return 0
+    end
+
+    def orientation
+      puts "insideOrientation: #{self.values[11]}"
+      return self.values[11] if self.values[11]&& self.values[11] != nil 
+      return 'unknown'
+    end
+
+
+    def first_product
+      left = first_primer
+      right = common_primer
+      nlen = product_size - left.size - right.size
+      product = left + ('n' * nlen) + Primer3Record.reverse_complement_string(right)
+      #puts "orientation: #{orientation}"
+      
+      product = Primer3Record.reverse_complement_string(product)  if orientation == 'reverse'
+    
+      product
+    end
+
+     def second_product
+      left = second_primer
+      right = common_primer
+      nlen = product_size - left.size - right.size
+      product = left + ('n' * nlen) + Primer3Record.reverse_complement_string(right)
+      product = Primer3Record.reverse_complement_string(product) if orientation == 'reverse'
+      
+
+      product
+    end
+
+
+    def realigned_primers_fasta
+      ret_str = ""
+      realigned_primers.each_pair do |name, seq|
+        ret_str << ">#{self.to_s}-#{name}\n#{seq}\n" 
+      end
+      ret_str 
+    end
+
+
+    def realigned_primers
+     
+      return @realigned_primers if @realigned_primers
+      sequences_to_align = Hash.new
+      sequences_to_align["first_product"]  = first_product
+      sequences_to_align["second_product"] = second_product
+      sequences_to_align.merge!(snp_from.surrounding_exon_sequences)
+      if sequences_to_align.size == 1
+        @realigned_primers = sequences_to_align
+        return @realigned_primers
+      end
+      options = ['--maxiterate', '1000', '--localpair', '--quiet']
+      mafft = Bio::MAFFT.new( "mafft" , options)
+      #puts "Before MAFT:#{sequences_to_align.inspect}"
+      report = mafft.query_align(sequences_to_align)
+      @realigned_primers = report.alignment
+      #puts "MAFFT: #{report.alignment.inspect}" 
+      @realigned_primers
+    end 
 
     def self.parse(reg_str)
       reg_str.chomp!
@@ -443,7 +508,7 @@ module Bio::DB::Primer3
       seq[coordinates[0],coordinates[1]] 
     end
 
-    def reverse_complement_string(sequenc_str)
+    def self.reverse_complement_string(sequenc_str)
       complement = sequenc_str.tr('atgcrymkdhvbswnATGCRYMKDHVBSWN', 'tacgyrkmhdbvswnTACGYRKMHDBVSWN')
       complement.reverse!
     end
