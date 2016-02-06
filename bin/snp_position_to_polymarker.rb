@@ -42,7 +42,8 @@ OptionParser.new do |opts|
   opts.on("-f", "--flanking_size INT", "Flanking size around the SNP") do |o|
     options[:flanking_size] = o.to_i
   end
-  opts.on("-t", "--mutant_list FILE", "File with the list of positions with mutation and the mutation line.\n\
+
+  opts.on("-t", "--mutant_list FILE", "File with the list of positions with mutation and the mutation line. Example: IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T\n\
     requires --reference to get the sequence using a position") do |o|
     options[:mutant_list] = o
      test_file = o 
