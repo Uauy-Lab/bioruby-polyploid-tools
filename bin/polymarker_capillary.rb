@@ -31,7 +31,7 @@ options[:primer_3_preferences] = {
   :primer_explain_flag => 1,
   :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
 }
-
+options[:genomes_count] = 3
 
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker_capillary.rb [options]"
@@ -47,6 +47,9 @@ OptionParser.new do |opts|
   opts.on("-o", "--output_folder FOLDER", "Path to a folder where the outputs are going to be stored") do |o|
     options[:output_folder] = o
   end
+    opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
+    options[:genomes_count] = o.to_i
+  end
 end.parse!
 
 
@@ -54,7 +57,7 @@ end.parse!
 reference     = options[:reference]
 markers       = options[:markers]
 output_folder = options[:output_folder]
-log "Output folde: #{output_folder}"
+log "Output folder: #{output_folder}"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 Dir.mkdir(output_folder)
 
@@ -94,13 +97,18 @@ module Bio::PolyploidTools
     end
 
     def primer_3_all_strings(target_chromosome, parental) 
+      #puts target_chromosome 
+      #puts parental
+      #puts aligned_sequences.to_fasta
       pr = primer_region(target_chromosome, parental )
       primer_3_propertes = Array.new
 
       seq_original = String.new(pr.sequence)
       #puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s
       return primer_3_propertes if seq_original.size < primer_3_min_seq_length
-      
+      #puts "Sequence origina: #{ self.original}" 
+      #puts pr.to_fasta
+#      puts "Postion: #{pr.snp_pos}"
       seq_original[pr.snp_pos] = self.original
       seq_original_reverse = reverse_complement_string(seq_original)
 
@@ -185,12 +193,13 @@ target=reference
 
 fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
 fasta_file.load_fai_entries
-min_identity = 95
+min_identity = 90
 found_contigs = Set.new
-found_contigs = Set.new
+
 Bio::DB::Exonerate.align({:query=>markers, :target=>reference, :model=>'ungapped'}) do |aln|
   if aln.identity > min_identity
     exo_f.puts aln.line
+    #puts aln.line
     unless found_contigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
       found_contigs.add(aln.target_id)
       entry = fasta_file.index.region_for_entry(aln.target_id)
@@ -198,14 +207,14 @@ Bio::DB::Exonerate.align({:query=>markers, :target=>reference, :model=>'ungapped
     end
   end  
 end
-
+exo_f.close
 
 arm_selection_functions = Hash.new
 
-arm_selection_functions[:full_scaffold] = lambda do | contig_name |      
+arm_selection_functions[:full_scaffold] = lambda do | contig_name |    
   return contig_name
 end
-min_identity = 96
+
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=500 
 container.gene_models(markers)
@@ -216,6 +225,7 @@ snps.each do |snp|
   snp.snp_in = "B"
   snp.container = container
   snp.flanking_size = container.flanking_size
+  snp.genomes_count = options[:genomes_count]
   container.add_snp(snp)
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_functions[:full_scaffold] , :min_identity=>min_identity})
@@ -291,9 +301,16 @@ Bio::DB::Primer3::Primer3Record.parse_file(primer_3_output) do | primer3record |
     toPrint <<  lArr.join("-")
     toPrint <<  p.left.tm
     toPrint <<  p.left.sequence
-    toPrint <<  p.right.coordinates.join("-")
+    toPrint <<  rArr.join("-")
     toPrint <<  p.right.tm
     toPrint <<  p.right.sequence
+
+    middle = 501 
+    toPrint << lArr[0]
+    toPrint << rArr[0]
+    toPrint << middle - lArr[0]
+    toPrint << rArr[0] - middle
+#Start End LeftDistance  RightDistance
 
     out.puts toPrint.join(",")
 
