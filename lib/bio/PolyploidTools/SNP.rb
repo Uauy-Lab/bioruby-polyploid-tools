@@ -253,6 +253,8 @@ module Bio::PolyploidTools
       left = opts[:left_pos]
       right = opts[:right_pos]
       sequence =  opts[:sequence]
+      extra =  opts[:extra]
+
       orientation = "forward"
       if opts[:right_pos]
         orientation = "forward"
@@ -271,9 +273,13 @@ module Bio::PolyploidTools
 
 
       str = "SEQUENCE_ID=#{opts[:name]} #{orientation}\n"
-      str << "SEQUENCE_FORCE_LEFT_END=#{left}\n"
+      str << "SEQUENCE_FORCE_LEFT_END=#{left}\n" unless  opts[:extra_f]
       str << "SEQUENCE_FORCE_RIGHT_END=#{right}\n" if opts[:right_pos]
+      str << extra if extra
+      str << opts[:extra_f] if opts[:extra_f]
       str << "SEQUENCE_TEMPLATE=#{sequence}\n"
+      
+     
       str << "=\n"
 
 
@@ -284,8 +290,10 @@ module Bio::PolyploidTools
         orientation = "reverse"
         sequence = reverse_complement_string(sequence)
         str << "SEQUENCE_ID=#{opts[:name]} #{orientation}\n"
-        str << "SEQUENCE_FORCE_LEFT_END=#{left}\n"
+        str << "SEQUENCE_FORCE_LEFT_END=#{left}\n" unless  opts[:extra_r]
+        str << opts[:extra_r] if opts[:extra_r]
         str << "SEQUENCE_TEMPLATE=#{sequence}\n"
+        str << extra if extra
         str << "=\n"
       end
 
@@ -402,8 +410,8 @@ module Bio::PolyploidTools
         
         seq[local_pos_in_gene] = self.snp if name == self.snp_in    
         @parental_sequences [name] = seq
-        #puts name
-        #puts seq
+        puts name
+        puts seq
       end
       @parental_sequences
     end
@@ -420,8 +428,9 @@ module Bio::PolyploidTools
           seq =  bam.consensus_with_ambiguities({:region=>gene_region}).to_s
         else
           seq = container.gene_model_sequence(gene_region)
+           
            unless name == self.snp_in
-             # puts "Modiging original: #{name} #{self.original}"  
+              #puts "Modifing original: #{name} #{seq}"  
               seq[local_pos_in_gene] = self.original 
             end
         end
@@ -470,7 +479,8 @@ module Bio::PolyploidTools
       
       options = ['--maxiterate', '1000', '--localpair', '--quiet']
       mafft = Bio::MAFFT.new( "mafft" , options)
-    #  puts "Before MAFT:#{sequences_to_align.inspect}"
+      #puts "Before MAFT:#{sequences_to_align.inspect}"
+
       report = mafft.query_align(sequences_to_align)
       @aligned_sequences = report.alignment
    #   puts "MAFFT: #{report.alignment.inspect}" 
@@ -510,7 +520,11 @@ module Bio::PolyploidTools
       local_pos = 0
       started = false
 #TODO: Validate the cases when the alignment has padding on the left on all the chromosomes
-
+      #unless parental_strings[0] 
+        #puts "parental hash: #{parental_sequences}"
+        #puts "Aligned sequences: #{aligned_sequences.to_fasta}"
+       # puts "parental_strings: #{parental_strings.to_s}"
+      #end
       while i < parental_strings[0].size  do
         if local_pos_in_gene == local_pos
           pos = i
@@ -543,10 +557,11 @@ module Bio::PolyploidTools
         different = 0
         cov = 0
         from_group = 0
+        nCount = 0
         names.each do | chr |
           if aligned_sequences[chr] and aligned_sequences[chr][i]  != "-"
             cov += 1 
-
+            nCount += 1 if aligned_sequences[chr][i] == 'N' or  aligned_sequences[chr][i] == 'n' # maybe fix this to use ambiguity codes instead. 
             from_group += 1 if chr[0] == chromosome_group
             #puts "Comparing #{chromosome_group} and #{chr[0]} as chromosomes"
             if chr != chromosome 
@@ -558,6 +573,7 @@ module Bio::PolyploidTools
         end
         masked_snps[i] = "-" if different == 0
         masked_snps[i] = "-" if cov == 1
+        masked_snps[i] = "-" if nCount > 0
         masked_snps[i] = "*" if cov == 0
         expected_snps = names.size - 1
        # puts "Diferences: #{different} to expected: #{ expected_snps } [#{i}] Genome count (#{from_group} == #{genomes_count})"

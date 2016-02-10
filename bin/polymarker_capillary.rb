@@ -32,6 +32,7 @@ options[:primer_3_preferences] = {
   :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
 }
 options[:genomes_count] = 3
+options[:allow_non_specific] = false
 
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker_capillary.rb [options]"
@@ -47,9 +48,13 @@ OptionParser.new do |opts|
   opts.on("-o", "--output_folder FOLDER", "Path to a folder where the outputs are going to be stored") do |o|
     options[:output_folder] = o
   end
-    opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
+  opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
     options[:genomes_count] = o.to_i
   end
+  opts.on("-a", "--allow_non_specific", "If used, semi-specific and non-specific primers will be produced") do |o|
+    options[:allow_non_specific] = true
+  end
+
 end.parse!
 
 
@@ -57,6 +62,7 @@ end.parse!
 reference     = options[:reference]
 markers       = options[:markers]
 output_folder = options[:output_folder]
+allow_non_specific = options[:allow_non_specific]
 log "Output folder: #{output_folder}"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 Dir.mkdir(output_folder)
@@ -67,6 +73,7 @@ module Bio::PolyploidTools
     attr_accessor :sequence_original
     attr_accessor :rstart
     attr_accessor :rend
+    attr_accessor :includeNoSpecific
     #Format: 
     #A fasta entry with the id: contig:start-end
     #The sequence can be prodcued with samtools faidx
@@ -106,9 +113,10 @@ module Bio::PolyploidTools
       seq_original = String.new(pr.sequence)
       #puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s
       return primer_3_propertes if seq_original.size < primer_3_min_seq_length
+      return primer_3_propertes unless pr.snp_pos == 500
       #puts "Sequence origina: #{ self.original}" 
       #puts pr.to_fasta
-#      puts "Postion: #{pr.snp_pos}"
+      #puts "Postion: #{pr.snp_pos}"
       seq_original[pr.snp_pos] = self.original
       seq_original_reverse = reverse_complement_string(seq_original)
 
@@ -132,16 +140,45 @@ module Bio::PolyploidTools
       pr.crhomosome_specific_intron.each {|pos| left_pos  << pos if pos < l_pos - 50}
       pr.crhomosome_specific_intron.each {|pos| right_pos << pos if pos > l_pos + 50}
 
+      prepareLRPrimers(left_pos, right_pos, "chromosome_specific" , snp_type,seq_original, primer_3_propertes)
+      if includeNoSpecific and (right_pos.size == 0 or right_pos.size == 0)
+        left_pos = Array.new
+        right_pos = Array.new
+        l_pos = pr.snp_pos
+        pr.almost_chromosome_specific.each {|pos| left_pos  << pos if pos < l_pos - 50 }
+        pr.almost_chromosome_specific.each {|pos| right_pos << pos if pos > l_pos + 50}
+        
+        pr.almost_crhomosome_specific_intron.each {|pos| left_pos  << pos if pos < l_pos - 50}
+        pr.almost_crhomosome_specific_intron.each {|pos| right_pos << pos if pos > l_pos + 50}
+
+        prepareLRPrimers(left_pos, right_pos, "chromosome_semispecific" ,snp_type, seq_original, primer_3_propertes)
+        args = {
+          :name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_nonspecific exon #{snp_type} #{chromosome}", 
+            :left_pos => 350,
+            :extra_f=>"SEQUENCE_TARGET=350,400\n",
+            :extra_r=>"SEQUENCE_TARGET=350,400\n",
+            :sequence=>seq_original}
+            str =  return_primer_3_string(args)
+
+        primer_3_propertes << str
+      end
+      primer_3_propertes
+    end
+
+    def prepareLRPrimers(left_pos, right_pos, type , snp_type, seq_original,primer_3_propertes)
+      count = 0
       left_pos.each do |l|
         right_pos.each do |r|
-          args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific exon #{snp_type} #{chromosome}", 
+          args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} #{type} exon #{snp_type} #{chromosome}", 
           :left_pos => l, 
           :right_pos => r, 
           :sequence=>seq_original}
+
           primer_3_propertes << return_primer_3_string(args)
+          count += 1
+#          return if count > 25
         end
       end
-      primer_3_propertes
     end
 
     def parental_sequences
@@ -193,7 +230,7 @@ target=reference
 
 fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
 fasta_file.load_fai_entries
-min_identity = 90
+min_identity = 95
 found_contigs = Set.new
 
 Bio::DB::Exonerate.align({:query=>markers, :target=>reference, :model=>'ungapped'}) do |aln|
@@ -226,6 +263,7 @@ snps.each do |snp|
   snp.container = container
   snp.flanking_size = container.flanking_size
   snp.genomes_count = options[:genomes_count]
+  snp.includeNoSpecific = allow_non_specific
   container.add_snp(snp)
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_functions[:full_scaffold] , :min_identity=>min_identity})
@@ -261,17 +299,20 @@ class Bio::DB::Primer3::Primer3Record
   attr_accessor :primerPairs
 end
 
+printed_counts = Hash.new(0)
 Bio::DB::Primer3::Primer3Record.parse_file(primer_3_output) do | primer3record |
   #puts primer3record.inspect
   next if primer3record.primer_left_num_returned.to_i == 0
   
   seq_id = primer3record.sequence_id
+  printed_counts[seq_id] += 1
+  next if printed_counts[seq_id] > 10
   excluded = "-"
   exArr = excluded.split(",")
   st = exArr[0].to_i
   ed = exArr[1].to_i
   tot = ed + st
-
+  
   excluded="#{st}-#{tot}"
   seq_len = primer3record.sequence_template.length
   printed = 0

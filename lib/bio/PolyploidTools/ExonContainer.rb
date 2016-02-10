@@ -24,10 +24,20 @@ module Bio::PolyploidTools
 
     #Returns the sequence for a region in the gene models (exon)
     def gene_model_sequence(region)
+      #puts "Region: "
       #puts region
       seq=@gene_models_db.fetch_sequence(region)
-
-
+      #puts "sequence: "
+      #This is a patch that we need to fix in biosamtools: 
+      #puts seq
+      index = seq.index('>')
+      if(index )
+        index -= 1
+        #puts "Index: #{index}"
+        seq = seq.slice(0..index) 
+      end
+      #puts seq
+      seq
     end
 
     #Sets the reference file for the gene models
@@ -40,10 +50,10 @@ module Bio::PolyploidTools
     def chromosome_sequence(region)
       left_pad = 0
       #TODO: Padd if it goes to the right
-      if(region.start < 0)
+      if(region.start < 1)
         left_pad = region.start * -1
         left_pad += 1
-        region.start = 0
+        region.start = 1
       end
       str = "-" * left_pad << @chromosomes_db.fetch_sequence(region)
       #str << "n" * (region.size - str.size + 1) if region.size > str.size
@@ -121,7 +131,10 @@ module Bio::PolyploidTools
             file.puts snp.aligned_sequences_fasta
           rescue Exception=>e
             @missing_exons << snp.to_s
-            $stderr.puts e.to_s
+            $stderr.puts "print_fasta_snp_exones:" + snp.to_s + ":" + e.to_s
+            $stderr.puts "Local position: #{snp.local_position}"
+            $stderr.puts "Local position: #{snp.parental_sequences.to_s}"
+            $stderr.puts e.backtrace
           end
         end
       end
@@ -145,7 +158,7 @@ module Bio::PolyploidTools
               @missing_exons << snp.to_s
              # $stderr.puts ""
 
-              $stderr.puts "print_primer_3_exons: #{e.to_s}"
+              $stderr.puts "print_primer_3_exons: #{e.to_s} : snp.to_s"
               $stderr.puts e.backtrace
             end
         end 
