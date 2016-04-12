@@ -16,9 +16,9 @@ end
 
 
 
-reference='wheat_6x_ty_mm_mutations_10mutants_for_validations/scaffolds_with_mm.fa'
-markers='wheat_6x_ty_mm_mutations_10mutants_for_validations/CadMulitMap.fa'
-output_folder='wheat_6x_ty_mm_mutations_10mutants_for_validations/PolyMarker'
+#reference='wheat_6x_ty_mm_mutations_10mutants_for_validations/scaffolds_with_mm.fa'
+#markers='wheat_6x_ty_mm_mutations_10mutants_for_validations/CadMulitMap.fa'
+#output_folder='wheat_6x_ty_mm_mutations_10mutants_for_validations/PolyMarker'
 
 options = Hash.new
 
@@ -68,7 +68,20 @@ exonerate_file="#{output_folder}/exonerate_tmp.tab"
 Dir.mkdir(output_folder)
 
 module Bio::PolyploidTools
+
+
+  
   class SequenceToAmplify < SNP
+
+    def self.select_chromosome(contig_name)
+  
+      arr = contig_name.split('_')
+      ret = "U"
+      ret = arr[2][0,2] if arr.size >= 3
+      ret = "3B" if arr.size == 2 and arr[0] == "v443"
+      ret = arr[0][0,2] if arr.size == 1   
+      return ret
+    end
 
     attr_accessor :sequence_original
     attr_accessor :rstart
@@ -86,7 +99,10 @@ module Bio::PolyploidTools
       rStart =  Regexp.last_match(:rstart).to_i
       rEnd =  Regexp.last_match(:rend).to_i
       snp.gene = fasta_entry.definition
-      snp.chromosome=rName
+      #snp.chromosome=rName
+
+      snp.chromosome=select_chromosome(rName)
+      #puts "#{rName}: #{snp.chromosome}"
       snp.sequence_original = fasta_entry.seq
       snp.template_sequence = fasta_entry.seq.upcase
       snp.snp_in = "B"
@@ -252,6 +268,22 @@ arm_selection_functions[:full_scaffold] = lambda do | contig_name |
   return contig_name
 end
 
+#Function to parse stuff like: "IWGSC_CSS_1AL_scaff_110"
+#Or the first two characters in the contig name, to deal with 
+#pseudomolecules that start with headers like: "1A"
+#And with the cases when 3B is named with the prefix: v443
+arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
+  
+  arr = contig_name.split('_')
+  ret = "U"
+  ret = arr[2][0,2] if arr.size >= 3
+  ret = "3B" if arr.size == 2 and arr[0] == "v443"
+  ret = arr[0][0,2] if arr.size == 1   
+  return ret
+end
+
+
+
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=500 
 container.gene_models(markers)
@@ -266,7 +298,7 @@ snps.each do |snp|
   snp.includeNoSpecific = allow_non_specific
   container.add_snp(snp)
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_functions[:full_scaffold] , :min_identity=>min_identity})
+container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_functions[:arm_selection_embl] , :min_identity=>min_identity})
 
 
 
