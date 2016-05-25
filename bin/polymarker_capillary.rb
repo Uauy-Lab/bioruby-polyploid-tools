@@ -27,6 +27,8 @@ options[:primer_3_preferences] = {
   :primer_max_size => 25 , 
   :primer_lib_ambiguity_codes_consensus => 1,
   :primer_liberal_base => 1, 
+  :primer_min_left_three_prime_distance => 5,
+  :primer_min_right_three_prime_distance => 5,
   :primer_num_return =>1,
   :primer_explain_flag => 1,
   :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
@@ -150,11 +152,11 @@ module Bio::PolyploidTools
       left_pos = Array.new
       right_pos = Array.new
       l_pos = pr.snp_pos
-      pr.chromosome_specific.each {|pos| left_pos  << pos if pos < l_pos - 50 }
-      pr.chromosome_specific.each {|pos| right_pos << pos if pos > l_pos + 50}
+      pr.chromosome_specific.shuffle.each {|pos| left_pos  << pos if pos < l_pos - 50 }
+      pr.chromosome_specific.shuffle.each {|pos| right_pos << pos if pos > l_pos + 50}
       
-      pr.crhomosome_specific_intron.each {|pos| left_pos  << pos if pos < l_pos - 50}
-      pr.crhomosome_specific_intron.each {|pos| right_pos << pos if pos > l_pos + 50}
+      pr.crhomosome_specific_intron.shuffle.each {|pos| left_pos  << pos if pos < l_pos - 50}
+      pr.crhomosome_specific_intron.shuffle.each {|pos| right_pos << pos if pos > l_pos + 50}
 
       prepareLRPrimers(left_pos, right_pos, "chromosome_specific" , snp_type,seq_original, primer_3_propertes)
       if includeNoSpecific and (right_pos.size == 0 or right_pos.size == 0)

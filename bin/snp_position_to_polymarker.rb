@@ -77,9 +77,10 @@ File.open(test_file) do | f |
        		if region != lastRegion
              lastTemplate = fasta_reference_db.fetch_sequence(region)
           end
-          snp.template_sequence = lastTemplate
+          snp.full_sequence = lastTemplate
           lastRegion = region
-       		out.puts "#{snp.gene}_#{snp.snp_id_in_seq},#{snp.chromosome},#{snp.to_polymarker_sequence(options[:flanking_size])}"
+
+       		out.puts "#{snp.gene}_#{snp.snp_id_in_seq},#{snp.chromosome},#{snp.sequence_original}"
     	else
     	   $stderr.puts "ERROR: Unable to find entry for #{snp.gene}"
     	end
