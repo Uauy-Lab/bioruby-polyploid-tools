@@ -11,3 +11,6 @@ rvm:
   - 2.1.10
   - 2.2.5
   - 2.3.1
+
+before_install:
+  - RUBYOPT="-W1"
