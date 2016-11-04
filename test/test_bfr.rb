@@ -60,23 +60,10 @@ class TestPolyploidTools < Test::Unit::TestCase
     snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
     snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
     snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
-
-    
-
-    #puts "#{region.entry}\t#{region.size}\t"
-    #puts "#{snps_1}\t#{called_1}\t#{snps_per_1k_1}\t"
-    #puts "#{snps_2}\t#{called_2}\t#{snps_per_1k_2}\t"
-    #puts "#{snps_tot}\t#{snps_per_1k_tot}\n"
-    
-    
+        
     snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
     snps_to_ref = Bio::Sequence.snps_between(cons_1, ref_seq)
-    #puts ">ref\n#{ref_seq}"
-    #puts ">a\n#{cons_1}"
-    #puts ">b\n#{cons_2}"
-    #puts "SNPS between: #{snps_tot}"
-    #puts "SNPS ref: #{snps_to_ref}"
-    #puts "SNPS call: #{snps_to_ref}"
+
     assert_equal(ref_seq.to_s, "acgcttgaccttaggcctatttaggtgacactatagaacaagtttgtacaaaaaagcaggctggtaccggtccggaattcccgggatatcgtcgacccacgcgtccgcgtccgaccagcacaaacaagactgtactctgggctcctctgactccgtgtcttgctaaaatatctttggtcgactcgttgcgaggttgatcagatggcggaggaagcgaagcaggatgtggcgccacccgcgccggagccgaccgaggacgtcgcggacgagaaggtggcggttccgtcgccggaggagtctaaggccctcgttgtcgccgagaatgacgctgagaagcctgcagctacagggggctcacacgaacgagatgctctgctcacgagggtcgcgaccgagaagaggatttcgctgatcaaggcatgggaggagaacgagaaggccaaagccgagaacaaggccgtgaagttgctggcggacatcacctcgtgggagaactccaaggccgcggaactggaagccgagctcaagaagatgcaagagcagctggagaagaagaaggcgcgctgcgtggagaagctcaagaacagcgccgcgacggtgcacaaagaggcggaangagaagcgtgccgcggcggaagcgcggcacggcgaggagatcgtcgcggcggaggagaccgccgccaagtaccgcgccaagggtgaagcgccgaagaagctgctcttcggcagaagatagatatcgcttcatcttcagcttctctctgtttgaccgnttgcatgtctcctgcccatggcatcacttgtgtatttatctttgggggngatcttagtttgtatggtatcatcaaatgcgtcgtga")
     assert_equal(cons_1.to_s , "acgcttgaccttaggcctatttaggtgacactatagaacaagtttgtacaaaaaagcaggctggtaccggtccggaattcccgggatatcgtcgacccacgcgtccgcgtccgaccagcacaaacaagactgtactctgggctcctctgactccgtgtcttgctaaaatatytttggtcgactcgttgcgaggttgatcagatggcggaggaagcgaagcaggatgtggcgccacccgcgccggagccgaccgaggacgtcgcggacgagaaggcggcggttccgtcgccggaggagtctaaggccctsgttgtcgccgagaatgacgcygagaagcctgcagctacagggggctcacacgaacgagatgctctgctcacgagggtygcgaccgagaagaggatttcgctgatcaaggcatgggaggagaaygagaaggccaaagccgagaacaaggccgtgaagttgctggcggacatcacctcgtgggagaactccaaggccgcggaactggaagccgagctcaagaagatgcaagagcagctggagaagaagaaggcgcgctgcgtggagaagctcaagaacagcgccgcgacggtgcacaaagaggcgraaggagaagcgtgccgcggcggaagygcggcrcggcgaggagatcgtcgcggcggaggagaccgccgccaagtaccgcgccaagggtgaggcgccgaagaagctgctcttcggcagaggatagatatcgcttcatcttcagcttctctctgtttgaccgnttgcatgtctcctgcccatggcatcacttgtgtatttatctttgggggngatcttagtttgtatggtatcatcaaatgcgtcgtga")  
     assert_equal(cons_2.to_s , "acgcttgaccttaggcctatttaggtgacactatagaacaagtttgtacaaaaaagcaggctggtaccggtccggaattcccgggatatcgtcgacccacgcgtccgcgtccgaccagcacaaacaagactgtactctgggctcctctgactccgtgtcttgctaaaatatytttggtcgactcgttgcgaggttgatcagatggcggasgaagcgaagcaggatgtggcgccacccgcgccggagccgaccgaggacgtcgcggacgagaaggcggcggttccgtcgccggaggartcyaaggccctsgttgtcgccgagaatgacgcygagaagcctgcagctacagggggctcacacgaacgagatgctctgctcacgagggtygcgaccgagaagaggatttcgctgatcaaggcatgggaggagaaygagaaggccaaagccgagaacaaggccgtgaagttgctggcggacatcacctcgtgggagaactccaaggccgcggaactggaagccgagctcaagaagatgcaagagcagctggagaagaagaaggcgcgctgcgtggagaagctcaagaacagcgccgcgacggtgcacaaagaggcgraaggagaagcgtgccgcggcggaagygcggcgcggcgaggagatcgtcgcggcggaggagrccgccgccaagtaccgcgccaagggtgaggcgccgaagaagctgctcttcggcagaagatagatatcgcttcatcttcagcttctctctgtttgaccgnttgcatgtctcctgcccatggcatcacttgtgtatttatctttgggggngatcttagtttgtatggtatcatcaaatgcgtcgtga")
@@ -108,7 +95,7 @@ class TestPolyploidTools < Test::Unit::TestCase
     @fasta_db.index.entries.each do | r |
       i = i  + 1
        
-      reg = container.process_region({:region => r.get_full_region.to_s,:output_file => output_file , :min_cov => 5} )
+      reg = container.process_region({:A => true, :q => 37, :region => r.get_full_region.to_s,:output_file => output_file , :min_cov => 5} )
       #puts reg.inspect
     end
     
@@ -116,21 +103,21 @@ class TestPolyploidTools < Test::Unit::TestCase
     
     bases_1 = Array.new
     bases_2 = Array.new
-    bases_1  << {:A=>0, :C=>24, :G=>120, :T=>0}
-    bases_2  << {:A=>0, :C=>24, :G=>112, :T=>0}
-    bases_1  << {:A=>34, :C=>0, :G=>138, :T=>0}
-    bases_2  << {:A=>26, :C=>0, :G=>138, :T=>0}
-    bases_1  << {:A=>0, :C=>32, :G=>0, :T=>141}
-    bases_2  << {:A=>0, :C=>26, :G=>0, :T=>142}
-    bases_1  << {:A=>22, :C=>0, :G=>56, :T=>0}
-    bases_2  << {:A=>62, :C=>0, :G=>25, :T=>0}
-    bases_1  << {:A=>27, :C=>0, :G=>22, :T=>0}
-    bases_2  << {:A=>46, :C=>0, :G=>9, :T=>0}
+    bases_1  << {:A=>0, :C=>24, :G=>147, :T=>0}
+    bases_2  << {:A=>0, :C=>33, :G=>142, :T=>0}
+    bases_1  << {:A=>35, :C=>0, :G=>142, :T=>0}
+    bases_2  << {:A=>25, :C=>0, :G=>149, :T=>0}
+    bases_1  << {:A=>0, :C=>32, :G=>0, :T=>146}
+    bases_2  << {:A=>0, :C=>24, :G=>0, :T=>152}
+    bases_1  << {:A=>22, :C=>0, :G=>38, :T=>0}
+    bases_2  << {:A=>49, :C=>0, :G=>20, :T=>0}
+    bases_1  << {:A=>26, :C=>0, :G=>16, :T=>0}
+    bases_2  << {:A=>36, :C=>0, :G=>10, :T=>0}
     i = 0
     with_bfr.each do | pos |
-      puts pos
-      assert_equal(reg.bases_bulk_1[pos - 1 ] , bases_1[i] )
-      assert_equal(reg.bases_bulk_2[pos - 1 ] , bases_2[i] )
+      #puts pos
+      assert_equal(bases_1[i], reg.bases_bulk_1[pos - 1 ] )
+      assert_equal(bases_2[i], reg.bases_bulk_2[pos - 1 ] )
       i += 1
     end
    

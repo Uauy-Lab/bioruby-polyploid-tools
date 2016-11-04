@@ -12,9 +12,18 @@ begin
 end
 require 'rake'
 
-require 'jeweler'
 
-Jeweler::Tasks.new do |gem|
+if RUBY_VERSION.start_with?("2.1") or RUBY_VERSION.start_with?("2.2") or RUBY_VERSION.start_with?("2.0")
+  require 'jeweler'
+  @taskClass = Jeweler
+else
+  require 'juwelier'
+  @taskClass = Juwelier
+end
+
+
+
+@taskClass::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
    gem.name = "bio-polyploid-tools"
   gem.homepage = "http://github.com/tgac/bioruby-polyploid-tools"
@@ -29,7 +38,7 @@ Jeweler::Tasks.new do |gem|
   #  gem.add_development_dependency 'rspec', '> 1.2.3'
 #  gem.extensions = "ext/mkrf_conf.rb"
 end
-Jeweler::RubygemsDotOrgTasks.new
+@taskClass::RubygemsDotOrgTasks.new
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
