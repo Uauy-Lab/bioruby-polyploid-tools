@@ -18,7 +18,7 @@ module Bio::PolyploidTools
 
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
-    #A_comp0_c0_seq1,C,519,A
+    #A_comp0_c0_seq1,C,519,A,2A
     def self.parse(reg_str)
       reg_str.chomp!
       snp = SNP.new
@@ -35,8 +35,28 @@ module Bio::PolyploidTools
       snp
     end
 
+    def setTemplateFromFastaFile(fastaFile ,flanking_size = 100)
+      reg = Bio::DB::Fasta::Region.new
+      reg.entry = gene
+      reg.entry = @contig if @contig
+      #puts reg.entry 
+      #puts @contig
+      #puts gene
+      reg.start = position - flanking_size
+      reg.end = position + flanking_size +1
+      reg.orientation = :forward
+      entry = fastaFile.index.region_for_entry(gene)
+      reg.start = 1 if reg.start < 1
+      reg.end = entry.length if reg.end > entry.length
+      amb = Bio::NucleicAcid.to_IUAPC("#{original}#{snp}")
+      @position = @position - reg.start + 1
+      @position = 1 if @position < 1
+      self.template_sequence = fastaFile.fetch_sequence(reg)
+      template_sequence[position - 1] = amb
+    end
+
     def initialize
-      @genomes_count = 3 #TODO: if we want to use this with other polyploids, me need to set this as a variable in the main script. 
+      @genomes_count = 3 
       @primer_3_min_seq_length = 50
       @variation_free_region = 0
     end
@@ -44,7 +64,6 @@ module Bio::PolyploidTools
     def to_polymarker_sequence(flanking_size)
       out = template_sequence.clone
       out[position-1]  = "[#{original}/#{snp}]"
-
       start = position - flanking_size - 1
       start = 0 if start < 0
       total = flanking_size * 2 + 6
@@ -172,10 +191,6 @@ module Bio::PolyploidTools
         ret_str << "#{seq}\n"
       end
 
-      #self.exon_sequences.each do | chromosome, exon_seq | 
-      #  ex_seq = cut_sequence_to_primer_region(exon_seq)
-      #  ret_str << ">#{chromosome}\n#{ex_seq}\n"
-      #end
       self.surrounding_exon_sequences.each do |chromosome, exon_seq|
         ret_str << ">#{chromosome}\n#{exon_seq}\n"
       end
