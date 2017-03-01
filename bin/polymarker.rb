@@ -12,6 +12,11 @@ require path
 
 arm_selection_functions = Hash.new;
 
+arm_selection_functions[:arm_selection_nrgenes] = lambda do | contig_name |
+#example format: chr2A
+  ret = contig_name[3,2]
+  return ret
+end
 
 arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
   ret = contig_name[0,2]       
@@ -257,9 +262,9 @@ File.open(test_file) do | f |
         write_status "WARN: Unable to find entry for #{snp.gene}"
       end
     else
-      rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
+      raise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
-    rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
+    raise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
 
     snp.genomes_count = options[:genomes_count]
     snp.snp_in = snp_in
