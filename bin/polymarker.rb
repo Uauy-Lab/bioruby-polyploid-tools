@@ -257,9 +257,9 @@ File.open(test_file) do | f |
         write_status "WARN: Unable to find entry for #{snp.gene}"
       end
     else
-      rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
+      raise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
-    rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
+    raise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
 
     snp.genomes_count = options[:genomes_count]
     snp.snp_in = snp_in
