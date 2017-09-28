@@ -43,7 +43,7 @@ module Bio::PolyploidTools
 
     def to_polymarker_sequence(flanking_size, total:nil)
       out = template_sequence.clone
-      puts "changin: #{position} #{flanking_size} len: #{total}"
+      puts "changing: #{position} #{flanking_size} len: #{total}"
       out[position-1]  = "[#{original}/#{snp}]"
       
       start = position - flanking_size - 1

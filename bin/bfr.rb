@@ -50,11 +50,11 @@ OptionParser.new do |opts|
     options[:bulk_2] = o
   end
   
-  opts.on("-m", "--chunk_size FILE", "Sorted BAM file with the alginments from bulk1 2 (corresponding to the phenotype of parental 2)") do |o|
+  opts.on("-m", "--chunk_size FILE", "Number of chunks to divde the SNP calling. Useful to run in a cluster.") do |o|
     options[:chunk_size] = o.to_i
   end
   
-  opts.on("-n", "--chunk FILE", "Sorted BAM file with the alginments from bulk1 2 (corresponding to the phenotype of parental 2)") do |o|
+  opts.on("-n", "--chunk FILE", "Chunk number. Must be less than chunk_size. ") do |o|
     options[:chunk] = o.to_i
   end
   
