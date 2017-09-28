@@ -109,9 +109,9 @@ File.open(snp_file) do | f |
       region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
       snp.template_sequence = fasta_reference_db.fetch_sequence(region)
     else
-      rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
+      raise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
-    rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
+    raise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
     snp.snp_in = snp_in
     snp.original_name = original_name
     snps << snp

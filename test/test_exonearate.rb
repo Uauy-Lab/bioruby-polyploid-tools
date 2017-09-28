@@ -21,7 +21,6 @@ class TestPolyploidTools < Test::Unit::TestCase
   end
   
   def test_simple_align_array
- #   puts $LOAD_PATH
     alignments = Bio::DB::Exonerate.align({:query=>Query, :target=>Target})
     assert(alignments.size == 4, "The count of alignments should be 4, it was #{alignments.size}")
   end

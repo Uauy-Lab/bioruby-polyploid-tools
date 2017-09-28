@@ -3,15 +3,18 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
-gem "bio", ">= 1.4.3"
-gem "bio-samtools", ">= 2.0.4"
+gem "bio", ">= 1.5.0"
+gem "bio-samtools", ">= 2.5.1"
 gem "rake"
-gem "jeweler"
 
 gem "systemu", ">=2.5.2"
 
 group :development do
-#  gem "shoulda", ">= 0"
-#  gem "shoulda-context"
-#  gem	 "shoulda-matchers"
+	gem "shoulda", "= 2.10"
+	gem 'test-unit'
+	if RUBY_VERSION.start_with?("2.1") or RUBY_VERSION.start_with?("2.2") or RUBY_VERSION.start_with?("2.0")
+		gem "jeweler", "= 2.0.1"
+	else
+		gem "juwelier" ,  :platforms => :ruby_23 #jeweler support is being dropped
+	end
 end

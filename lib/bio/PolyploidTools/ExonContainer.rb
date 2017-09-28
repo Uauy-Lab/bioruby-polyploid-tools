@@ -19,6 +19,7 @@ module Bio::PolyploidTools
 
     def gene_models(path)
       @gene_models_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
+      @gene_models_db.index
       @gene_models_path = path
     end
 

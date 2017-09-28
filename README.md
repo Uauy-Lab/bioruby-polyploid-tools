@@ -52,6 +52,43 @@ Usage: polymarker.rb [options]
     -P, --primers_to_order			 If present, saves a file named primers_to_order which contains the KASP tails
 ```
 
+## Input formats
+
+The following formats are used to define the marker sequences:
+
+### Marker list
+
+If the option ```--marker_list FILE``` is used, the SNP and the flanking sequence is included in the file. The format contains 3 columns (the order is important):
+
+* **snp_name** The ID of the marker. Must be unique. 
+* **target chromosome** for the specific primers. Must be in line with the chromosome selection critieria. 
+* **sequence** The sequence flanking the SNP with the SNP highligted on square brackets (```[]```) and the two alleles separated by a forward slash (```/```). 
+
+#### Example:
+
+```
+BS00068396_51,2A,CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTA[T/C]ATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA
+```
+
+### SNP list
+
+If the flanking sequence is unknow, but the position on a reference is available,  the option ```--snp_list``` can be used and the FASTA file with the reference sequence must be provided with the option ```--reference```. This is to allow the use of a different assembly or set of contigs used for the discovery of the SNPs that are different to the reference given in the option ```--contigs```. The format contains the following positional columns: 
+
+* **scaffold** The sacffold where the SNP is. 
+* **reference allele** The base in the reference (may or may not be the same as in the reference file.
+* **position** Position of the SNP. The first base in the scaffold is base 1. 
+* **alternative allele** The base in the alternative allele. 
+* **target chromosome** for the specific primers. Must be in line with the chromosome selection critieria. 
+
+####Example
+
+```
+IWGSC_CSS_1AL_scaff_110,C,519,A,2A
+```
+
+This file format can be used with ```snp_positions_to_polymarker.rb``` to produce the input for the option```--marker_list```.
+
+
 ###Custom reference sequences. 
 By default, the contigs and pseudomolecules from [ensembl](ftp://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz
 ) are used. However, it is possible to use a custom reference. To define the chromosome where each contig belongs the argument ```arm_selection``` is used.  The defailt uses ids like: ```IWGSC_CSS_1AL_scaff_110```, where the third field, separated by underscores is used. A simple way to add costum references is to rename the fasta file to follow that convention. Another way is to use the option ```--arm_selection arm_selection_first_two```, where only the first two characters in each contig is used as identifier, useful when pseudomolecules are named after the chromosomes (ie: ">1A" in the fasta file). 

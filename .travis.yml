@@ -1,0 +1,16 @@
+language: ruby
+sudo: false
+addons:
+  apt:
+    packages:
+    - zlib1g-dev
+    - libncurses5-dev
+    - libtinfo-dev   
+rvm:
+  - 2.0.0
+  - 2.1.10
+  - 2.2.5
+  - 2.3.1
+
+before_install:
+  - export RUBYOPT="-W1"

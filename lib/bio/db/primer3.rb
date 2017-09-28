@@ -419,7 +419,7 @@ module Bio::DB::Primer3
       $stderr.puts "Missing #{method_name}"
       $stderr.puts @properties.inspect
       return "" #if a property is missing, return blank. 
-      #raise NoMethodError.new() 
+      raise NoMethodError.new() 
     end
 
     def find_left_tm(primer)
@@ -481,13 +481,14 @@ module Bio::DB::Primer3
         base_original = snp.original 
         base_snp = snp.snp
       elsif self.orientation == :reverse
-        base_original = reverse_complement_string(snp.original )
-        base_snp = reverse_complement_string(snp.snp)
+        #puts self.inspect
+        base_original =Primer3Record.reverse_complement_string(snp.original )
+        base_snp = Primer3Record.reverse_complement_string(snp.snp)
       else
         raise Primer3Exception.new "#{self.orientation} is not a valid orientation"
       end
 
-      # puts "#{snp.to_s} #{self.orientation} #{tmp_primer[-1] } #{base_original} #{base_snp}"
+      #puts "#{snp.to_s} #{self.orientation} #{tmp_primer[-1] } #{base_original} #{base_snp}"
       if tmp_primer[-1] == base_original
         tmp_primer[-1] = base_snp
       elsif tmp_primer[-1] == base_snp
@@ -503,7 +504,7 @@ module Bio::DB::Primer3
 
       seq = self.sequence_template
       #puts "Left coordinates: #{seq}"
-      seq = reverse_complement_string(seq) if self.orientation != other_orientation
+      seq = Primer3Record.reverse_complement_string(seq) if self.orientation != other_orientation
 
       seq[coordinates[0],coordinates[1]] 
     end
@@ -515,7 +516,7 @@ module Bio::DB::Primer3
 
     def right_primer_delete
       @right_primer = self.sequence_template[right_coordinates[0],right_coordinates[1]] unless @right_primer
-      @right_primer = reverse_complement_string(@right_primer)
+      @right_primer = Primer3Record.reverse_complement_string(@right_primer)
       @right_primer
     end
     

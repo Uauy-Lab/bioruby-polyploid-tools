@@ -43,7 +43,6 @@ arm_selection_functions[:scaffold] = lambda do | contig_name |
 end
 
 def validate_files(o)
-
   [
     o[:path_to_contigs], 
     o[:marker_list], 
@@ -120,7 +119,19 @@ OptionParser.new do |opts|
   end
 
   opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two|scaffold", "Function to decide the chromome arm") do |o|
-    options[:arm_selection] = arm_selection_functions[o.to_sym];
+    tmp_str = o
+    arr = o.split(",")
+    if arr.size == 2
+       options[:arm_selection] = lambda do |contig_name|
+          separator, field = arr
+          field = field.to_i
+          ret = contig_name.split(separator)[field]
+          return ret
+        end
+    else
+      options[:arm_selection] = arm_selection_functions[o.to_sym];
+    end
+
    end
   
   opts.on("-p", "--primer_3_preferences FILE", "file with preferences to be sent to primer3") do |o|
@@ -215,7 +226,7 @@ fasta_reference_db = nil
 if fasta_reference
   fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>fasta_reference})
   fasta_reference_db.load_fai_entries
-  p "Fasta reference: #{fasta_reference}"
+  write_status "Fasta reference: #{fasta_reference}"
 end
 
 #1. Read all the SNP files 
@@ -246,9 +257,9 @@ File.open(test_file) do | f |
         write_status "WARN: Unable to find entry for #{snp.gene}"
       end
     else
-      rise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
+      raise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
     end
-    rise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
+    raise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
 
     snp.genomes_count = options[:genomes_count]
     snp.snp_in = snp_in
@@ -258,9 +269,6 @@ File.open(test_file) do | f |
     else
       $stderr.puts "ERROR: #{snp.gene} doesn't contain a SNP"
     end
-
-#    chromosome = snp.chromosome unless chromosome
-  #  raise Bio::DB::Exonerate::ExonerateException.new "All the snps should come from the same chromosome" if chromosome != snp.chromosome
   end
 end
 
@@ -285,7 +293,7 @@ write_status "Searching markers in genome"
 exo_f = File.open(exonerate_file, "w")
 contigs_f = File.open(temp_contigs, "w") if options[:extract_found_contigs]
 filename=path_to_contigs 
-puts filename
+#puts filename
 target=filename
 
 fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
@@ -299,9 +307,11 @@ Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>mod
       found_contigs.add(aln.target_id)
       entry = fasta_file.index.region_for_entry(aln.target_id)
       raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
-      region = entry.get_full_region
-      seq = fasta_file.fetch_sequence(region)
-      contigs_f.puts(">#{aln.target_id}\n#{seq}") if options[:extract_found_contigs]
+      if options[:extract_found_contigs]
+        region = entry.get_full_region
+        seq = fasta_file.fetch_sequence(region)
+        contigs_f.puts(">#{aln.target_id}\n#{seq}") 
+      end
     end
   end  
 end
@@ -326,8 +336,6 @@ snps.each do |snp|
   snp.flanking_size = container.flanking_size
   snp.variation_free_region = options[:variation_free_region]
   container.add_snp(snp)
-
-
 end
 container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
 
