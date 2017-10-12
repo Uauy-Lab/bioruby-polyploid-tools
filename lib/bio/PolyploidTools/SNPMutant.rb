@@ -7,7 +7,7 @@ module Bio::PolyploidTools
 
   class SNPMutant < SNPSequence
 
-    attr_accessor :library, :contig, :chr
+    attr_accessor :library, :contig, :chr, :parsed_start, :parsed_flanking, :region_size
     #Format: 
     #seqid,library,position,wt_base,mut_base
     #IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T
@@ -19,7 +19,7 @@ module Bio::PolyploidTools
       
       throw SNPSequenceException.new "Need five fields to parse, and got #{arr.size} in #{reg_str}" if arr.size < 5
       
-      snp.contig, snp.library, snp.position, snp.original, snp.snp = reg_str.split(",")
+      snp.contig, snp.library, snp.position, snp.original, snp.snp, parsed_flanking, region_size = reg_str.split(",")
       snp.position = snp.position.to_i
       snp.gene = "EMPTY"
       begin
@@ -40,12 +40,18 @@ module Bio::PolyploidTools
       
       snp.exon_list = Hash.new()
       snp.flanking_size=100
+      snp.region_size = region_size.to_i if region_size
+      snp.flanking_size = parsed_flanking.to_i if parsed_flanking
       snp
     end
     
     def full_sequence=(seq)
       self.template_sequence = seq
-      self.sequence_original = self.to_polymarker_sequence(self.flanking_size)
+#       puts self.inspect
+       puts self.contig
+#       puts self.region_size
+
+      self.sequence_original = self.to_polymarker_sequence(self.flanking_size, total:region_size)
       self.parse_sequence_snp
     end
 

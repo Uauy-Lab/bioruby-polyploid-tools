@@ -61,12 +61,16 @@ module Bio::PolyploidTools
       @variation_free_region = 0
     end
 
-    def to_polymarker_sequence(flanking_size)
+    def to_polymarker_sequence(flanking_size, total:nil)
       out = template_sequence.clone
+      puts "changing: #{position} #{flanking_size} len: #{total}"
       out[position-1]  = "[#{original}/#{snp}]"
       start = position - flanking_size - 1
+      puts "Start: #{start}"
       start = 0 if start < 0
-      total = flanking_size * 2 + 6
+      total = flanking_size * 2 unless total
+      total += 4
+      puts "Total: #{total}"
       out[start , total ]
     end
     

@@ -13,14 +13,12 @@ options[:min_bases] = 200
 options[:split_token] = "-"
 options[:tmp_folder]  = Dir.mktmpdir
 options[:program]  = "blastn"
+options[:random_sample] = 0
 
 OptionParser.new do |opts|
   
   opts.banner = "Usage: filter_blat.rb [options]"
 
-#  opts.on("-p", "--psl FILE", "PSL file") do |o|
-#    options[:blat_file] = o
-#  end
   opts.on("-i", "--identity FLOAT", "Minimum percentage identity") do |o|
     options[:identity] = o.to_f
   end
@@ -42,6 +40,10 @@ OptionParser.new do |opts|
 
   opts.on("-p", "--program blastn|blastp", "The program to use in the alignments. Currntly only supported blastn and blastp") do |o|
     options[:program] = o
+  end
+
+  opts.on("-r", "--random_sample INT", "Number of blast to run and keep. If set, only the number of subsets will be run") do |o|
+    options[:random_sample] = o.to_i
   end
 
 
@@ -97,35 +99,59 @@ b_tmp   = options[:tmp_folder] + "/B.fa"
 d_tmp   = options[:tmp_folder] + "/D.fa"
 out_tmp = options[:tmp_folder] + "/out.blast"
 
+
 puts [
   "group_id" , "query"      , "subject" , 
   "chr_query", "chr_subject", "aln_type",
   "length"   , "pident"    ].join("\t")
+
+count_lines = File.foreach(options[:triads]).inject(0) {|c, line| c+1}
+
+probability =  options[:random_sample] / count_lines.to_f
+probability = 1 if options[:random_sample] == 0
+prng = Random.new
+#puts probability
 
 CSV.foreach(options[:triads], headers:true ) do |row|
    a = row['A']
    b = row['B']
    d = row['D']
    triad = row['group_id']
+
+   save = probability > prng.rand && probability < 1
+   run  = probability == 1 || save 
+   next unless run
+
    seq_a = sequences[a]
    seq_b = sequences[b]
    seq_d = sequences[d]
    File.open(a_tmp, 'w') {|f| f.write(seq_a) } if seq_a
    File.open(b_tmp, 'w') {|f| f.write(seq_b) } if seq_b
    File.open(d_tmp, 'w') {|f| f.write(seq_d) } if seq_d
-  if seq_a and seq_b
+   save_folder = "random_sample/#{triad}"
+   
+   if save
+    FileUtils.mkdir_p save_folder
+    FileUtils.cp(a_tmp, save_folder) if seq_a
+    FileUtils.cp(b_tmp, save_folder) if seq_b
+    FileUtils.cp(d_tmp, save_folder) if seq_d
+   end
+
+   if seq_a and seq_b
       to_print = [triad, a, b , "A","B","A->B"]
       to_print << blast_pair_fast(a_tmp, b_tmp, out_tmp, program:options[:program])
+      FileUtils.cp(out_tmp, "#{save_folder}/A_B.xml") if save
       puts to_print.join("\t")
    end
   if seq_a and seq_d
       to_print = [triad, a, b , "A","D","A->D"]
-      to_print << blast_pair_fast(a_tmp, d_tmp, out_tmp, program:options[:program])
+      to_print << blast_pair_fast(a_tmp, d_tmp, out_tmp, program:options[:program]) if save
       puts to_print.join("\t")
   end
   if seq_b and seq_d
       to_print = [triad, a, b , "B","D","B->D"]
       to_print << blast_pair_fast(b_tmp, d_tmp, out_tmp, program:options[:program])
+      FileUtils.cp(out_tmp, "#{save_folder}/B_D.xml") if save
       puts to_print.join("\t")
   end
 end

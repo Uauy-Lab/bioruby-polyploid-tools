@@ -186,6 +186,7 @@ options[:model] = "est2genome"
 options[:min_identity] = 90
 options[:extract_found_contigs] = false
 options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
+options[:genomes_count] = 3
 
 
 options[:primer_3_preferences] = {
@@ -211,6 +212,10 @@ OptionParser.new do |opts|
   end
   opts.on("-o", "--output DIR", "Directory to write the output") do |o|
     options[:output] = o
+  end
+
+  opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
+    options[:genomes_count] = o.to_i
   end
 
   opts.on("-x", "--extract_found_contigs", "If present, save in a separate file the contigs with matches. Useful to debug.") do |o|
@@ -262,8 +267,10 @@ Bio::FlatFile.auto(sequences) do |ff|
     fields << entry.seq
     
     line = fields.join(",")
-    exons << Bio::PolyploidTools::NoSNPSequence.parse(line)
-
+    snp =  Bio::PolyploidTools::NoSNPSequence.parse(line)
+    snp.genomes_count = options[:genomes_count]
+    exons << snp
+     
   end
 end
 
