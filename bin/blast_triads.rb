@@ -62,11 +62,16 @@ def blast_pair_fast(path_a, path_b, out_path, program: "blastn")
   max_pident = 0.0
   n.each do | iter |
     iter.each do | hit |
+      align_len = 0
+      identity = 0.0
       hit.each do | hsp |
-        if hsp.align_len > max_length
-          max_length = hsp.align_len
-          max_pident = 100 * hsp.identity.to_f / hsp.align_len.to_f
-        end
+        align_len += hsp.align_len
+        identity  += hsp.identity
+      end
+
+      if align_len > max_length
+          max_length = align_len
+          max_pident = 100 * identity / align_len
       end
     end
   end
@@ -145,8 +150,9 @@ CSV.foreach(options[:triads], headers:true ) do |row|
    end
   if seq_a and seq_d
       to_print = [triad, a, b , "A","D","A->D"]
-      to_print << blast_pair_fast(a_tmp, d_tmp, out_tmp, program:options[:program]) if save
+      to_print << blast_pair_fast(a_tmp, d_tmp, out_tmp, program:options[:program]) 
       puts to_print.join("\t")
+      FileUtils.cp(out_tmp, "#{save_folder}/A_D.xml") if save
   end
   if seq_b and seq_d
       to_print = [triad, a, b , "B","D","B->D"]
