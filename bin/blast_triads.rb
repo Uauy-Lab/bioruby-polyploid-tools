@@ -60,22 +60,25 @@ def blast_pair_fast(path_a, path_b, out_path, program: "blastn")
   longest = nil
   max_length = 0
   max_pident = 0.0
+  max_similarity = 0.0
   n.each do | iter |
     iter.each do | hit |
       align_len = 0
       identity = 0.0
+      positives = 0.0
       hit.each do | hsp |
         align_len += hsp.align_len
-        identity  += hsp.identity
+        identity  += hsp.identity  
+        positives += hsp.positive if program == "blastp"
       end
-
       if align_len > max_length
-          max_length = align_len
-          max_pident = 100 * identity / align_len
+        max_length = align_len
+        max_pident = 100 * identity      / align_len
+        max_similarity = 100 * positives / align_len
       end
     end
   end
-  [max_length, max_pident]
+  [max_length, max_pident, max_similarity]
 end
 
 valid_pairs_A_B = Hash.new
@@ -108,7 +111,7 @@ out_tmp = options[:tmp_folder] + "/out.blast"
 puts [
   "group_id" , "query"      , "subject" , 
   "chr_query", "chr_subject", "aln_type",
-  "length"   , "pident"    ].join("\t")
+  "length"   , "pident" , "psimilarity"   ].join("\t")
 
 count_lines = File.foreach(options[:triads]).inject(0) {|c, line| c+1}
 
