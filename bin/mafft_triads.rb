@@ -17,7 +17,7 @@ options[:random_sample] = 0
 
 OptionParser.new do |opts|
   
-  opts.banner = "Usage: filter_blat.rb [options]"
+  opts.banner = "Usage: mafft_triads.rb [options]"
 
   opts.on("-i", "--identity FLOAT", "Minimum percentage identity") do |o|
     options[:identity] = o.to_f
