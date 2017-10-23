@@ -11,7 +11,7 @@ options = {}
 options[:identity] = 50
 options[:min_bases] = 200
 options[:split_token] = "-"
-options[:tmp_folder]  = Dir.mktmpdir
+options[:output_folder]  = "."
 options[:program]  = "blastn"
 options[:random_sample] = 0
 
@@ -42,8 +42,8 @@ OptionParser.new do |opts|
     options[:program] = o
   end
 
-  opts.on("-r", "--random_sample INT", "Number of blast to run and keep. If set, only the number of subsets will be run") do |o|
-    options[:random_sample] = o.to_i
+  opts.on("-o", "--output_folder DIR", "Folder to save the output") do |o|
+    options[:output_folder] = o
   end
 
 
@@ -67,11 +67,12 @@ module Bio::Alignment::EnumerableExtension
     a = Bio::Alignment::SequenceHash.new
     a.set_all_property(get_all_property)
     each_pair do |key, str|
-      a.store(key, str[start, length])
+      seq = ""
+      seq = str[start, length] if str != nil
+      a.store(key, seq)
     end
     a
   end
-
 
   def each_base_alignment
     names = self.keys 
@@ -105,7 +106,7 @@ module Bio::Alignment::EnumerableExtension
     return @len if @len
     names = self.keys 
     @len = 0 
-    @len = self[names[0]].length if names[0]
+    @len = self[names[0]].length if names[0] and self[names[0]] != nil
     @len
   end
 
@@ -133,17 +134,17 @@ module Bio::Alignment::EnumerableExtension
       y = i + 1
       for j in y..x
         case 
-          when (bases[i] == "-" and bases[j] == "-")
-            total += 0
-          when (bases[i] == "-" or bases[j] == "-")
-            total -= 2
-          when bases[i] ==  bases[j]
-            total += 1
-          when  bases[i] !=  bases[j]
-            total -= 1
-          else
-            $stderr.puts "Invalid comparaison! sum_of_pairs(#{bases})"
-          end
+        when (bases[i] == "-" and bases[j] == "-")
+          total += 0
+        when (bases[i] == "-" or bases[j] == "-")
+          total -= 2
+        when bases[i] ==  bases[j]
+          total += 1
+        when  bases[i] !=  bases[j]
+          total -= 1
+        else
+          $stderr.puts "Invalid comparaison! sum_of_pairs(#{bases})"
+        end
       end
     end
     total 
@@ -161,11 +162,31 @@ module Bio::Alignment::EnumerableExtension
     total 
   end
 
+  def window_identities(window_size=100, offset=25)
+    steps = (0..len).step(offset).to_a.map {|a| a + len%offset }.reverse
+    ret = []
+    steps.each_with_index do |e, i|
+      start   = e - window_size
+      tmp_aln = self.cut_alignment start, window_size
+      tmp_arr = [
+        i * offset, 
+        i * offset + window_size,
+        tmp_aln.sum_of_pairs, 
+        tmp_aln.normalized_sum_of_pairs, 
+        tmp_aln.sum_of_identities, 
+        tmp_aln.identity]
+      ret << tmp_arr
+    end
+    ret
+  end
 end
 
 def promoter_alignment(sequences_to_align) 
-  options = ['--maxiterate', '1000', '--ep', '0', '--genafpair', '--quiet']
-  options = ['--maxiterate', '1000', '--localpair', '--quiet']
+  process = true
+  sequences_to_align.each_value { |val| process &= val != nil }
+  return sequences_to_align unless process
+ #options = ['--maxiterate', '1000', '--ep', '0', '--genafpair', '--quiet']
+ options = ['--maxiterate', '1000', '--localpair', '--quiet']
  @mafft = Bio::MAFFT.new( "mafft" , options) unless @mafft 
  report = @mafft.query_align(sequences_to_align)
  report.alignment
@@ -179,26 +200,20 @@ def write_fasta_from_hash(sequences, filename)
   out.close
 end
 
-
-
-
 def get_aln_stats(aln, max_gap: 10)
-  #puts aln.inspect
-  names = aln.keys 
-  
+  names = aln.keys   
   i = 0
-  len = 0 
-  len = aln[names[0]].length if names[0]
+  len = 0  
+  len = aln[names[0]].length if names[0] and aln[names[0]] != nil
   total_alignments = names.size
-  masked_snps = "-" * len
-  
+  masked_snps = "-" * len  
   longest_start = -1
   longest_length = 0
   current_start = -1
   current_length = 0
-  
   current_gap = 0 
-
+  longest_gaps = 0
+  gaps = 0
   while i < len  do
     different = 0
     cov = 0
@@ -207,27 +222,30 @@ def get_aln_stats(aln, max_gap: 10)
         cov += 1 
       end
     end
-
     if cov == total_alignments
       current_start = i if current_length == 0
       current_length += 1 
       current_gap = 0
     else
+      gaps += 1
       current_gap += 1 
     end
 
     if current_length > longest_length
       longest_length = current_length
       longest_start  = current_start
+      longest_gaps = gaps - current_gap
     end
 
     if current_gap > max_gap
       current_length = 0
+      gaps = 0
     end
 
     i += 1
   end
-  [longest_start, longest_length]
+  longest_length += longest_gaps
+  [longest_start, longest_length, len, len - longest_start - longest_length, len - longest_start]
 end
 
 split_token = options[:split_token]
@@ -244,28 +262,39 @@ Bio::FlatFile.open(Bio::FastaFormat, options[:fasta]) do |fasta_file|
 end
 
 $stderr.puts "#Loaded #{sequences.length} genes from #{sequence_count} sequences"
+output_folder = options[:output_folder]
+
+FileUtils.mkdir_p output_folder
+summary_file    = "#{output_folder}/identities.txt" 
+long_table_file = "#{output_folder}/sliding_window_identities.txt"
+
+out = File.open(summary_file, "w")
+long_table = File.open(long_table_file, "w")
 
 i =0 
+
+out.puts ["triad", "longest_start", "longest_length","total_aln_length", "start_from_CDS","end_from_CDS", "sum_of_pairs","norm_sum_of_pairs","sum_of_identities", "identity"].join("\t")
+long_table.puts ["triad", "type", "start_from_CDS", "end_from_cds" , "sum_of_pairs","norm_sum_of_pairs","sum_of_identities", "identity"].join("\t")
 CSV.foreach(options[:triads], headers:true ) do |row|
  a = row['A']
  b = row['B']
  d = row['D']
  triad = row['group_id']
 
- 
  to_align = Bio::Alignment::SequenceHash.new 
  to_align[a] = sequences[a]
  to_align[b] = sequences[b]
  to_align[d] = sequences[d]
 
+
  prom_aln = promoter_alignment to_align
  print_arr = [triad]
  aln_stats = get_aln_stats prom_aln
- puts triad
+ #puts triad
  print_arr << aln_stats
  cent_triad = triad.to_i / 100
 
- cut_seqs = prom_aln.cut_alignment *aln_stats
+ cut_seqs = prom_aln.cut_alignment aln_stats[0], aln_stats[1]
 
  print_arr << cut_seqs.sum_of_pairs
  print_arr << cut_seqs.normalized_sum_of_pairs
@@ -273,8 +302,18 @@ CSV.foreach(options[:triads], headers:true ) do |row|
  print_arr << cut_seqs.sum_of_identities
  print_arr << cut_seqs.identity
  
- puts print_arr.join("\t")
- folder = "prom_aln/#{cent_triad}/"
+ base = [triad, "cut_longest_region"]
+ cut_seqs.window_identities.each do |e|    
+  long_table.puts [base, e].flatten.join("\t")
+ end
+
+ base = [triad, "full_promoter"]
+ prom_aln.window_identities.each do |e|    
+  long_table.puts [base, e].flatten.join("\t")
+ end
+
+ out.puts print_arr.join("\t")
+ folder = "#{output_folder}/prom_aln/#{cent_triad}/"
  FileUtils.mkdir_p folder
  save_prom = "#{folder}/#{triad}.prom.fa"
  write_fasta_from_hash(prom_aln, save_prom)
@@ -283,5 +322,6 @@ CSV.foreach(options[:triads], headers:true ) do |row|
  write_fasta_from_hash(cut_seqs, save_prom)
  i += 1
  break if i > 10
-
 end
+long_table.close
+out.close
