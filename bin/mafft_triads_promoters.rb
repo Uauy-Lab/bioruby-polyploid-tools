@@ -165,7 +165,7 @@ end
 
 def promoter_alignment(sequences_to_align) 
   options = ['--maxiterate', '1000', '--ep', '0', '--genafpair', '--quiet']
- # options = ['--maxiterate', '1000', '--localpair', '--quiet']
+  options = ['--maxiterate', '1000', '--localpair', '--quiet']
  @mafft = Bio::MAFFT.new( "mafft" , options) unless @mafft 
  report = @mafft.query_align(sequences_to_align)
  report.alignment
