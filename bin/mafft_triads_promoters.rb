@@ -74,23 +74,59 @@ module Bio::Alignment::EnumerableExtension
     a
   end
 
-  def each_base_alignment
+  def best_block
+    best_start = 0
+    best_score = 0
+    best_end = 0
+    best_length = 0
+    current_start = 0
+    current_score = 0
+    current_length = 0
+
+    each_base_alignment_with_index do |bases, i|
+      current_start = i if current_length == 0
+      current_length += 1
+      current_score += sum_of_pair bases
+      if current_score > best_score
+        best_score = current_score
+        best_length = current_length
+        best_end = i 
+        best_start = current_start
+      end
+
+      if current_score < 0
+        current_length = 0
+        current_score = 0
+      end
+
+    end
+
+    [best_start, best_length, len - best_start - best_length , len - best_start ]
+  end
+
+  def each_base_alignment_with_index
     names = self.keys 
     total_alignments = names.size  
     i = 0
     while i < len  do
-      yield names.map { | chr| self[chr][i]  }
+      yield names.map { | chr| self[chr][i] } , i
       i += 1
     end
   end
 
-  def sum_of_pairs
-    return @sum_of_pairs if @sum_of_pairs
-    @sum_of_pairs = 0
-    self.each_base_alignment do |bases|
-      @sum_of_pairs += s_o_p bases
+  def each_base_alignment
+    each_base_alignment_with_index do |chr, i|
+      yield chr
     end
-    @sum_of_pairs
+  end
+
+  def sum_of_all_pairs
+    return @sum_of_all_pairs if @sum_of_all_pairs
+    @sum_of_all_pairs = 0
+    self.each_base_alignment do |bases|
+      @sum_of_all_pairs += sum_of_pair bases
+    end
+    @sum_of_all_pairs
   end
 
   def sum_of_identities
@@ -122,12 +158,12 @@ module Bio::Alignment::EnumerableExtension
     sum_of_identities.to_f/max_score
   end
 
-  def normalized_sum_of_pairs
+  def normalized_sum_of_all_pairs
     max_score = len * pairwise_comparaisons
-    sum_of_pairs.to_f/max_score
+    sum_of_all_pairs.to_f/max_score
   end
 
-  def s_o_p(bases)
+  def sum_of_pair(bases)
     x = bases.length - 1
     total  = 0
     for i in 0..x 
@@ -136,6 +172,10 @@ module Bio::Alignment::EnumerableExtension
         case 
         when (bases[i] == "-" and bases[j] == "-")
           total += 0
+        when (bases[i] == "N" and bases[j] == "N")
+          total += 0
+        when (bases[i] == "n" and bases[j] == "n")
+          total += 0
         when (bases[i] == "-" or bases[j] == "-")
           total -= 2
         when bases[i] ==  bases[j]
@@ -143,7 +183,7 @@ module Bio::Alignment::EnumerableExtension
         when  bases[i] !=  bases[j]
           total -= 1
         else
-          $stderr.puts "Invalid comparaison! sum_of_pairs(#{bases})"
+          $stderr.puts "Invalid comparaison! sum_of_all_pairs(#{bases})"
         end
       end
     end
@@ -171,8 +211,8 @@ module Bio::Alignment::EnumerableExtension
       tmp_arr = [
         i * offset, 
         i * offset + window_size,
-        tmp_aln.sum_of_pairs, 
-        tmp_aln.normalized_sum_of_pairs, 
+        tmp_aln.sum_of_all_pairs, 
+        tmp_aln.normalized_sum_of_all_pairs, 
         tmp_aln.sum_of_identities, 
         tmp_aln.identity]
       ret << tmp_arr
@@ -200,7 +240,7 @@ def write_fasta_from_hash(sequences, filename)
   out.close
 end
 
-def get_aln_stats(aln, max_gap: 10)
+def get_longest_aln(aln, max_gap: 10)
   names = aln.keys   
   i = 0
   len = 0  
@@ -236,30 +276,34 @@ def get_aln_stats(aln, max_gap: 10)
       longest_start  = current_start
       longest_gaps = gaps - current_gap
     end
-
     if current_gap > max_gap
       current_length = 0
       gaps = 0
     end
-
     i += 1
   end
   longest_length += longest_gaps
-  [longest_start, longest_length, len, len - longest_start - longest_length, len - longest_start]
+  [longest_start, longest_length, len - longest_start - longest_length, len - longest_start]
 end
 
 split_token = options[:split_token]
 
-sequences = Hash.new
-sequence_count=0
-Bio::FlatFile.open(Bio::FastaFormat, options[:fasta]) do |fasta_file|
-  fasta_file.each do |entry|
-    gene_name = entry.entry_id.split(split_token)[0]  
-    sequences[gene_name] = entry unless sequences[gene_name]
-    sequences[gene_name] = entry if entry.length > sequences[gene_name].length
-    sequence_count += 1
+def read_alignments(fasta_path, split_token)
+  sequences = Hash.new
+  sequence_count=0
+  Bio::FlatFile.open(Bio::FastaFormat, fasta_path) do |fasta_file|
+    fasta_file.each do |entry|
+      #puts entry
+      gene_name = entry.entry_id.split(split_token)[0]  
+      sequences[gene_name] = entry unless sequences[gene_name]
+      sequences[gene_name] = entry if entry.length > sequences[gene_name].length
+      sequence_count += 1
+    end
   end
+  [sequences,sequence_count]
 end
+
+sequences, sequence_count = read_alignments(options[:fasta], split_token)
 
 $stderr.puts "#Loaded #{sequences.length} genes from #{sequence_count} sequences"
 output_folder = options[:output_folder]
@@ -273,38 +317,66 @@ long_table = File.open(long_table_file, "w")
 
 i =0 
 
-out.puts ["triad", "longest_start", "longest_length","total_aln_length", "start_from_CDS","end_from_CDS", "sum_of_pairs","norm_sum_of_pairs","sum_of_identities", "identity"].join("\t")
-long_table.puts ["triad", "type", "start_from_CDS", "end_from_cds" , "sum_of_pairs","norm_sum_of_pairs","sum_of_identities", "identity"].join("\t")
-CSV.foreach(options[:triads], headers:true ) do |row|
+header =  ["triad", "total_aln_length"]
+header << ["longest_start", "longest_length", "longest_start_from_CDS","longest_end_from_CDS", "longest_sum_of_all_pairs","longest_norm_sum_of_all_pairs","longest_sum_of_identities", "longest_identity"]
+header << ["best_start",    "best_length"  ,  "best_start_from_CDS","best_end_from_CDS", "best_sum_of_all_pairs","best_norm_sum_of_all_pairs","best_sum_of_identities", "best_identity"]
+out.puts header.join("\t")
+long_table.puts ["triad", "type", "start_from_CDS", "end_from_cds" , "sum_of_all_pairs","norm_sum_of_all_pairs","sum_of_identities", "identity"].join("\t")
+CSV.foreach( options[:triads], headers:true ) do |row|
  a = row['A']
  b = row['B']
  d = row['D']
  triad = row['group_id']
 
+ cent_triad = triad.to_i / 100
+ folder = "#{output_folder}/prom_aln/#{cent_triad}/"
+ save_prom = "#{folder}/#{triad}.prom.fa"
+ 
  to_align = Bio::Alignment::SequenceHash.new 
  to_align[a] = sequences[a]
  to_align[b] = sequences[b]
  to_align[d] = sequences[d]
 
-
- prom_aln = promoter_alignment to_align
- print_arr = [triad]
- aln_stats = get_aln_stats prom_aln
- #puts triad
+ prom_aln = nil
+ unless File.file? save_prom
+  prom_aln = promoter_alignment to_align 
+ else
+  ff, seqs_cnt = read_alignments save_prom, split_token
+  seqs = Bio::Alignment::SequenceHash.new 
+  prom_aln = Bio::Alignment.new(ff)
+ end
+ print_arr = [triad, prom_aln.len]
+ aln_stats = get_longest_aln prom_aln
  print_arr << aln_stats
- cent_triad = triad.to_i / 100
-
  cut_seqs = prom_aln.cut_alignment aln_stats[0], aln_stats[1]
 
- print_arr << cut_seqs.sum_of_pairs
- print_arr << cut_seqs.normalized_sum_of_pairs
+
+
+ print_arr << cut_seqs.sum_of_all_pairs
+ print_arr << cut_seqs.normalized_sum_of_all_pairs
 
  print_arr << cut_seqs.sum_of_identities
  print_arr << cut_seqs.identity
- 
+
+ best_aln_stats = prom_aln.best_block
+ best_aln_cut = prom_aln.cut_alignment best_aln_stats[0], best_aln_stats[1]
+
+ print_arr << best_aln_stats
+
+ print_arr << best_aln_cut.sum_of_all_pairs
+ print_arr << best_aln_cut.normalized_sum_of_all_pairs
+
+ print_arr << best_aln_cut.sum_of_identities
+ print_arr << best_aln_cut.identity
+
  base = [triad, "cut_longest_region"]
  cut_seqs.window_identities.each do |e|    
-  long_table.puts [base, e].flatten.join("\t")
+   long_table.puts [base, e].flatten.join("\t")
+ end
+
+  base = [triad, "cut_best_region"]
+ best_aln_cut.window_identities.each do |e|    
+   long_table.puts [base, e].flatten.join("\t")
  end
 
  base = [triad, "full_promoter"]
@@ -313,15 +385,19 @@ CSV.foreach(options[:triads], headers:true ) do |row|
  end
 
  out.puts print_arr.join("\t")
- folder = "#{output_folder}/prom_aln/#{cent_triad}/"
- FileUtils.mkdir_p folder
- save_prom = "#{folder}/#{triad}.prom.fa"
- write_fasta_from_hash(prom_aln, save_prom)
 
- save_prom = "#{folder}/#{triad}.prom.cut.fa"
- write_fasta_from_hash(cut_seqs, save_prom)
+ FileUtils.mkdir_p folder
+
+ write_fasta_from_hash(prom_aln, save_prom) unless File.file?(save_prom)
+
+ save_prom_cut = "#{folder}/#{triad}.prom.cut.fa"
+ write_fasta_from_hash(cut_seqs, save_prom_cut)  unless File.file?(save_prom)
+
+ save_prom_cut_best = "#{folder}/#{triad}.prom.cut.best.fa"
+ write_fasta_from_hash(best_aln_cut, save_prom_cut_best)  
+
  i += 1
- break if i > 10
+ #break if i > 10
 end
 long_table.close
 out.close
