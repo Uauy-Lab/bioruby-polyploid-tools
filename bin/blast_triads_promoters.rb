@@ -14,6 +14,8 @@ options[:split_token] = "-"
 options[:tmp_folder]  = Dir.mktmpdir
 options[:program]  = "blastn"
 options[:random_sample] = 0
+options[:cut_promoter_length] = 0
+options[:reverse] = true
 
 OptionParser.new do |opts|
   
@@ -46,7 +48,20 @@ OptionParser.new do |opts|
     options[:random_sample] = o.to_i
   end
 
+  opts.on("-l", "--cut_promoter_length INT", "Bases to consider") do |o|
+    options[:cut_promoter_length] = o.to_i
+  end
 
+  opts.on("-v", "--reverse T|F", "Reverse the input bases") do |o|
+    if o == 'T'
+      options[:reverse] = true
+    elsif o == 'F'
+      options[:reverse] = false
+    else
+      $stderr.puts "Invalid option for reverse (should be T or F)"
+      exit -1
+    end
+  end
 end.parse!
 
 
@@ -84,6 +99,10 @@ sequence_count=0
 Bio::FlatFile.open(Bio::FastaFormat, options[:fasta]) do |fasta_file|
   fasta_file.each do |entry|
     gene_name = entry.entry_id.split(split_token)[0]  
+    seq = entry.naseq
+    seq.reverse_complement! if options[:reverse] 
+    seq = seq[0,options[:cut_promoter_length]] if options[:cut_promoter_length] > 0
+    entry.data = seq
     sequences[gene_name] = entry unless sequences[gene_name]
     sequences[gene_name] = entry if entry.length > sequences[gene_name].length
     sequence_count += 1
@@ -103,7 +122,7 @@ out_tmp = options[:tmp_folder] + "/out.blast"
 puts [
   "group_id" , "query"      , "subject" , 
   "chr_query", "chr_subject", "aln_type",
-  "length"   , "pident"    ].join("\t")
+  "length"   , "pident" , "Ns_query", "Ns_subject", "Ns_total"   ].join("\t")
 
 count_lines = File.foreach(options[:triads]).inject(0) {|c, line| c+1}
 
@@ -111,12 +130,13 @@ probability =  options[:random_sample] / count_lines.to_f
 probability = 1 if options[:random_sample] == 0
 prng = Random.new
 #puts probability
-
+prom_len = options[:cut_promoter_length]
 CSV.foreach(options[:triads], headers:true ) do |row|
    a = row['A']
    b = row['B']
    d = row['D']
-   triad = row['group_id']
+   triad = row['group_id'].to_i
+   triad_folder = triad/100
 
    save = probability > prng.rand && probability < 1
    run  = probability == 1 || save 
@@ -128,31 +148,45 @@ CSV.foreach(options[:triads], headers:true ) do |row|
    File.open(a_tmp, 'w') {|f| f.write(seq_a) } if seq_a
    File.open(b_tmp, 'w') {|f| f.write(seq_b) } if seq_b
    File.open(d_tmp, 'w') {|f| f.write(seq_d) } if seq_d
-   save_folder = "random_sample/#{triad}"
+
+   ns_a = seq_a.seq.count('Nn') if seq_a
+   ns_b = seq_b.seq.count('Nn') if seq_b
+   ns_d = seq_d.seq.count('Nn') if seq_d
+
+   save_folder = "blast_alignments_#{prom_len}/#{triad_folder}/#{triad}"
    
-   if save
+   #if save
     FileUtils.mkdir_p save_folder
     FileUtils.cp(a_tmp, save_folder) if seq_a
     FileUtils.cp(b_tmp, save_folder) if seq_b
     FileUtils.cp(d_tmp, save_folder) if seq_d
-   end
+   #end
 
    if seq_a and seq_b
       to_print = [triad, a, b , "A","B","A->B"]
       to_print << blast_pair_fast(a_tmp, b_tmp, out_tmp, program:options[:program])
-      FileUtils.cp(out_tmp, "#{save_folder}/A_B.xml") if save
+      to_print << ns_a 
+      to_print << ns_b
+      to_print << ns_a + ns_b
+      FileUtils.cp(out_tmp, "#{save_folder}/A_B.xml") #if save
       puts to_print.join("\t")
    end
   if seq_a and seq_d
       to_print = [triad, a, b , "A","D","A->D"]
       to_print << blast_pair_fast(a_tmp, d_tmp, out_tmp, program:options[:program]) 
+      to_print << ns_a 
+      to_print << ns_d
+      to_print << ns_a + ns_d
+      FileUtils.cp(out_tmp, "#{save_folder}/A_D.xml") #if save
       puts to_print.join("\t")
-      FileUtils.cp(out_tmp, "#{save_folder}/A_D.xml") if save
   end
   if seq_b and seq_d
       to_print = [triad, a, b , "B","D","B->D"]
       to_print << blast_pair_fast(b_tmp, d_tmp, out_tmp, program:options[:program])
-      FileUtils.cp(out_tmp, "#{save_folder}/B_D.xml") if save
+      to_print << ns_b
+      to_print << ns_d
+      to_print << ns_b + ns_d
+      FileUtils.cp(out_tmp, "#{save_folder}/B_D.xml") #if save
       puts to_print.join("\t")
   end
 end

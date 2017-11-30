@@ -5,12 +5,13 @@ addons:
     packages:
     - zlib1g-dev
     - libncurses5-dev
-    - libtinfo-dev   
+    - libtinfo-dev 
+    - exonerate  
 rvm:
-  - 2.0.0
   - 2.1.10
   - 2.2.5
-  - 2.3.1
+  - 2.3.5
+  - 2.4.2
 
 before_install:
   - export RUBYOPT="-W1"
