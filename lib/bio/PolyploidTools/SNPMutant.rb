@@ -47,11 +47,7 @@ module Bio::PolyploidTools
     
     def full_sequence=(seq)
       self.template_sequence = seq
-#       puts self.inspect
-       puts self.contig
-#       puts self.region_size
-
-      self.sequence_original = self.to_polymarker_sequence(self.flanking_size, total:region_size)
+      self.sequence_original = self.to_polymarker_sequence(self.flanking_size)
       self.parse_sequence_snp
     end
 

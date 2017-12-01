@@ -69,7 +69,7 @@ module Bio::PolyploidTools
       puts "Start: #{start}"
       start = 0 if start < 0
       total = flanking_size * 2 unless total
-      total += 4
+      total += 5
       puts "Total: #{total}"
       out[start , total ]
     end

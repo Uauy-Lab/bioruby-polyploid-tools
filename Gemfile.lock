@@ -4,7 +4,7 @@ GEM
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
     bio (1.5.1)
-    bio-samtools (2.6.0)
+    bio-samtools (2.6.1)
       bio (>= 1.4.2)
       bio-svgenes (>= 0.4.1)
     bio-svgenes (0.4.1)

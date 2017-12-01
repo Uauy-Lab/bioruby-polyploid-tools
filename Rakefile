@@ -29,8 +29,8 @@ end
   gem.homepage = "http://github.com/tgac/bioruby-polyploid-tools"
   gem.license = "MIT"
   gem.summary = %Q{Tool to work with polyploids, NGS and molecular biology}
-  gem.description = %Q{Repository of tools developed in TGAC and Crop Genetics in JIC to work with polyploid wheat}
-   gem.email = "ricardo.ramirez-gonzalez@tgac.ac.uk"
+  gem.description = %Q{Repository of tools developed at Crop Genetics in JIC to work with polyploid wheat}
+   gem.email = "ricardo.ramirez-gonzalez@jic.ac.uk"
   gem.authors = ["Ricardo H.  Ramirez-Gonzalez"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)

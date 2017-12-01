@@ -33,7 +33,7 @@ class TestPolyploidTools < Test::Unit::TestCase
 
     ref=@data + "/IWGSC_CSS_1AL_scaff_1455974_aln_contigs.fa"
     fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>ref})
-    
+    fasta_reference_db.index
     fasta_reference_db.load_fai_entries 
     
     snp = Bio::PolyploidTools::SNPMutant.parse("IWGSC_CSS_1AL_scaff_1455974,Kronos2281,127,C,T")
@@ -45,8 +45,8 @@ class TestPolyploidTools < Test::Unit::TestCase
     region = fasta_reference_db.index.region_for_entry(snp.contig).get_full_region
     snp.full_sequence = fasta_reference_db.fetch_sequence(region)
 
-    assert_equal(snp.template_sequence, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctcYttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga")
-    assert_equal(snp.sequence_original, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga")
+    assert_equal(snp.template_sequence, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctcYttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaag")
+    assert_equal(snp.sequence_original, "actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaag")
     assert_equal(snp.position, 101)
     assert_equal(snp.original, "C")
     assert_equal(snp.snp, "T")
@@ -67,7 +67,7 @@ class TestPolyploidTools < Test::Unit::TestCase
     assert_equal(127, snp.position, "The position is not parsed: #{snp.position}")
     snp.setTemplateFromFastaFile(fasta_reference_db, flanking_size = 100)
     assert_equal("actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctcYttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga",     snp.template_sequence)
-    assert_equal("actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga", snp.to_polymarker_sequence(100))
+    assert_equal("actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaag", snp.to_polymarker_sequence(100))
     assert_equal(101,snp.position)
     assert_equal("C",snp.original)
     assert_equal("T",snp.snp)
