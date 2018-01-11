@@ -59,18 +59,19 @@ module Bio::PolyploidTools
       @genomes_count = 3 
       @primer_3_min_seq_length = 50
       @variation_free_region = 0
+      @contig = false
     end
 
     def to_polymarker_sequence(flanking_size, total:nil)
       out = template_sequence.clone
-      puts "changing: #{position} #{flanking_size} len: #{total}"
+      #puts "changing: #{position} #{flanking_size} len: #{total}"
       out[position-1]  = "[#{original}/#{snp}]"
       start = position - flanking_size - 1
-      puts "Start: #{start}"
+      #puts "Start: #{start}"
       start = 0 if start < 0
       total = flanking_size * 2 unless total
       total += 5
-      puts "Total: #{total}"
+      #puts "Total: #{total}"
       out[start , total ]
     end
     

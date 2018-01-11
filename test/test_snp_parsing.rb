@@ -6,18 +6,13 @@ path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools
 require path
 require "test/unit"
 
-class TestPolyploidTools < Test::Unit::TestCase
+class TestSNPparsing < Test::Unit::TestCase
 
   #Set up the paths
   def setup
-    @data = File.expand_path(File.dirname(__FILE__) + "/data")
-    
+    @data = File.expand_path(File.dirname(__FILE__) + "/data")    
   end
-  
-  def teardown
-    
-  end
-  
+
   def test_snp_sequence
     snp = Bio::PolyploidTools::SNPSequence.parse("BS00068396_51,2A,CGAAGCGATCCTACTACATTGCGTTCCTTTCCCACTCCCAGGTCCCCCTA[T/C]ATGCAGGATCTTGATTAGTCGTGTGAACAACTGAAATTTGAGCGCCACAA")
     assert(snp.gene == "BS00068396_51" )

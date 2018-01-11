@@ -4,7 +4,7 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 
 gem "bio", ">= 1.5.0"
-gem "bio-samtools", ">= 2.5.1"
+gem "bio-samtools", ">= 2.6.2"
 #gem "rake"
 
 gem "systemu", ">=2.5.2"

@@ -6,19 +6,15 @@ path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools
 require path
 require "test/unit"
 
-class TestPolyploidTools < Test::Unit::TestCase
+class TestExonerate < Test::Unit::TestCase
   Query=File.dirname(__FILE__) + '/data/'+"BS00068396_51.fa"
   Target=File.dirname(__FILE__) + '/data/'+"BS00068396_51_contigs.fa"
   #Set up the paths
   def setup
     File.expand_path(File.dirname(__FILE__) + '/data/')
-    
-  
   end
   
-  def teardown
-    
-  end
+  
   
   def test_simple_align_array
     alignments = Bio::DB::Exonerate.align({:query=>Query, :target=>Target})

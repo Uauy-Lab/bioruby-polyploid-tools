@@ -1,11 +1,16 @@
+
 $: << File.expand_path(File.dirname(__FILE__) + '/../lib')
 $: << File.expand_path('.')
 path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
 
+tmp_verb = $VERBOSE
+$VERBOSE=nil
 #puts path
 require path
 require 'bio-samtools'
 require "test/unit"
+$VERBOSE=tmp_verb
+
 
 class TestPolyploidTools < Test::Unit::TestCase
 
@@ -40,7 +45,7 @@ class TestPolyploidTools < Test::Unit::TestCase
     reg="gnl|UG|Ta#S22380157"
     region = @fasta_db.index.region_for_entry(reg).to_region
     min_cov=20
-    puts region.to_s
+    #puts region.to_s
     
     #puts @bam_a.methods
     ref_seq=@fasta_db.fetch_sequence(region)
@@ -56,10 +61,10 @@ class TestPolyploidTools < Test::Unit::TestCase
     called_2 = reg_b.called
     
     snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
-    block_size = 1000
-    snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
-    snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
-    snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
+    #block_size = 1000
+    #snps_per_1k_1   = (block_size * snps_1.to_f   ) / region.size
+    #snps_per_1k_2   = (block_size * snps_2.to_f   ) / region.size
+    #snps_per_1k_tot = (block_size * snps_tot.to_f ) / region.size
         
     snps_tot = Bio::Sequence.snps_between(cons_1, cons_2)
     snps_to_ref = Bio::Sequence.snps_between(cons_1, ref_seq)

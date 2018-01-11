@@ -114,6 +114,7 @@ module Bio::BFRTools
       self.entry = reg.entry
       self.start = reg.start
       self.end   = reg.end
+      @BFRs = nil
       opts[:region] = reg
       @container = opts[:container]
 
