@@ -7,8 +7,8 @@ require path
 require "test/unit"
 
 class TestExonerate < Test::Unit::TestCase
-  Query=File.dirname(__FILE__) + '/data/'+"BS00068396_51.fa"
-  Target=File.dirname(__FILE__) + '/data/'+"BS00068396_51_contigs.fa"
+  Query  = File.dirname(__FILE__) + '/data/'+"BS00068396_51.fa"
+  Target = File.dirname(__FILE__) + '/data/'+"BS00068396_51_contigs.fa"
   #Set up the paths
   def setup
     File.expand_path(File.dirname(__FILE__) + '/data/')

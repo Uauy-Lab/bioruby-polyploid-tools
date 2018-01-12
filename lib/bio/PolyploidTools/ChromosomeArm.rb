@@ -22,6 +22,7 @@ module Bio::PolyploidTools
      # puts entry
       @fasta_db.fetch_sequence(entry.get_full_region)
     end
+
     #Loads all the chromosome arms in a folder. 
     #The current version requires that all the references end with .fa, and start with XXX_*.fa
     #Where XXX is the chromosome name
@@ -29,16 +30,11 @@ module Bio::PolyploidTools
       chromosomeArms = Hash.new
       
       Dir.foreach(path_to_contigs) do |filename |
-        
         if  File.fnmatch("*.fa", filename)
           
           parsed = /^(?<arm>\d\w+)/.match(filename)
-         
           target="#{path_to_contigs}/#{filename}"
-          
-         
-         
-         # fasta_file = Bio::DB::Fasta::FastaFile.new(target)
+          #fasta_file = Bio::DB::Fasta::FastaFile.new(target)
           #fasta_file.load_fai_entries
           arm = ChromosomeArm.new(parsed[:arm], target)
           chromosomeArms[arm.name] = arm

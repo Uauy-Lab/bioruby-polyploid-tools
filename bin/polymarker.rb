@@ -68,6 +68,9 @@ options[:genomes_count] = 3
 options[:min_identity] = 90
 options[:scoring] = :genome_specific
 
+options[:aligner] = :exonerate
+
+
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -117,7 +120,7 @@ OptionParser.new do |opts|
   opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
      options[:model] = o
   end
-
+  
   opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two|scaffold", "Function to decide the chromome arm") do |o|
     tmp_str = o
     arr = o.split(",")
@@ -151,13 +154,14 @@ OptionParser.new do |opts|
     options[:primers_to_order] = true
   end
 
-  opts.on("-H", "--het_dels", "If present, change the socring to give priority to: semi-specific, specific, non-specific")  do
+  opts.on("-H", "--het_dels", "If present, change the scoring to give priority to: semi-specific, specific, non-specific")  do
     options[:scoring] = :het_dels
   end
 
-
-
-  
+  opts.on("-A", "--aligner exonerate|blast", "Select the aligner to use. Default: exonerate") do |o|
+    raise "Invalid aligner" unless o == "exonerate" or o == "blast" 
+    options[:aligner] = o.to_sym
+  end
 end.parse!
 
 

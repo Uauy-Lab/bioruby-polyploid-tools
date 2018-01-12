@@ -170,9 +170,9 @@ module Bio::DB::Exonerate
       end
 
       @vulgar_block = Array.new
-      # p "VULGAR #{vulgar_str}"
+      #p "VULGAR #{vulgar_str}"
       vulgar_str.split(/\s/).each_slice(3) do | block |
-        #    p block
+        #p block
         vulgar = Vulgar.new(block[0].to_sym, block[1].to_i, block[2].to_i, tarcurrent, target_multiply, query_current, query_multiply, self)
         query_current = vulgar.query_end
         tarcurrent = vulgar.target_end
