@@ -67,7 +67,7 @@ options[:extract_found_contigs] = false
 options[:genomes_count] = 3
 options[:min_identity] = 90
 options[:scoring] = :genome_specific
-
+options[:database]  = false
 options[:aligner] = :exonerate
 
 
@@ -120,7 +120,7 @@ OptionParser.new do |opts|
   opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
      options[:model] = o
   end
-  
+
   opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two|scaffold", "Function to decide the chromome arm") do |o|
     tmp_str = o
     arr = o.split(",")
@@ -162,10 +162,17 @@ OptionParser.new do |opts|
     raise "Invalid aligner" unless o == "exonerate" or o == "blast" 
     options[:aligner] = o.to_sym
   end
+
+  opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
+    options[:database] = o
+  end
 end.parse!
 
 
 validate_files(options)
+
+ options[:database] = File.basename(options[:path_to_contigs],File.extname(options[:path_to_contigs])) unless  options[:database] 
+
 
 if options[:primer_3_preferences][:primer_product_size_range]
   range = options[:primer_3_preferences][:primer_product_size_range]
@@ -304,7 +311,9 @@ fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
 fasta_file.load_fai_entries
 
 found_contigs = Set.new
-Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
+
+
+def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
   if aln.identity > min_identity
     exo_f.puts aln.line
     unless found_contigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
@@ -318,7 +327,20 @@ Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>mod
       end
     end
   end  
+
 end
+
+Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
+  do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
+end if options[:aligner] == :blast
+
+Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
+  do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
+end if options[:aligner] == :exonerate
+ 
+exo_f.close() 
+
+
  
 exo_f.close() 
 contigs_f.close() if options[:extract_found_contigs]
@@ -335,6 +357,7 @@ container.gene_models(temp_fasta_query)
 container.chromosomes(target)
 container.add_parental({:name=>snp_in})
 container.add_parental({:name=>original_name})
+
 snps.each do |snp|
   snp.container = container
   snp.flanking_size = container.flanking_size
@@ -357,7 +380,6 @@ added_exons = container.print_primer_3_exons(file, nil, snp_in)
 file.close
 
 Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output}) if added_exons > 0
-
 
 #5. Pick the best primer and make the primer3 output
 write_status "Selecting best primers"
