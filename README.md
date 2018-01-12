@@ -108,6 +108,13 @@ end
 
 The function should return a 2 character string, when the first is the chromosome number and the second the chromosome group. The symbol in the hash is the name to be used in the argument ```--arm_selection```.  If you want your parser to be added to the distribution, feel free to fork and make a pull request.  
 
+##Using blast
+
+To use blast instead of exonerate, use the following command:
+
+```
+./bin/polymarker.rb --contigs test/data/BS00068396_51_contigs.fa --marker_list test/data/BS00068396_51_for_polymarker.fa  --aligner blast  -a arm_selection_first_two
+```
 
 
 ##Release Notes
