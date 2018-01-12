@@ -27,7 +27,8 @@ class TestBlast < Test::Unit::TestCase
 
     lines.each_with_index do |line , i|
       tmp =  Bio::DB::Blast.to_sugar(line)
-      assert(tmp==expected[i])
+      assert_equal(tmp, expected[i], "Error in line #{i} of the cigar")
+     
     end
     
   end
