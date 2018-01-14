@@ -127,7 +127,9 @@ module Bio::PolyploidTools
       @snp_map.each do | gene, snp_array|
         snp_array.each do |snp|
           #file.puts snp.primer_fasta_string 
-       
+          #puts "In print_fast_np_exones"
+          #puts snp.inspect
+
           begin 
             file.puts snp.aligned_sequences_fasta
           rescue Exception=>e

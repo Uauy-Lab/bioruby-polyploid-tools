@@ -14,6 +14,7 @@ arm_selection_functions = Hash.new;
 
 
 arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
+  contig_name.gsub!(/chr/,"")
   ret = contig_name[0,2]       
   return ret
 end
@@ -330,7 +331,7 @@ def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
 
 end
 
-Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
+Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>options[:database], :model=>model}) do |aln|
   do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
 end if options[:aligner] == :blast
 

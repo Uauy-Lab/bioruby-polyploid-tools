@@ -100,7 +100,7 @@ module Bio::DB::Blast
 			end
 			return alns unless block_given?
 		else
-			raise ExonerateException.new(), "Error running exonerate. Command line was '#{cmdline}'\nExonerate STDERR was:\n#{stderr}"
+			raise BlasteException.new(), "Error running exonerate. Command line was '#{cmdline}'\n Blast STDERR was:\n#{stderr}"
 		end
 	end	
 
