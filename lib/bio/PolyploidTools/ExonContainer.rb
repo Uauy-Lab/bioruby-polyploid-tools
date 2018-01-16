@@ -26,7 +26,12 @@ module Bio::PolyploidTools
     #Returns the sequence for a region in the gene models (exon)
     def gene_model_sequence(region)
       #puts "Region: "
-      #puts region
+      #puts region.inspect
+      target_reg = @gene_models_db.index.region_for_entry(region.entry)
+      #puts target_reg.inspect
+      region.end = target_reg.length if region.end > target_reg.length
+      #entries[region.entry]
+
       seq=@gene_models_db.fetch_sequence(region)
       #puts "sequence: "
       #This is a patch that we need to fix in biosamtools: 
