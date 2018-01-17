@@ -172,7 +172,7 @@ end.parse!
 
 validate_files(options)
 
- options[:database] = File.basename(options[:path_to_contigs],File.extname(options[:path_to_contigs])) unless  options[:database] 
+ options[:database] = options[:path_to_contigs] unless  options[:database] 
 
 
 if options[:primer_3_preferences][:primer_product_size_range]
