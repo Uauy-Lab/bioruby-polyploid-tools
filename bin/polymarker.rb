@@ -12,6 +12,11 @@ require path
 
 arm_selection_functions = Hash.new;
 
+arm_selection_functions[:arm_selection_nrgenes] = lambda do | contig_name |
+#example format: chr2A
+  ret = contig_name[3,2]
+  return ret
+end
 
 arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
   contig_name.gsub!(/chr/,"")
