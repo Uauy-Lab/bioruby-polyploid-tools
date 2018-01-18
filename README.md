@@ -19,7 +19,7 @@ You need to have in your ```$PATH``` the following programs:
 
 The code was originally developed on ruby 2.1.0, but it should work on 1.9.3 and above. However, it is only actively tested in currently supported ruby versions: 
   
-  *2.1.10
+  * 2.1.10
   * 2.2.5
   * 2.3.5
   * 2.4.2
