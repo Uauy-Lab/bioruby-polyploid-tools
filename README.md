@@ -1,10 +1,12 @@
-#bio-polyploid-tools
+# bio-polyploid-tools
 
-##Introduction
+## Introduction
+
 This tools are designed to deal with polyploid wheat. The first tool is to design KASP primers, making them as specific as possible. 
 
 
-##Installation
+## Installation
+
 ```sh
 gem install bio-polyploid-tools
 ```
@@ -13,10 +15,17 @@ You need to have in your ```$PATH``` the following programs:
 * [MAFFT](http://mafft.cbrc.jp/alignment/software/)
 * [primer3](http://primer3.sourceforge.net/releases.php)
 * [exonerate](http://www.ebi.ac.uk/~guy/exonerate/) 
+* [blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE%3DBlastDocs&DOC_TYPE%3DDownload)
 
-The code has been developed on ruby 2.1.0, but it should work on 1.9.3 and above. 
+The code was originally developed on ruby 2.1.0, but it should work on 1.9.3 and above. However, it is only actively tested in currently supported ruby versions: 
+  
+  *2.1.10
+  * 2.2.5
+  * 2.3.5
+  * 2.4.2
 
-#PolyMarker
+
+# PolyMarker
 
 To run poolymerker with the CSS wheat contigs, you need to unzip the reference file from  [ensembl](http://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz).
 
@@ -80,7 +89,7 @@ If the flanking sequence is unknow, but the position on a reference is available
 * **alternative allele** The base in the alternative allele. 
 * **target chromosome** for the specific primers. Must be in line with the chromosome selection critieria. 
 
-####Example
+#### Example
 
 ```
 IWGSC_CSS_1AL_scaff_110,C,519,A,2A
@@ -89,7 +98,8 @@ IWGSC_CSS_1AL_scaff_110,C,519,A,2A
 This file format can be used with ```snp_positions_to_polymarker.rb``` to produce the input for the option```--marker_list```.
 
 
-###Custom reference sequences. 
+### Custom reference sequences. 
+
 By default, the contigs and pseudomolecules from [ensembl](ftp://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz
 ) are used. However, it is possible to use a custom reference. To define the chromosome where each contig belongs the argument ```arm_selection``` is used.  The defailt uses ids like: ```IWGSC_CSS_1AL_scaff_110```, where the third field, separated by underscores is used. A simple way to add costum references is to rename the fasta file to follow that convention. Another way is to use the option ```--arm_selection arm_selection_first_two```, where only the first two characters in each contig is used as identifier, useful when pseudomolecules are named after the chromosomes (ie: ">1A" in the fasta file). 
 
@@ -117,33 +127,38 @@ To use blast instead of exonerate, use the following command:
 ```
 
 
-##Release Notes
+## Release Notes
 
-###0.7.3
+### 0.8
+
+* FEATURE: ```polymarker.rb``` added the flag ```--aligner blast|exonerate ``` which lets you pick between ```blast``` or ```exonerate``` as the aligner. For blast the default is to have the database with the same name as the ```--contigs``` file. However, it is possible to use a different name vua the option ```--database```.
+
+### 0.7.3
+
 * FEATURE: ```polymarker.rb``` Added to the flag ```--arm_selection``` the option ```scaffold```, which now supports a scaffold specific primer.
 * FEATURE: ```snp_position_to_polymarker``` Added the option ```--mutant_list```  to prepare files for PolyMarker from files with the following columns ```ID,Allele_1,position,Allele_1,target_chromosome```. 
 
-###0.7.2
+### 0.7.2
+
 * FEATURE: Added a flag ```min_identity``` to set the minimum identity to consider a hit. The default is 90
 
-###0.7.1
+### 0.7.1
 * BUGFIX: Now the parser for ```arm_selection_embl``` works with the mixture of contigs and pseudomolecules
 *  DOC: Added documentation on how to use custom references.  
 
-###0.7.0
+### 0.7.0
 * Added flag ```genomes_count``` for number of genomes, to be used on tetraploids, etc. 
 
-###0.6.1
+### 0.6.1
 
 
 * polymarker.rb now validates that all the files exist. 
 * BUGFIX: A reference was required even when it was not used to generate contigs. 
 
-#Notes
+# Notes
 
 
-* If the SNP is in a gap in the alignment to the chromosomes, it is ignored. 
-
+* BUG: If the SNP is in a gap in the alignment to the chromosomes, it is ignored. 
 * BUG: Blocks with NNNs are picked and treated as semi-specific. 
 * BUG: If the name of the reference have space, the ID is not chopped. ">gene_1 (G12A)" shouls be treated as ">gene_1". 
 * TODO: Add a parameter file to configure the alignments. 
