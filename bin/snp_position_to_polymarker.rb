@@ -71,16 +71,26 @@ File.open(test_file) do | f |
          snp = Bio::PolyploidTools::SNPMutant.parse(line)
          entry = fasta_reference_db.index.region_for_entry(snp.contig)
       end
-    	
+    	#puts line
     	if entry
        		region = entry.get_full_region
-       		if region != lastRegion
-             lastTemplate = fasta_reference_db.fetch_sequence(region)
-          end
-          snp.full_sequence = lastTemplate
+          snp_name = snp.snp_id_in_seq
+
+       		#if region != lastRegion
+          #  lastTemplate = fasta_reference_db.fetch_sequence(region)
+          #end
+          start, total, new_position = snp.to_polymarker_coordinates(options[:flanking_size])
+          region.start = start 
+          region.end = start + total
+          #puts region
+          local_template = fasta_reference_db.fetch_sequence(region)
+
+          snp.position = new_position
+
+          snp.template_sequence = local_template
           lastRegion = region
 
-       		out.puts "#{snp.gene}_#{snp.snp_id_in_seq},#{snp.chromosome},#{snp.sequence_original}"
+       		out.puts "#{snp.gene}_#{snp_name},#{snp.chromosome},#{snp.to_polymarker_sequence(options[:flanking_size])}"
     	else
     	   $stderr.puts "ERROR: Unable to find entry for #{snp.gene}"
     	end

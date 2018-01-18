@@ -62,6 +62,15 @@ module Bio::PolyploidTools
       @contig = false
     end
 
+    def to_polymarker_coordinates(flanking_size, total:nil)
+      start = position - flanking_size + 1
+      start = 0 if start < 0
+      total = flanking_size * 2 unless total
+      total += 1
+      new_position = position - start + 2
+      [start , total, new_position ]
+    end
+
     def to_polymarker_sequence(flanking_size, total:nil)
       out = template_sequence.clone
       #puts "changing: #{position} #{flanking_size} len: #{total}"
