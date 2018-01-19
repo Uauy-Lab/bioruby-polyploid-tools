@@ -202,12 +202,16 @@ module Bio::PolyploidTools
     end
 
     def primer_region(target_chromosome, parental )
+  
       parental = aligned_sequences[parental].downcase
+      names = aligned_sequences.keys
+      target_chromosome = get_target_sequence(names, target_chromosome)
+  
       chromosome_seq = aligned_sequences[target_chromosome]
       chromosome_seq = "-" * parental.size unless chromosome_seq
       chromosome_seq = chromosome_seq.downcase
       mask = mask_aligned_chromosomal_snp(target_chromosome)
-      #puts "'#{mask}'"
+
 
       pr = PrimerRegion.new
       position_in_region = 0
