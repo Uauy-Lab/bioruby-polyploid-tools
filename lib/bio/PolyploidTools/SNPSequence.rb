@@ -29,7 +29,7 @@ module Bio::PolyploidTools
       #snp.snp.upcase!  
       snp.chromosome. strip!
       snp.parse_sequence_snp
-      snp.exon_list = Hash.new()
+  
       snp
     end
     

@@ -113,6 +113,8 @@ module Bio::DB::Primer3
       right_start = 0
       right_end = 0
       total_columns_before_messages=17
+      #puts "Values in primer3"
+      #puts snp_from.inspect
       @values = Array.new
       #@values << "#{gene},,#{template_length},"
       @values << gene
@@ -763,7 +765,7 @@ module Bio::DB::Primer3
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
       snp.snp_from = snp_in
-      snp.regions = snp_in.exon_list.values.collect { |x| x.target_region.to_s }
+      snp.regions = snp_in.exon_list.values.collect { |x|  x.collect {|y| y.target_region.to_s }}
       @snp_hash[snp.to_s] = snp
       snp
     end

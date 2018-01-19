@@ -16,6 +16,8 @@ module Bio::PolyploidTools
     attr_accessor :chromosome
     attr_accessor :variation_free_region
 
+
+
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
     #A_comp0_c0_seq1,C,519,A,2A
@@ -30,7 +32,7 @@ module Bio::PolyploidTools
       snp.snp.upcase!
       snp.snp.strip!  
       snp.chromosome.strip!
-      snp.exon_list = Hash.new()
+   
       snp.use_reference = false
       snp
     end
@@ -60,6 +62,7 @@ module Bio::PolyploidTools
       @primer_3_min_seq_length = 50
       @variation_free_region = 0
       @contig = false
+      @exon_list = Hash.new {|hsh, key| hsh[key] = [] }
     end
 
     def to_polymarker_coordinates(flanking_size, total:nil)
@@ -112,8 +115,7 @@ module Bio::PolyploidTools
       end
 
     def add_exon(exon, arm)
-      @exon_list[arm] = exon unless @exon_list[arm]
-      @exon_list[arm] = exon if exon.record.score > @exon_list[arm].record.score
+      exon_list[arm] << exon    
     end
 
     def covered_region
@@ -124,28 +126,28 @@ module Bio::PolyploidTools
          reg.orientation = :forward
          reg.start = self.position - self.flanking_size
          reg.end = self.position + self.flanking_size
-         
          reg.start = 1 if reg.start < 1
-         
          return reg
       end
       
       min = @position
       max = @position
-     # puts "Calculating covered region for #{self.inspect}"
-    #  puts "#{@exon_list.inspect}"
-      #raise SNPException.new "Exons haven't been loaded for #{self.to_s}" if @exon_list.size == 0
+      # puts "Calculating covered region for #{self.inspect}"
+      # puts "#{@exon_list.inspect}"
+      # raise SNPException.new "Exons haven't been loaded for #{self.to_s}" if @exon_list.size == 0
       if @exon_list.size == 0
         min = self.position - self.flanking_size
         min = 1 if min < 1
         max =  self.position + self.flanking_size
       end
-      @exon_list.each do | chromosome, exon |
-       # puts exon.inspect
-        reg = exon.query_region
-        min = reg.start if reg.start < min
-        max = reg.end if reg.end > max
+      @exon_list.each do | chromosome, exon_arr |
+        exon_arr.each do | exon |
+          reg = exon.query_region
+          min = reg.start if reg.start < min
+          max = reg.end if reg.end > max
+        end
       end
+
       reg = Bio::DB::Fasta::Region.new()
       reg.entry = gene
       reg.orientation = :forward
@@ -176,24 +178,6 @@ module Bio::PolyploidTools
     def padded_position (pos)
       pos + left_padding
     end
-
-    def exon_fasta_string
-      gene_region = self.covered_region
-      local_pos_in_gene = self.local_position
-      ret_str = ""
-      container.parents.each  do |name, bam|
-        ret_str << ">#{gene_region.entry}-#{self.position}_#{name} Overlapping_exons:#{gene_region.to_s} localSNPpo:#{local_pos_in_gene+1}\n" 
-        to_print = parental_sequences[name]
-        ret_str << to_print << "\n"
-      end
-      self.exon_sequences.each do | chromosome, exon_seq | 
-        ret_str << ">#{chromosome}\n#{exon_seq}\n"
-      end
-      mask = masked_chromosomal_snps("1BS", flanking_size)
-      ret_str << ">Mask\n#{mask}\n"
-      ret_str
-    end
-
 
     def primer_fasta_string
       gene_region = self.covered_region
@@ -300,8 +284,9 @@ module Bio::PolyploidTools
 
       end
 
-
-      str = "SEQUENCE_ID=#{opts[:name]} #{orientation}\n"
+      #puts "__"
+      #puts self.inspect
+      str = "SEQUENCE_ID=#{opts[:name]} #{orientation} \n"
       str << "SEQUENCE_FORCE_LEFT_END=#{left}\n" unless  opts[:extra_f]
       str << "SEQUENCE_FORCE_RIGHT_END=#{right}\n" if opts[:right_pos]
       str << extra if extra
@@ -335,10 +320,10 @@ module Bio::PolyploidTools
       primer_3_propertes = Array.new
 
       seq_original = String.new(pr.sequence)
-      puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s 
+      #puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s 
       return primer_3_propertes if seq_original.size < primer_3_min_seq_length
       #puts self.inspect
-      puts pr.snp_pos.to_s << "(" << seq_original.length.to_s << ")"
+      #puts pr.snp_pos.to_s << "(" << seq_original.length.to_s << ")"
       
       seq_original[pr.snp_pos] = self.original
       seq_original_reverse = reverse_complement_string(seq_original)
@@ -441,11 +426,12 @@ module Bio::PolyploidTools
         
         seq[local_pos_in_gene] = self.snp if name == self.snp_in    
         @parental_sequences [name] = seq
-        puts name
-        puts seq
       end
       @parental_sequences
     end
+
+
+
 
     def surrounding_parental_sequences
       return @surrounding_parental_sequences if @surrounding_parental_sequences
@@ -459,11 +445,15 @@ module Bio::PolyploidTools
           seq =  bam.consensus_with_ambiguities({:region=>gene_region}).to_s
         else
           seq = container.gene_model_sequence(gene_region)
-           
-           unless name == self.snp_in
-              #puts "Modifing original: #{name} #{seq}"  
-              seq[local_pos_in_gene] = self.original 
-            end
+          #puts "#{name} #{self.snp_in}"
+          #puts "Modifing original: #{name}\n#{seq}"  
+          unless name == self.snp_in
+
+            seq[local_pos_in_gene] = self.original 
+          else
+            seq[local_pos_in_gene] = self.snp 
+          end
+          #puts "#{seq}"  
         end
         seq[local_pos_in_gene] = seq[local_pos_in_gene].upcase
         seq[local_pos_in_gene] = self.snp if name == self.snp_in  
@@ -531,71 +521,99 @@ module Bio::PolyploidTools
       ret_str 
     end
 
+
+    def get_snp_position_after_trim
+      local_pos_in_gene = self.local_position
+      ideal_min = self.local_position - flanking_size 
+      ideal_max = self.local_position + flanking_size
+      left_pad = 0
+      if ideal_min < 0
+        left_pad = ideal_min * -1
+        ideal_min = 0 
+      end
+      local_pos_in_gene - ideal_min
+    end
+
     def aligned_snp_position
       return @aligned_snp_position if @aligned_snp_position
+      #puts self.inspect
       pos = -1
       parental_strings = Array.new
       parental_sequences.keys.each do | par |
-        
         parental_strings << aligned_sequences[par]
-      end
-      template_sequence = nil
-      aligned_sequences.keys.each do |temp |
-        template_sequence = aligned_sequences[ temp ] if  aligned_sequences[ temp ][0] != "-"
       end
       $stderr.puts "WARN: #{self.to_s} #{parental_sequences.keys} is not of size 2 (#{parental_strings.size})" if parental_strings.size != 2
 
+      local_pos_in_parental = get_snp_position_after_trim
       i = 0
-      differences = 0
-      local_pos_in_gene = flanking_size
-      local_pos = 0
-      started = false
-#TODO: Validate the cases when the alignment has padding on the left on all the chromosomes
-      #unless parental_strings[0] 
-        #puts "parental hash: #{parental_sequences}"
-        #puts "Aligned sequences: #{aligned_sequences.to_fasta}"
-       # puts "parental_strings: #{parental_strings.to_s}"
-      #end
       while i < parental_strings[0].size  do
-        if local_pos_in_gene == local_pos
+        if local_pos_in_parental == 0
           pos = i
           if parental_strings[0][i] == parental_strings[1][i]
             $stderr.puts "WARN: #{self.to_s} doesn't have a SNP in the marked place (#{i})! \n#{parental_strings[0]}\n#{parental_strings[1]}"
           end 
-    
         end
-
-        started = true if template_sequence[i] != "-" 
-        if started == false or template_sequence[i] != "-" 
-          local_pos += 1
-        end
+      
+        local_pos_in_parental -= 1 if parental_strings[0][i] != "-"
         i += 1
       end
       @aligned_snp_position = pos
       return pos
     end
 
+    def get_target_sequence(names, chromosome)
+      
+      best = chromosome
+      best_score = 0
+      names.each do |e|  
+        arr = e.split("_")
+        if arr.length == 3
+          score = arr[2].to_f
+          if score >best_score
+            best_score = score 
+            best = e
+          end
+        end
+      end
+      best
+    end
+
+    
+
     def mask_aligned_chromosomal_snp(chromosome)
-      names = exon_sequences.keys
+      names = aligned_sequences.keys
       parentals =  parental_sequences.keys
 
+      position_after_trim = get_snp_position_after_trim
+
+      #puts "mask_aligned_chromosomal_snp"
+      #puts names
+      #puts parentals
+      #puts "__"
+      names = names - parentals
+      #puts names
       local_pos_in_gene = aligned_snp_position
-      masked_snps = aligned_sequences[chromosome].downcase if aligned_sequences[chromosome]
-      masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[chromosome]
+      #puts "mask_aligned_chromosomal_snp(#{chromosome})"
+      #puts aligned_sequences.keys
+      best_target = get_target_sequence(names, chromosome)
+      masked_snps = aligned_sequences[best_target].downcase if aligned_sequences[best_target]
+      masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[best_target]
       #TODO: Make this chromosome specific, even when we have more than one alignment going to the region we want.
       i = 0
-      while i < masked_snps.size
+      for  i in 0..masked_snps.size-1
+        #puts i
         different = 0
         cov = 0
         from_group = 0
         nCount = 0
         names.each do | chr |
           if aligned_sequences[chr] and aligned_sequences[chr][i]  != "-"
+            #puts aligned_sequences[chr][i]
             cov += 1 
             nCount += 1 if aligned_sequences[chr][i] == 'N' or  aligned_sequences[chr][i] == 'n' # maybe fix this to use ambiguity codes instead. 
             from_group += 1 if chr[0] == chromosome_group
             #puts "Comparing #{chromosome_group} and #{chr[0]} as chromosomes"
-            if chr != chromosome 
+            if chr != best_target 
               $stderr.puts "WARN: No base for #{masked_snps} : ##{i}" unless masked_snps[i].upcase
               $stderr.puts "WARN: No base for #{aligned_sequences[chr]} : ##{i}" unless masked_snps[i].upcase
               different += 1  if masked_snps[i].upcase != aligned_sequences[chr][i].upcase 
@@ -610,9 +628,11 @@ module Bio::PolyploidTools
        # puts "Diferences: #{different} to expected: #{ expected_snps } [#{i}] Genome count (#{from_group} == #{genomes_count})"
         
         masked_snps[i] = masked_snps[i].upcase if different == expected_snps and from_group == genomes_count
+        #puts "#{i}:#{masked_snps[i]}"
 
         if i == local_pos_in_gene
           masked_snps[i] = "&"
+          #puts "#{i}:#{masked_snps[i]}___"
           bases = ""
           names.each do | chr |
             bases << aligned_sequences[chr][i]  if aligned_sequences[chr] and aligned_sequences[chr][i]  != "-"
@@ -626,7 +646,7 @@ module Bio::PolyploidTools
           end 
 
         end
-        i += 1
+        #i += 1
       end
       masked_snps
     end
@@ -669,19 +689,17 @@ module Bio::PolyploidTools
       masked_snps
     end
 
+
     def surrounding_masked_chromosomal_snps(chromosome)
 
       chromosomes = surrounding_exon_sequences
       names = chromosomes.keys
+      get_target_sequence(names)
       masked_snps = chromosomes[chromosome].tr("-","+") if chromosomes[chromosome]
       masked_snps = "-" * (flanking_size * 2 ) unless chromosomes[chromosome]
       local_pos_in_gene = flanking_size 
-      # ideal_min = local_pos_in_gene - flanking_size
-      #ideal_max = local_pos_in_gene + flanking_size
       i = 0
       while i < masked_snps.size  do
-
-
         different = 0
         cov = 0
         names.each do | chr |
@@ -691,12 +709,10 @@ module Bio::PolyploidTools
               different += 1  if masked_snps[i] != chromosomes[chr][i] 
             end
           end
-
         end
         masked_snps[i] = "-" if different == 0 and  masked_snps[i] != "+"
         masked_snps[i] = "-" if cov < 2
         masked_snps[i] = masked_snps[i].upcase if different > 1   
-
 
         if i == local_pos_in_gene
           masked_snps[i] = "&"
@@ -708,18 +724,19 @@ module Bio::PolyploidTools
 
     def surrounding_exon_sequences
       return @surrounding_exon_sequences if @surrounding_exon_sequences
+      gene_region = self.covered_region
       @surrounding_exon_sequences =  Bio::Alignment::SequenceHash.new
-      self.exon_list.each do |chromosome, exon| 
-        #puts "surrounding_exon_sequences #{flanking_size}"
-        #puts chromosome
-        #puts exon
-        flanquing_region  = exon.target_flanking_region_from_position(position,flanking_size)
-        #TODO: Padd when the exon goes over the regions... 
-        
-        #Ignoring when the exon is in a gap
-        unless exon.snp_in_gap 
-          exon_seq = container.chromosome_sequence(flanquing_region)
-          @surrounding_exon_sequences[chromosome] = exon_seq
+      self.exon_list.each do |chromosome, exon_arr| 
+        exon_arr.each do |exon|
+          exon_start_offset = exon.query_region.start - gene_region.start
+          flanquing_region  = exon.target_flanking_region_from_position(position,flanking_size)
+          #TODO: Padd when the exon goes over the regions... 
+          #puts flanquing_region.inspect
+          #Ignoring when the exon is in a gap
+          unless exon.snp_in_gap 
+            exon_seq = container.chromosome_sequence(flanquing_region)
+            @surrounding_exon_sequences["#{chromosome}_#{flanquing_region.start}_#{exon.record.score}"] = exon_seq
+          end
         end
       end
       @surrounding_exon_sequences
@@ -731,18 +748,21 @@ module Bio::PolyploidTools
       gene_region = self.covered_region
       local_pos_in_gene = self.local_position
       @exon_sequences = Bio::Alignment::SequenceHash.new
-      self.exon_list.each do |chromosome, exon| 
-        exon_start_offset = exon.query_region.start - gene_region.start
-        exon_seq  = "-" * exon_start_offset 
-        exon_seq << container.chromosome_sequence(exon.target_region).to_s
-        #puts exon_seq
-       # l_pos = exon_start_offset + local_pos_in_gene
-        unless exon.snp_in_gap
-          #puts "local position: #{local_pos_in_gene}"
-          #puts "Exon_seq: #{exon_seq}"
-          exon_seq[local_pos_in_gene] = exon_seq[local_pos_in_gene].upcase
-          exon_seq << "-" * (gene_region.size - exon_seq.size + 1)
-          @exon_sequences[chromosome] = exon_seq
+      self.exon_list.each do |chromosome, exon_arr| 
+        exon_arr.each do |exon|
+          exon_start_offset = exon.query_region.start - gene_region.start
+          exon_seq  = "-" * exon_start_offset 
+          exon_seq << container.chromosome_sequence(exon.target_region).to_s
+          #puts exon_seq
+          #l_pos = exon_start_offset + local_pos_in_gene
+          unless exon.snp_in_gap
+            #puts "local position: #{local_pos_in_gene}"
+            #puts "Exon_seq: #{exon_seq}"
+            exon_seq[local_pos_in_gene] = exon_seq[local_pos_in_gene].upcase
+            exon_seq << "-" * (gene_region.size - exon_seq.size + 1)
+            #puts exon.inspect
+            @exon_sequences["#{chromosome}_#{exon.query_region.start}_#{exon.record.score}"] = exon_seq
+          end
         end
       end
       @exon_sequences[@chromosome] = "-" * gene_region.size unless @exon_sequences[@chromosome]

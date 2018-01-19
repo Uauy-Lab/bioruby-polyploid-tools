@@ -38,7 +38,6 @@ module Bio::PolyploidTools
         $stderr.puts e
       end
       
-      snp.exon_list = Hash.new()
       snp.flanking_size=100
       snp.region_size = region_size.to_i if region_size
       snp.flanking_size = parsed_flanking.to_i if parsed_flanking

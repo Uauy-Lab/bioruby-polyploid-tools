@@ -116,13 +116,13 @@ module Bio::PolyploidTools
         target_region = exon.target_region
         exon_start_offset = exon.query_region.start - gene_region.start
         chr_local_pos=local_pos_in_gene + target_region.start + 1
-        ret_str << ">#{chromosome}_SNP-#{chr_local_pos} #{exon.to_s} #{target_region.orientation}\n"
-        to_print = "-" * exon_start_offset 
-        chr_seq = chromosome_sequence(exon.target_region).to_s
-        l_pos = exon_start_offset + local_pos_in_gene
-        to_print <<  chr_seq
+        ret_str  << ">#{chromosome}_SNP-#{chr_local_pos} #{exon.to_s} #{target_region.orientation}\n"
+        to_print =  "-" * exon_start_offset 
+        chr_seq  =  chromosome_sequence(exon.target_region).to_s
+        l_pos    =  exon_start_offset + local_pos_in_gene
+        to_print << chr_seq
         to_print[local_pos_in_gene] = to_print[local_pos_in_gene].upcase
-        ret_str << to_print
+        ret_str  << to_print
       end
       ret_str
     end
