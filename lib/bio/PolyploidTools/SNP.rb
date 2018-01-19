@@ -212,7 +212,6 @@ module Bio::PolyploidTools
       chromosome_seq = chromosome_seq.downcase
       mask = mask_aligned_chromosomal_snp(target_chromosome)
 
-
       pr = PrimerRegion.new
       position_in_region = 0
       (0..parental.size-1).each do |i|
@@ -597,6 +596,8 @@ module Bio::PolyploidTools
       masked_snps = aligned_sequences[best_target].downcase if aligned_sequences[best_target]
       masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[best_target]
       #TODO: Make this chromosome specific, even when we have more than one alignment going to the region we want.
+      #puts "mask_aligned_chromosomal_snp(#{chromosome})"
+      #puts names
       i = 0
       for  i in 0..masked_snps.size-1
         #puts i
@@ -604,12 +605,18 @@ module Bio::PolyploidTools
         cov = 0
         from_group = 0
         nCount = 0
+        seen = []
         names.each do | chr |
           if aligned_sequences[chr] and aligned_sequences[chr][i]  != "-"
             #puts aligned_sequences[chr][i]
             cov += 1 
             nCount += 1 if aligned_sequences[chr][i] == 'N' or  aligned_sequences[chr][i] == 'n' # maybe fix this to use ambiguity codes instead. 
-            from_group += 1 if chr[0] == chromosome_group
+            
+            if chr[0] == chromosome_group and  not seen.include? chr[1]
+              seen << chr[1]
+              from_group += 1 
+
+            end
             #puts "Comparing #{chromosome_group} and #{chr[0]} as chromosomes"
             if chr != best_target 
               $stderr.puts "WARN: No base for #{masked_snps} : ##{i}" unless masked_snps[i].upcase
@@ -623,7 +630,8 @@ module Bio::PolyploidTools
         masked_snps[i] = "-" if nCount > 0
         masked_snps[i] = "*" if cov == 0
         expected_snps = names.size - 1
-       # puts "Diferences: #{different} to expected: #{ expected_snps } [#{i}] Genome count (#{from_group} == #{genomes_count})"
+
+       #puts "Diferences: #{different} to expected: #{ expected_snps } [#{i}] Genome count (#{from_group} == #{genomes_count})"
         
         masked_snps[i] = masked_snps[i].upcase if different == expected_snps and from_group == genomes_count
         #puts "#{i}:#{masked_snps[i]}"
