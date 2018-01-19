@@ -586,15 +586,9 @@ module Bio::PolyploidTools
 
       position_after_trim = get_snp_position_after_trim
 
-      #puts "mask_aligned_chromosomal_snp"
-      #puts names
-      #puts parentals
-      #puts "__"
       names = names - parentals
-      #puts names
       local_pos_in_gene = aligned_snp_position
-      #puts "mask_aligned_chromosomal_snp(#{chromosome})"
-      #puts aligned_sequences.keys
+
       best_target = get_target_sequence(names, chromosome)
       masked_snps = aligned_sequences[best_target].downcase if aligned_sequences[best_target]
       masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[best_target]
@@ -651,45 +645,7 @@ module Bio::PolyploidTools
       masked_snps
     end
 
-    def masked_chromosomal_snps(chromosome)
-      chromosomes = exon_sequences
-      names = chromosomes.keys
-      masked_snps = chromosomes[chromosome].tr("-","+") if chromosomes[chromosome]
-      masked_snps = "-" * covered_region.size unless chromosomes[chromosome]
-      local_pos_in_gene = self.local_position
-      ideal_min = local_pos_in_gene - flanking_size
-      ideal_max = local_pos_in_gene + flanking_size
-      i = 0
-      while i < masked_snps.size  do
-        if i > ideal_min and i <= ideal_max
-
-          different = 0
-          cov = 0
-          names.each do | chr |
-            if chromosomes[chr][i]  != "-"
-              cov += 1 
-              if chr != chromosome and masked_snps[i] != "+"
-                different += 1  if masked_snps[i] != chromosomes[chr][i] 
-              end
-            end
-
-          end
-          masked_snps[i] = "-" if different == 0 and  masked_snps[i] != "+"
-          masked_snps[i] = "-" if cov < 2
-          masked_snps[i] = masked_snps[i].upcase if different > 1   
-
-        else
-          masked_snps[i] = "*"
-        end   
-        if i == local_pos_in_gene
-          masked_snps[i] = "&"
-        end
-        i += 1
-      end
-      masked_snps
-    end
-
-
+    
     def surrounding_masked_chromosomal_snps(chromosome)
 
       chromosomes = surrounding_exon_sequences
