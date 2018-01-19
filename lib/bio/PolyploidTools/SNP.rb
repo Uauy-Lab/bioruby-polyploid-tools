@@ -547,7 +547,7 @@ module Bio::PolyploidTools
       local_pos_in_parental = get_snp_position_after_trim
       i = 0
       while i < parental_strings[0].size  do
-        if local_pos_in_parental == 0
+        if local_pos_in_parental == 0 and parental_strings[0][i] != "-"
           pos = i
           if parental_strings[0][i] == parental_strings[1][i]
             $stderr.puts "WARN: #{self.to_s} doesn't have a SNP in the marked place (#{i})! \n#{parental_strings[0]}\n#{parental_strings[1]}"
