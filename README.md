@@ -171,8 +171,6 @@ To use blast instead of exonerate, use the following command:
 
 # Notes
 
-
-* BUG: If the SNP is in a gap in the alignment to the chromosomes, it is ignored. 
 * BUG: Blocks with NNNs are picked and treated as semi-specific. 
 * BUG: If the name of the reference have space, the ID is not chopped. ">gene_1 (G12A)" shouls be treated as ">gene_1". 
 * TODO: Add a parameter file to configure the alignments. 
