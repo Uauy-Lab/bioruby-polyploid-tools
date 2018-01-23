@@ -1,4 +1,5 @@
-class Bio::PolyploidTools::ChromosomeArm
+module Bio::PolyploidTools
+class ChromosomeArm
 
 
 
@@ -47,5 +48,5 @@ class Bio::PolyploidTools::ChromosomeArm
   def self.getValidFunctions
     @@arm_selection_functions.keys.map { |e| e.to_s }
   end
-
+end
 end
