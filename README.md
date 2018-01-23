@@ -17,13 +17,13 @@ You need to have in your ```$PATH``` the following programs:
 * [exonerate](http://www.ebi.ac.uk/~guy/exonerate/) 
 * [blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE%3DBlastDocs&DOC_TYPE%3DDownload)
 
-The code was originally developed on ruby 2.1.0, but it should work on 1.9.3 and above. However, it is only actively tested in currently supported ruby versions: 
+The code was originally developed on ruby 2.1, 2.3 and 2.5. It may work on older version. However, it is only actively tested in currently supported ruby versions: 
   
   * 2.1.10
   * 2.2.5
   * 2.3.5
   * 2.4.2
-
+  * 2.5.0
 
 # PolyMarker
 
@@ -102,10 +102,10 @@ This file format can be used with ```snp_positions_to_polymarker.rb``` to produc
 By default, the contigs and pseudomolecules from [ensembl](ftp://ftp.ensemblgenomes.org/pub/release-25/plants/fasta/triticum_aestivum/dna/Triticum_aestivum.IWGSC2.25.dna.genome.fa.gz
 ) are used. However, it is possible to use a custom reference. To define the chromosome where each contig belongs the argument ```arm_selection``` is used.  The defailt uses ids like: ```IWGSC_CSS_1AL_scaff_110```, where the third field, separated by underscores is used. A simple way to add costum references is to rename the fasta file to follow that convention. Another way is to use the option ```--arm_selection arm_selection_first_two```, where only the first two characters in each contig is used as identifier, useful when pseudomolecules are named after the chromosomes (ie: ">1A" in the fasta file). 
 
-If your contigs follow a different convention, in the file ```polymarker.rb``` it is possible to define new parsers, by adding at the begining, with the rest of the parsers a new lambda like:
+If your contigs follow a different convention, in the file ```ChromosomeArm.rb``` it is possible to define new parsers, by adding at the begining, with the rest of the parsers a new lambda like:
 
 ```rb
-arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
+@@arm_selection_functions[:embl] = lambda do | contig_name|
   arr = contig_name.split('_')
   ret = "U"
   ret = arr[2][0,2] if arr.size >= 3
@@ -127,6 +127,16 @@ To use blast instead of exonerate, use the following command:
 
 
 ## Release Notes
+
+### 0.8.2
+
+* FEATURE: The functions to select the chromosome arm are now in ```lib/bio/PolyploidTools/ChromosomeArm.rb``` and the help message is updated automatically with the valid options. 
+* FEATURE: Added option ```filter_best``` to replicate the original behaviour of selecting the best hit of each chromosome. Still useful for assemblies which still contain synthetic duplications.
+
+### 0.8.1
+
+* BUGFIX: There was an error which prevented the correct localisation of the SNP in markeres with gaps in the local alignment before the position with the snp.
+* FEATURE: PolyMarker now selects the best hit of the target chromosome. This improves the specificity in regions with a recent duplication. The drawback is that if your assembly has artificial repetitions, the primers won't be marked as 'chromosome specific', but as 'chromosome semi-specific '. In a future version this will be addressed. 
 
 ### 0.8
 

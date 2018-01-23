@@ -1,48 +1,51 @@
-module Bio::PolyploidTools
-  
-  class ChromosomeArm
-    attr_accessor :name
-    attr_reader :genes
-    attr_reader :loaded_entries
-    attr_reader :fasta_db
+class Bio::PolyploidTools::ChromosomeArm
 
-    def initialize(name, path_to_fasta)
-      @name = name
-      @fasta_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path_to_fasta})
-      #$stderr.puts "Loading entries for #{name}"
-      
-      @genes = Hash.new
-    end
-    
-    def fetch_contig(contig_id)
-      
-      @fasta_db.load_fai_entries unless @loaded_entries
-      @loaded_entries = true
-      entry = fasta_db.index.region_for_entry(contig_id)
-     # puts entry
-      @fasta_db.fetch_sequence(entry.get_full_region)
-    end
 
-    #Loads all the chromosome arms in a folder. 
-    #The current version requires that all the references end with .fa, and start with XXX_*.fa
-    #Where XXX is the chromosome name
-    def self.load_from_folder(path_to_contigs)
-      chromosomeArms = Hash.new
-      
-      Dir.foreach(path_to_contigs) do |filename |
-        if  File.fnmatch("*.fa", filename)
-          
-          parsed = /^(?<arm>\d\w+)/.match(filename)
-          target="#{path_to_contigs}/#{filename}"
-          #fasta_file = Bio::DB::Fasta::FastaFile.new(target)
-          #fasta_file.load_fai_entries
-          arm = ChromosomeArm.new(parsed[:arm], target)
-          chromosomeArms[arm.name] = arm
-        end
-      end
-      return chromosomeArms
-    end
-    
+
+  @@arm_selection_functions = Hash.new;
+
+  #example format: chr2A
+  @@arm_selection_functions[:nrgene] = lambda do | contig_name |
+    ret = contig_name[3,2]
+    return ret
+  end
+
+  @@arm_selection_functions[:first_two] = lambda do | contig_name |
+    contig_name.gsub!(/chr/,"")
+    ret = contig_name[0,2]       
+    return ret
+  end
+
+  #Function to parse stuff like: "IWGSC_CSS_1AL_scaff_110"
+  #Or the first two characters in the contig name, to deal with 
+  #pseudomolecules that start with headers like: "1A"
+  #And with the cases when 3B is named with the prefix: v443
+  @@arm_selection_functions[:embl] = lambda do | contig_name|
+
+    arr = contig_name.split('_')
+    ret = "U"
+    ret = arr[2][0,2] if arr.size >= 3
+    ret = "3B" if arr.size == 2 and arr[0] == "v443"
+    ret = arr[0][0,2] if arr.size == 1   
+    return ret
+  end
+
+  @@arm_selection_functions[:morex] = lambda do | contig_name |
+    ret = contig_name.split(':')[0].split("_")[1];       
+    return ret
+  end
+
+  @@arm_selection_functions[:scaffold] = lambda do | contig_name |
+    ret = contig_name;       
+    return ret
+  end
+
+  def self.getArmSelection(name)
+    @@arm_selection_functions[name.to_sym]
+  end
+
+  def self.getValidFunctions
+    @@arm_selection_functions.keys.map { |e| e.to_s }
   end
 
 end

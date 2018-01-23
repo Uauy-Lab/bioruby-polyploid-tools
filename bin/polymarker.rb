@@ -10,43 +10,7 @@ $: << File.expand_path('.')
 path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
 require path
 
-arm_selection_functions = Hash.new;
 
-arm_selection_functions[:arm_selection_nrgenes] = lambda do | contig_name |
-#example format: chr2A
-  ret = contig_name[3,2]
-  return ret
-end
-
-arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
-  contig_name.gsub!(/chr/,"")
-  ret = contig_name[0,2]       
-  return ret
-end
-
-#Function to parse stuff like: "IWGSC_CSS_1AL_scaff_110"
-#Or the first two characters in the contig name, to deal with 
-#pseudomolecules that start with headers like: "1A"
-#And with the cases when 3B is named with the prefix: v443
-arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
-  
-  arr = contig_name.split('_')
-  ret = "U"
-  ret = arr[2][0,2] if arr.size >= 3
-  ret = "3B" if arr.size == 2 and arr[0] == "v443"
-  ret = arr[0][0,2] if arr.size == 1   
-  return ret
-end
-
-arm_selection_functions[:arm_selection_morex] = lambda do | contig_name |
-  ret = contig_name.split(':')[0].split("_")[1];       
-  return ret
-end
-
-arm_selection_functions[:scaffold] = lambda do | contig_name |
-  ret = contig_name;       
-  return ret
-end
 
 def validate_files(o)
   [
@@ -66,7 +30,7 @@ options[:chunks] = 1
 options[:bucket_size] = 0
 options[:bucket] = 1
 options[:model] = "est2genome"
-options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
+options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene");
 options[:flanking_size] = 150;
 options[:variation_free_region] = 0 
 options[:extract_found_contigs] = false
@@ -74,6 +38,7 @@ options[:genomes_count] = 3
 options[:min_identity] = 90
 options[:scoring] = :genome_specific
 options[:database]  = false
+options[:filter_best]  = false
 options[:aligner] = :exonerate
 
 
@@ -86,6 +51,8 @@ options[:primer_3_preferences] = {
       :primer_explain_flag => 1,
       :primer_thermodynamic_parameters_path=>File.expand_path(File.dirname(__FILE__) + '../../conf/primer3_config/') + '/'
     }
+
+
 
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
@@ -102,6 +69,11 @@ OptionParser.new do |opts|
     options[:genomes_count] = o.to_i
   end
   
+  opts.on("-b", "--filter_best", "If set, only keep the best alignment for each chromosome") do 
+    options[:filter_best]  = true
+  end
+
+
   opts.on("-s", "--snp_list FILE", "File with the list of snps to search from, requires --reference to get the sequence using a position") do |o|
     options[:snp_list] = o
   end
@@ -127,7 +99,7 @@ OptionParser.new do |opts|
      options[:model] = o
   end
 
-  opts.on("-a", "--arm_selection arm_selection_embl|arm_selection_morex|arm_selection_first_two|scaffold", "Function to decide the chromome arm") do |o|
+  opts.on("-a", "--arm_selection #{Bio::PolyploidTools::ChromosomeArm.getValidFunctions.join('|')}", "Function to decide the chromome arm") do |o|
     tmp_str = o
     arr = o.split(",")
     if arr.size == 2
@@ -138,7 +110,7 @@ OptionParser.new do |opts|
           return ret
         end
     else
-      options[:arm_selection] = arm_selection_functions[o.to_sym];
+      options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection(o)
     end
 
    end
@@ -370,7 +342,11 @@ snps.each do |snp|
   snp.variation_free_region = options[:variation_free_region]
   container.add_snp(snp)
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
+container.add_alignments({
+  :exonerate_file=>exonerate_file, 
+  :arm_selection=>options[:arm_selection], 
+  :min_identity=>min_identity,
+  :filter_best=>options[:filter_best]})
 
 
 #4.1 generating primer3 file

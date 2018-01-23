@@ -114,8 +114,14 @@ module Bio::PolyploidTools
         return ">#{self.gene}\n#{self.template_sequence}\n"
       end
 
-    def add_exon(exon, arm)
-      exon_list[arm] << exon    
+    def add_exon(exon, arm, filter_best: true)
+      if filter_best and exon_list[arm].size > 0
+        current = exon_list[arm].first
+        exon_list[arm] = [exon] if exon.record.score > current.record.score 
+      else
+         exon_list[arm] << exon 
+      end
+        
     end
 
     def covered_region
