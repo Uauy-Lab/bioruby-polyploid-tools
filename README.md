@@ -128,6 +128,11 @@ To use blast instead of exonerate, use the following command:
 
 ## Release Notes
 
+### 0.8.3
+
+* BUGFIX: ```ChromosomeArm.rb``` was fixed to conform the module assumptions for the package. 
+
+
 ### 0.8.2
 
 * FEATURE: The functions to select the chromosome arm are now in ```lib/bio/PolyploidTools/ChromosomeArm.rb``` and the help message is updated automatically with the valid options. 
