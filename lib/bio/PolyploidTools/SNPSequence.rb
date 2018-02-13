@@ -33,10 +33,6 @@ module Bio::PolyploidTools
       snp
     end
     
-    def parse_snp
-      
-    end
-
     def parse_sequence_snp
       pos = 0
       match_data = /(?<pre>\w*)\[(?<org>[ACGT])\/(?<snp>[ACGT])\](?<pos>\w*)/.match(sequence_original.strip)
