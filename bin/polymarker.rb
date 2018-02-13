@@ -350,10 +350,11 @@ container.add_alignments({
 
 
 #4.1 generating primer3 file
-write_status "Running primer3"
+write_status "Finding genome-specific positions"
 file = File.open(exons_filename, "w")
 container.print_fasta_snp_exones(file)
 file.close
+write_status "Running primer3"
 
 file = File.open(primer_3_input, "w")
 

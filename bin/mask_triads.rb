@@ -7,6 +7,10 @@ require 'tmpdir'
 require 'bio-samtools'
 require 'bio'
 
+$: << File.expand_path(File.dirname(__FILE__) + '/../lib')
+$: << File.expand_path('.')
+path= File.expand_path(File.dirname(__FILE__) + '/../lib/bioruby-polyploid-tools.rb')
+require path
 opts = {}
 opts[:identity] = 50
 opts[:min_bases] = 200
@@ -59,35 +63,47 @@ def write_fasta_from_hash(sequences, filename)
 end
 
 
-
+mafft_opts = ['--maxiterate', '1000', '--localpair', '--quiet']
+mafft = Bio::MAFFT.new( "mafft" , mafft_opts)
 
 CSV.foreach(opts[:triads], headers:true ) do |row|
   next unless row["cardinality_abs"] == "1:1:1"
-  mafft_opts = ['--maxiterate', '1000', '--localpair', '--quiet']
-  mafft = Bio::MAFFT.new( "mafft" , mafft_opts)
    a = row['A']
    b = row['B']
    d = row['D']
    triad = row['group_id']
 
    to_align = Bio::Alignment::SequenceHash.new 
-   puts cannonical[a].get_full_region
+   
    seq_a = fasta_reference_db.fetch_sequence(cannonical[a].get_full_region)
    seq_b = fasta_reference_db.fetch_sequence(cannonical[b].get_full_region)
    seq_d = fasta_reference_db.fetch_sequence(cannonical[d].get_full_region)
    to_align[a] = seq_a
    to_align[b] = seq_b
    to_align[d] = seq_d
+
   
    report = mafft.query_alignment(to_align)
+   aln = report.alignment
+   
+   #aln.seqs["A"] =  Bio::PolyploidTools.get_mask(aln, target: a)
+   #aln.seqs["B"] =  Bio::PolyploidTools.get_mask(aln, target: b)
+   #aln.seqs["D"] =  Bio::PolyploidTools.get_mask(aln, target: d)
+   aln.add_seq(Bio::PolyploidTools::Mask.get(aln, target: a), "A")
+   aln.add_seq(Bio::PolyploidTools::Mask.get(aln, target: b), "B")
+   aln.add_seq(Bio::PolyploidTools::Mask.get(aln, target: d), "D")
+   puts aln["A"]
+   puts Bio::PolyploidTools::Mask.stats(aln["A"])
+   puts aln["B"]
+   puts aln["D"]
+
+
 
    #cent_triad = triad.to_i / 100
    #folder = "alignments/#{cent_triad}/"
+   
    #FileUtils.mkdir_p folder
    
-   #report = mafft.query_align(to_align)
-   #aln = report.alignment
-
    #save_cds = "#{folder}/#{triad}.cds.fa"
    #write_fasta_from_hash(cds_seqs, save_cds)
   #break
