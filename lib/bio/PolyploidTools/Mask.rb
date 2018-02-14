@@ -24,6 +24,7 @@ module Bio::PolyploidTools::Mask
           if chr != target
             different += 1  if masked_snps[i].upcase != seqs[chr][i].upcase
           end
+        end
         if seqs[chr][i]  == "-" and chr == target
             gap = true
         end
