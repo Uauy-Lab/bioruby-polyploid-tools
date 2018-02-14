@@ -16,8 +16,8 @@ opts[:identity] = 50
 opts[:min_bases] = 200
 opts[:split_token] = "."
 opts[:tmp_folder]  = Dir.mktmpdir
-opts[:program]  = "blastn"
 opts[:random_sample] = 0
+opts[:output_folder] = "."
 
 OptionParser.new do |o|
 
@@ -34,7 +34,6 @@ OptionParser.new do |o|
   o.on("-s", "--split_token CHAR", "Character used to split the sequence name. The name will be evarything before this token on the name of the sequences") do |o|
     opts[:split_token] = o
   end
-
 end.parse!
 
 
@@ -62,6 +61,7 @@ def write_fasta_from_hash(sequences, filename)
   end
   out.close
 end
+
 
 
 mafft_opts = ['--maxiterate', '1000', '--localpair', '--quiet']
@@ -100,7 +100,7 @@ CSV.foreach(opts[:triads], headers:true ) do |row|
    puts d_stats.values.join(",")
    cent_triad = triad.to_i / 100
    header_printed = true
-   folder = "alignments/#{reference_name}/#{cent_triad}/"
+   folder = "#{output_folder}/alignments/#{reference_name}/#{cent_triad}/"
 
    FileUtils.mkdir_p folder
 

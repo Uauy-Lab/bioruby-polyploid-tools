@@ -19,21 +19,21 @@ module Bio::PolyploidTools::Mask
       cov = 0
       gap = false
       names.each do | chr |
-        if seqs[chr] and seqs[chr][i]  != "-" and seqs[chr][i]  != "n" and seqs[chr][i]  != "N"
+        if seqs[chr][i]  != "-" and seqs[chr][i]  != "n" and seqs[chr][i]  != "N"
           cov += 1
           if chr != target
             different += 1  if masked_snps[i].upcase != seqs[chr][i].upcase
           end
-        elsif seqs[chr] and seqs[chr][i]  == "-" and chr == target
+        if seqs[chr][i]  == "-" and chr == target
             gap = true
         end
       end
-      masked_snps[i] = "-" if gap
       masked_snps[i] = "." if different == 0
       masked_snps[i] = "." if cov == 1
       masked_snps[i] = "*" if cov == 0
-      expected_snps = names.size - 1
+      expected_snps  = names.size - 1
       masked_snps[i] = masked_snps[i].upcase if different == expected_snps
+      masked_snps[i] = "-" if gap
       i += 1
     end
     masked_snps
