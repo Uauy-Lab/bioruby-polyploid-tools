@@ -9,11 +9,39 @@ class Array
 end
 
 module Bio::PolyploidTools::Mask
-  def self.get(seqs, target: nil)
+
+  def self.find_end(seqs)
+    size = seqs.values[0].size
+    names = seqs.keys
+    i = size - 1
+    gap_count = 3
+    while i > 0 and gap_count > 0
+      gap_count = names.map { |chr| seqs[chr][i] == "-" ? 1:0  }.inject(0, :+)
+  
+      i -= 1
+    end
+    i + 1
+  end
+
+  def self.find_start(seqs)
+    size = seqs.values[0].size
+    names = seqs.keys
+    i = 0
+    gap_count = 3
+    while i < size  and gap_count > 0
+      gap_count = names.map { |chr| seqs[chr][i] == "-" ? 1 : 0  } .inject(0, :+)  
+      
+      i += 1
+    end
+    i - 1
+  end
+
+  def self.get(seqs, target: nil, seq_start: 0, seq_end: 0)
     names = seqs.keys
     target = names[0] if target.nil?
     masked_snps = seqs[target].downcase
     i = 0
+  
     while i < masked_snps.size
       different = 0
       cov = 0
@@ -21,9 +49,9 @@ module Bio::PolyploidTools::Mask
       names.each do | chr |
         if seqs[chr][i]  != "-" and seqs[chr][i]  != "n" and seqs[chr][i]  != "N"
           cov += 1
-          if chr != target
-            different += 1  if masked_snps[i].upcase != seqs[chr][i].upcase
-          end
+        end
+        if chr != target
+         different += 1  if masked_snps[i].upcase != seqs[chr][i].upcase
         end
         if seqs[chr][i]  == "-" and chr == target
             gap = true
@@ -34,7 +62,11 @@ module Bio::PolyploidTools::Mask
       masked_snps[i] = "*" if cov == 0
       expected_snps  = names.size - 1
       masked_snps[i] = masked_snps[i].upcase if different == expected_snps
-      masked_snps[i] = "-" if gap
+      if gap
+        masked_snps[i] = different == expected_snps ? "-" : "_" 
+      end
+      masked_snps[i] = "|" if i < seq_start or i > seq_end
+
       i += 1
     end
     masked_snps

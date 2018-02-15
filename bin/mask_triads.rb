@@ -96,7 +96,7 @@ mafft_opts = ['--maxiterate', '1000', '--localpair', '--quiet']
 mafft = Bio::MAFFT.new( "mafft" , mafft_opts)
 header_printed = false
 stats = File.open("#{output_folder}/#{reference_name}.identity_stats.csv", "w")
-
+i = 0
 CSV.foreach(opts[:triads], headers:true ) do |row|
   next unless row["cardinality_abs"] == "1:1:1" and row["HC.LC"] == "HC-only"
    a = row['A']
@@ -113,9 +113,13 @@ CSV.foreach(opts[:triads], headers:true ) do |row|
    save_cds = "#{folder}/#{triad}.fa"
 
    aln2 = Bio::Alignment.new aln
-   aln2.add_seq(Bio::PolyploidTools::Mask.get(aln, target: a), "A")
-   aln2.add_seq(Bio::PolyploidTools::Mask.get(aln, target: b), "B")
-   aln2.add_seq(Bio::PolyploidTools::Mask.get(aln, target: d), "D")
+   seq_start = Bio::PolyploidTools::Mask.find_start(aln)
+   seq_end   = Bio::PolyploidTools::Mask.find_end(aln)
+   puts "#{triad}: #{seq_start}-#{seq_end}"
+
+   aln2.add_seq(Bio::PolyploidTools::Mask.get(aln,seq_start: seq_start, seq_end: seq_end, target: a), "A")
+   aln2.add_seq(Bio::PolyploidTools::Mask.get(aln,seq_start: seq_start, seq_end: seq_end, target: b), "B")
+   aln2.add_seq(Bio::PolyploidTools::Mask.get(aln,seq_start: seq_start, seq_end: seq_end, target: d), "D")
 
    a_stats =  Bio::PolyploidTools::Mask.stats(aln2["A"], triad, a, "A", reference_name)
    b_stats =  Bio::PolyploidTools::Mask.stats(aln2["B"], triad, b, "B", reference_name)
@@ -127,8 +131,10 @@ CSV.foreach(opts[:triads], headers:true ) do |row|
 
    header_printed = true
 
-
    write_fasta_from_hash(aln2, save_cds)
+
+   i += 1
+   break if i > 100
 end
 
 stats.close
