@@ -95,7 +95,16 @@ end
 mafft_opts = ['--maxiterate', '1000', '--localpair', '--quiet']
 mafft = Bio::MAFFT.new( "mafft" , mafft_opts)
 header_printed = false
-stats = File.open("#{output_folder}/#{reference_name}.identity_stats.csv", "w")
+stats     = File.open("#{output_folder}/#{reference_name}.identity_stats.csv", "w")
+distances = File.open("#{output_folder}/#{reference_name}.distance_between_snps.csv.gz", "w")
+gz = Zlib::GzipWriter.new(distances)
+gz.write "triad,gene,genome,reference,type,distance\n"
+#gz.close
+
+def write_distances(distances, triad, gene, genome, reference, type, out)
+  distances.each { |e| out.write "#{triad},#{gene},#{genome},#{reference},#{type},#{e}\n" }
+end
+
 i = 0
 CSV.foreach(opts[:triads], headers:true ) do |row|
   next unless row["cardinality_abs"] == "1:1:1" and row["HC.LC"] == "HC-only"
@@ -115,7 +124,8 @@ CSV.foreach(opts[:triads], headers:true ) do |row|
    aln2 = Bio::Alignment.new aln
    seq_start = Bio::PolyploidTools::Mask.find_start(aln)
    seq_end   = Bio::PolyploidTools::Mask.find_end(aln)
-   puts "#{triad}: #{seq_start}-#{seq_end}"
+   #puts "#{triad}: #{seq_start}-#{seq_end}"
+
 
    aln2.add_seq(Bio::PolyploidTools::Mask.get(aln,seq_start: seq_start, seq_end: seq_end, target: a), "A")
    aln2.add_seq(Bio::PolyploidTools::Mask.get(aln,seq_start: seq_start, seq_end: seq_end, target: b), "B")
@@ -124,17 +134,36 @@ CSV.foreach(opts[:triads], headers:true ) do |row|
    a_stats =  Bio::PolyploidTools::Mask.stats(aln2["A"], triad, a, "A", reference_name)
    b_stats =  Bio::PolyploidTools::Mask.stats(aln2["B"], triad, b, "B", reference_name)
    d_stats =  Bio::PolyploidTools::Mask.stats(aln2["D"], triad, d, "D", reference_name)
+  
+   write_distances(a_stats[:specific], triad, a, "A", reference_name, "specific", gz)
+   write_distances(b_stats[:specific], triad, b, "B", reference_name, "specific", gz)
+   write_distances(d_stats[:specific], triad, d, "D", reference_name, "specific", gz)
+
+   write_distances(a_stats[:semispecific], triad, a, "A", reference_name, "semispecific", gz)
+   write_distances(b_stats[:semispecific], triad, b, "B", reference_name, "semispecific", gz)
+   write_distances(d_stats[:semispecific], triad, d, "D", reference_name, "semispecific", gz)
+   
+   a_stats.delete(:semispecific)
+   b_stats.delete(:semispecific)
+   d_stats.delete(:semispecific)
+   
+   a_stats.delete(:specific)
+   b_stats.delete(:specific)
+   d_stats.delete(:specific)
+
+   a_stats[:length] = @cannonical[a].length
+   b_stats[:length] = @cannonical[b].length
+   d_stats[:length] = @cannonical[d].length
+
    stats.puts a_stats.keys.join(",") unless header_printed
    stats.puts a_stats.values.join(",")
    stats.puts b_stats.values.join(",")
    stats.puts d_stats.values.join(",")
-
    header_printed = true
 
    write_fasta_from_hash(aln2, save_cds)
-
    i += 1
-   break if i > 100
 end
-
+gz.close
+distances.close
 stats.close

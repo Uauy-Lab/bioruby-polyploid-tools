@@ -103,13 +103,15 @@ module Bio::PolyploidTools::Mask
       triad: triad,
       genome: genome,
       gene: gene,
-      semispecific: semispecific.mean,
+      semispecific_mean: semispecific.mean,
       semispecific_bases: semispecific.size,
       semispecific_identity: (1 - (semispecific.size.to_f / i)) * 100 ,
-      specific: specific.mean,
+      specific_mean: specific.mean,
       specific_bases: specific.size,
       specific_identity: (1 - (specific.size.to_f / i )) * 100,
-      length: i
+      aligned_length: i,
+      specific: specific, 
+      semispecific: semispecific
     }
   end
 end
