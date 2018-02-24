@@ -17,7 +17,6 @@ module Bio::PolyploidTools::Mask
     gap_count = 3
     while i > 0 and gap_count > 0
       gap_count = names.map { |chr| seqs[chr][i] == "-" ? 1:0  }.inject(0, :+)
-  
       i -= 1
     end
     i + 1
@@ -29,8 +28,8 @@ module Bio::PolyploidTools::Mask
     i = 0
     gap_count = 3
     while i < size  and gap_count > 0
-      gap_count = names.map { |chr| seqs[chr][i] == "-" ? 1 : 0  } .inject(0, :+)  
-      
+      gap_count = names.map { |chr| seqs[chr][i] == "-" ? 1 : 0  } .inject(0, :+)
+
       i += 1
     end
     i - 1
@@ -41,7 +40,6 @@ module Bio::PolyploidTools::Mask
     target = names[0] if target.nil?
     masked_snps = seqs[target].downcase
     i = 0
-  
     while i < masked_snps.size
       different = 0
       cov = 0
@@ -63,10 +61,9 @@ module Bio::PolyploidTools::Mask
       expected_snps  = names.size - 1
       masked_snps[i] = masked_snps[i].upcase if different == expected_snps
       if gap
-        masked_snps[i] = different == expected_snps ? "-" : "_" 
+        masked_snps[i] = different == expected_snps ? "-" : "_"
       end
       masked_snps[i] = "|" if i < seq_start or i > seq_end
-
       i += 1
     end
     masked_snps
@@ -110,7 +107,7 @@ module Bio::PolyploidTools::Mask
       specific_bases: specific.size,
       specific_identity: (1 - (specific.size.to_f / i )) * 100,
       aligned_length: i,
-      specific: specific, 
+      specific: specific,
       semispecific: semispecific
     }
   end
