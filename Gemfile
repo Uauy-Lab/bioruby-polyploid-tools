@@ -5,6 +5,7 @@ source "http://rubygems.org"
 
 gem "bio", ">= 1.5.1"
 gem "bio-samtools", ">= 2.6.2"
+gem "descriptive_statistics"
 #gem "rake"
 
 gem "systemu", ">=2.5.2"
