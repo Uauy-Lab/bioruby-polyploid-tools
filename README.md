@@ -128,6 +128,14 @@ To use blast instead of exonerate, use the following command:
 
 ## Release Notes
 
+### 0.8.4 
+
+* Added script ```tag_stats.rb`` That gets the descriptive statistics for a tag in a bam file for each reference. 
+
+```bash
+ruby tag_stats.rb -b HI.3206.006.Index_2.CS_125RNA_14d_Leaf8.sorted.bam -r /Users/ramirezr/Dropbox/JIC/expVIPMetadatas/RefSeq1.0/Genes/annotation/IWGSCv1.0_UTR_ALL.cdnas.fasta --tag 'NH'
+```
+
 ### 0.8.3
 
 * BUGFIX: ```ChromosomeArm.rb``` was fixed to conform the module assumptions for the package. 
