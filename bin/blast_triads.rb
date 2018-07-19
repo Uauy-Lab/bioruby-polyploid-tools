@@ -144,7 +144,7 @@ CSV.foreach(options[:triads], headers:true ) do |row|
     FileUtils.cp(b_tmp, save_folder) if seq_b
     FileUtils.cp(d_tmp, save_folder) if seq_d
    end
-
+   #This had a bug where the columns where always "AB"
    if seq_a and seq_b
       to_print = [triad, a, b , "A","B","A->B"]
       to_print << blast_pair_fast(a_tmp, b_tmp, out_tmp, program:options[:program])
@@ -152,13 +152,13 @@ CSV.foreach(options[:triads], headers:true ) do |row|
       puts to_print.join("\t")
    end
   if seq_a and seq_d
-      to_print = [triad, a, b , "A","D","A->D"]
+      to_print = [triad, a, d , "A","D","A->D"]
       to_print << blast_pair_fast(a_tmp, d_tmp, out_tmp, program:options[:program]) 
       puts to_print.join("\t")
       FileUtils.cp(out_tmp, "#{save_folder}/A_D.xml") if save
   end
   if seq_b and seq_d
-      to_print = [triad, a, b , "B","D","B->D"]
+      to_print = [triad, b, d , "B","D","B->D"]
       to_print << blast_pair_fast(b_tmp, d_tmp, out_tmp, program:options[:program])
       FileUtils.cp(out_tmp, "#{save_folder}/B_D.xml") if save
       puts to_print.join("\t")
