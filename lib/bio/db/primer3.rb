@@ -754,6 +754,7 @@ module Bio::DB::Primer3
     end
 
     def add_snp(snp_in) 
+      #TODO: Here we need to also copy the errors that will be printed. 
       @snp_hash=Hash.new unless @snp_hash
       snp = SNP.new
       snp.gene = snp_in.gene

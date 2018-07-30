@@ -5,7 +5,7 @@ module Bio::PolyploidTools
     attr_reader :parental_1_name, :parental_2_name, :gene_models_db
     attr_reader :chromosomes, :snp_map
     attr_reader :parents
-    attr_accessor :flanking_size , :primer_3_min_seq_length
+    attr_accessor :flanking_size , :primer_3_min_seq_length, :max_hits
 
     BASES = [:A, :C, :G, :T]
     #Sets the reference file for the gene models
@@ -15,6 +15,7 @@ module Bio::PolyploidTools
       @snp_map = Hash.new 
       @snp_contigs
       @primer_3_min_seq_length = 50
+      @max_hits = 10
     end
 
     def gene_models(path)
@@ -76,6 +77,7 @@ module Bio::PolyploidTools
     end
     
     def add_snp(snp)
+      #TODO: add to the snp the maximum number of hits? 
       @snp_map[snp.gene] = Array.new unless   @snp_map[snp.gene] 
       @snp_map[snp.gene] << snp
     end
@@ -157,6 +159,7 @@ module Bio::PolyploidTools
           begin 
             primer_3_min_seq_length
             string = snp.primer_3_string( snp.chromosome, parental )
+            #TODO: add tan error to the SNP this snp has more than max_hits. Or maybe inside the SNP file. 
             #puts "print_primer_3_exons: #{string.size}"
             if string.size > 0
               file.puts string

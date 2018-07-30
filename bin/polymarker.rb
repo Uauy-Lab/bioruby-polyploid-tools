@@ -39,6 +39,7 @@ options[:min_identity] = 90
 options[:scoring] = :genome_specific
 options[:database]  = false
 options[:filter_best]  = false
+options[:max_hits] = 10
 options[:aligner] = :exonerate
 
 
@@ -83,7 +84,7 @@ OptionParser.new do |opts|
   opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
     options[:database] = o
   end
-  
+
   opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
      options[:model] = o
   end
@@ -91,7 +92,7 @@ OptionParser.new do |opts|
   opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
     options[:genomes_count] = o.to_i
   end
-  
+
   opts.on("-i", "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
     options[:min_identity] = o.to_i
   end
@@ -136,6 +137,10 @@ OptionParser.new do |opts|
 
   opts.on("-H", "--het_dels", "If present, change the scoring to give priority to: semi-specific, specific, non-specific")  do
     options[:scoring] = :het_dels
+  end
+
+  opts.on("-M", "--max_hits INT", "Maximum number of hits to consider a region as non repetitive. Markers with more than this number of hits will be ignored. (default #{options[:max_hits]})") do |o|
+    options[:max_hits] = o.to_i
   end
 
   opts.on("-P", "--primers_to_order", "If present, save a separate file with the primers with the KASP tails")do
@@ -328,8 +333,9 @@ contigs_f.close() if options[:extract_found_contigs]
 write_status "Reading best alignment on each chromosome"
 
 
-container= Bio::PolyploidTools::ExonContainer.new
-container.flanking_size=options[:flanking_size] 
+container = Bio::PolyploidTools::ExonContainer.new
+container.flanking_size = options[:flanking_size] 
+container.max_hits = options[:max_hits]
 container.gene_models(temp_fasta_query)
 container.chromosomes(target)
 container.add_parental({:name=>snp_in})
