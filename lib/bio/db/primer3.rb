@@ -59,6 +59,7 @@ module Bio::DB::Primer3
     attr_accessor :snp_from
     attr_accessor :regions
     attr_accessor :primer3_errors
+    attr_accessor :repetitive
     
     def line_1_name
       "#{gene}:#{position}#{original}>#{snp} #{line_1}}"
@@ -112,7 +113,7 @@ module Bio::DB::Primer3
       left_end = 0
       right_start = 0
       right_end = 0
-      total_columns_before_messages=17
+      total_columns_before_messages=18
       #puts "Values in primer3"
       #puts snp_from.inspect
       @values = Array.new
@@ -123,6 +124,7 @@ module Bio::DB::Primer3
       @values << snp_from.chromosome
       @values << regions.size
       @values << regions.join("|")
+      @values << repetitive
       if primer3_line_1 and primer3_line_2
         @values <<  primer3_line_1.polymorphism
 
@@ -761,6 +763,7 @@ module Bio::DB::Primer3
       snp.primer3_errors = Set.new snp_in.errors
       snp.position = snp_in.position
       snp.snp = snp_in.snp
+      snp.repetitive = snp_in.repetitive
 
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
