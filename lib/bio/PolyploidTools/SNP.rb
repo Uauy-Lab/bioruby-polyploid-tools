@@ -15,6 +15,8 @@ module Bio::PolyploidTools
     attr_accessor :primer_3_min_seq_length 
     attr_accessor :chromosome
     attr_accessor :variation_free_region
+    attr_accessor :max_hits
+    attr_accessor :errors
 
 
 
@@ -62,7 +64,9 @@ module Bio::PolyploidTools
       @primer_3_min_seq_length = 50
       @variation_free_region = 0
       @contig = false
+      @max_hits = 10
       @exon_list = Hash.new {|hsh, key| hsh[key] = [] }
+      @errors = Array.new
     end
 
     def to_polymarker_coordinates(flanking_size, total:nil)
@@ -329,11 +333,16 @@ module Bio::PolyploidTools
       primer_3_propertes = Array.new
 
       seq_original = String.new(pr.sequence)
-      #puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s 
-      return primer_3_propertes if seq_original.size < primer_3_min_seq_length
-      #puts self.inspect
-      #puts pr.snp_pos.to_s << "(" << seq_original.length.to_s << ")"
       
+      if seq_original.size < primer_3_min_seq_length
+        errors << "The sequence (#{seq_original.size}) is shorter than #{primer_3_min_seq_length}"
+        return primer_3_propertes 
+      end
+
+      if exon_list.size > max_hits
+        errors << "The marker maps to #{exon_list.size} positions (max_hits: #{max_hits}). "
+        return primer_3_propertes 
+      end
       seq_original[pr.snp_pos] = self.original
       seq_original_reverse = reverse_complement_string(seq_original)
 

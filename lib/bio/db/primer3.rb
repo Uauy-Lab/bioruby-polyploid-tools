@@ -655,8 +655,7 @@ module Bio::DB::Primer3
       @values = Hash.new
     end
 
-    def method_missing(m, *args, &block)  
-
+    def method_missing(m, *args, &block)
       return @values[m.to_s] if @values[m.to_s] != nil
       raise NoMethodError.new(), "There's no method called #{m}, available: #{@values.keys.to_s}."  
     end
@@ -759,7 +758,7 @@ module Bio::DB::Primer3
       snp = SNP.new
       snp.gene = snp_in.gene
       snp.original = snp_in.original
-
+      snp.primer3_errors = Set.new snp_in.errors
       snp.position = snp_in.position
       snp.snp = snp_in.snp
 

@@ -78,8 +78,10 @@ module Bio::PolyploidTools
     
     def add_snp(snp)
       #TODO: add to the snp the maximum number of hits? 
+      snp.max_hits = self.max_hits
       @snp_map[snp.gene] = Array.new unless   @snp_map[snp.gene] 
       @snp_map[snp.gene] << snp
+
     end
 
     def add_snp_file(filename, chromosome, snp_in, original_name)
@@ -208,6 +210,19 @@ module Bio::PolyploidTools
                 end
               end
             end
+          end
+        end
+      end
+      remove_alignments_over_max_hits
+    end
+
+    def remove_alignments_over_max_hits
+      @snp_map.each_pair do | gene, snp_array| 
+        snp_array.each do |snp|
+          if snp.exon_list.size > max_hits
+            total_hits = snp.exon_list.size
+            snp.exon_list = {} 
+            snp.errors << "The marker is in a repetitive region (#{total_hits} hits to reference)"
           end
         end
       end

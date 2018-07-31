@@ -312,7 +312,7 @@ def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
 
 end
 
-Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>options[:database], :model=>model}) do |aln|
+Bio::DB::Blast.align({:max_hits=>options[:max_hits], :query=>temp_fasta_query, :target=>options[:database], :model=>model}) do |aln|
   do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
 end if options[:aligner] == :blast
 
