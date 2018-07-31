@@ -128,6 +128,12 @@ To use blast instead of exonerate, use the following command:
 
 ## Release Notes
 
+### Next release
+
+### 0.8.5
+
+* Added the option ```--max_hits``` to ```polyamarker.rb``` to set a maximum number of bast hits to identify repetitive regions. This adds the column ```is_repetitve``` to the output. The mask is not calculated in repetitive regions and the primers are designed as non-specific. 
+
 ### 0.8.4 
 
 * Added script ```tag_stats.rb`` That gets the descriptive statistics for a tag in a bam file for each reference. 
