@@ -113,7 +113,7 @@ module Bio::DB::Primer3
       left_end = 0
       right_start = 0
       right_end = 0
-      total_columns_before_messages=18
+      total_columns_before_messages=17
       #puts "Values in primer3"
       #puts snp_from.inspect
       @values = Array.new
@@ -124,7 +124,6 @@ module Bio::DB::Primer3
       @values << snp_from.chromosome
       @values << regions.size
       @values << regions.join("|")
-      @values << repetitive
       if primer3_line_1 and primer3_line_2
         @values <<  primer3_line_1.polymorphism
 
@@ -248,7 +247,9 @@ module Bio::DB::Primer3
     end
 
     def print_primers
-      self.values.join(",")
+      to_print = values.dup
+      to_print << @repetitive
+      to_print.join(",")
     end
 
     def found_primers?
