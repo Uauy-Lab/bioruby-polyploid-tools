@@ -80,7 +80,7 @@ module Bio::DB::Blast
 		target=opts[:target]
 		query=opts[:query]
 		max_target_seqs = 15
-		max_target_seqs = opts[:max_hits] + 1 if opts[:max_hits]
+		max_target_seqs = opts[:max_hits] * 2 if opts[:max_hits]
 		cmdline = "blastn -max_target_seqs #{max_target_seqs} -query #{query} -db #{target} -outfmt '6 qseqid qstart qend qframe sseqid sstart send sframe score pident qlen slen qseq sseq'"
 
 		status, stdout, stderr = systemu cmdline

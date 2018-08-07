@@ -128,6 +128,9 @@ To use blast instead of exonerate, use the following command:
 
 ## Release Notes
 
+### 0.8.7
+* FEATURE: ```polymarker.rb``` now also prints the total number of hits found. 
+
 ### 0.8.6
 
 * BUGFIX: ```priemr3.rb``` had a regression when adding the repetitive flag to the ```@values``` array. This lead to the wrong order of the columns in the output and possibly other secondary effects. 
