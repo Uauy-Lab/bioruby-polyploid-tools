@@ -60,6 +60,7 @@ module Bio::DB::Primer3
     attr_accessor :regions
     attr_accessor :primer3_errors
     attr_accessor :repetitive
+    attr_accessor :hit_count
     
     def line_1_name
       "#{gene}:#{position}#{original}>#{snp} #{line_1}}"
@@ -249,6 +250,7 @@ module Bio::DB::Primer3
     def print_primers
       to_print = values.dup
       to_print << @repetitive
+      to_print << hit_count
       to_print.join(",")
     end
 
@@ -765,7 +767,8 @@ module Bio::DB::Primer3
       snp.position = snp_in.position
       snp.snp = snp_in.snp
       snp.repetitive = snp_in.repetitive
-
+      #puts snp_in.inspect
+      snp.hit_count = snp_in.hit_count
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
       snp.snp_from = snp_in

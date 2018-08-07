@@ -221,6 +221,7 @@ module Bio::PolyploidTools
         snp_array.each do |snp|
           if snp.exon_list.size > max_hits
             total_hits = snp.exon_list.size
+            snp.hit_count = total_hits
             snp.exon_list = {} 
             snp.repetitive = true
             snp.errors << "The marker is in a repetitive region (#{total_hits} hits to reference)"

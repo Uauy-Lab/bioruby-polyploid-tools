@@ -18,6 +18,7 @@ module Bio::PolyploidTools
     attr_accessor :max_hits
     attr_accessor :errors
     attr_accessor :repetitive
+    attr_accessor :hit_count
 
 
 
@@ -69,6 +70,7 @@ module Bio::PolyploidTools
       @exon_list = Hash.new {|hsh, key| hsh[key] = [] }
       @errors = Array.new
       @repetitive = false
+      @hit_count = 0
     end
 
     def to_polymarker_coordinates(flanking_size, total:nil)
@@ -340,8 +342,9 @@ module Bio::PolyploidTools
         errors << "The sequence (#{seq_original.size}) is shorter than #{primer_3_min_seq_length}"
         return primer_3_propertes 
       end
-
-      if exon_list.size > max_hits
+      hit_count = exon_list.size
+      puts exon_list.inspect
+      if hit_count > max_hits
         errors << "The marker maps to #{exon_list.size} positions (max_hits: #{max_hits}). "
         repetitive = true
         return primer_3_propertes 
