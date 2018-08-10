@@ -343,9 +343,8 @@ module Bio::PolyploidTools
         return primer_3_propertes 
       end
       @hit_count = exon_list.size
-      puts exon_list.inspect
       if @hit_count > max_hits
-        errors << "The marker maps to #{exon_list.size} positions (max_hits: #{max_hits}). "
+        errors << "The marker maps to #{@hit_count} positions (max_hits: #{max_hits}). "
         repetitive = true
         return primer_3_propertes 
       end
