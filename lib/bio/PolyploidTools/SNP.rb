@@ -20,8 +20,6 @@ module Bio::PolyploidTools
     attr_accessor :repetitive
     attr_accessor :hit_count
 
-
-
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
     #A_comp0_c0_seq1,C,519,A,2A
@@ -70,7 +68,6 @@ module Bio::PolyploidTools
       @exon_list = Hash.new {|hsh, key| hsh[key] = [] }
       @errors = Array.new
       @repetitive = false
-      @hit_count = 0
     end
 
     def to_polymarker_coordinates(flanking_size, total:nil)
@@ -129,7 +126,6 @@ module Bio::PolyploidTools
       else
          exon_list[arm] << exon 
       end
-        
     end
 
     def covered_region
@@ -333,6 +329,7 @@ module Bio::PolyploidTools
 
 
     def primer_3_all_strings(target_chromosome, parental) 
+
       pr = primer_region(target_chromosome, parental )
       primer_3_propertes = Array.new
 
@@ -342,9 +339,9 @@ module Bio::PolyploidTools
         errors << "The sequence (#{seq_original.size}) is shorter than #{primer_3_min_seq_length}"
         return primer_3_propertes 
       end
-      @hit_count = exon_list.size
-      if @hit_count > max_hits
-        errors << "The marker maps to #{@hit_count} positions (max_hits: #{max_hits}). "
+      
+      if hit_count > max_hits
+        errors << "The marker maps to #{hit_count} positions (max_hits: #{max_hits}). "
         repetitive = true
         return primer_3_propertes 
       end

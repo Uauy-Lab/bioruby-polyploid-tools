@@ -39,7 +39,7 @@ options[:min_identity] = 90
 options[:scoring] = :genome_specific
 options[:database]  = false
 options[:filter_best]  = false
-options[:max_hits] = 10
+options[:max_hits] = 8
 options[:aligner] = :exonerate
 
 
