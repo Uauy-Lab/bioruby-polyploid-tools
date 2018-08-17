@@ -219,9 +219,9 @@ module Bio::PolyploidTools
     def remove_alignments_over_max_hits
       @snp_map.each_pair do | gene, snp_array| 
         snp_array.each do |snp|
-          if snp.exon_list.size > max_hits
-            total_hits = snp.exon_list.size
-            snp.hit_count = total_hits
+          total_hits = snp.exon_list.size
+          snp.hit_count = total_hits
+          if total_hits > max_hits
             snp.exon_list = {} 
             snp.repetitive = true
             snp.errors << "The marker is in a repetitive region (#{total_hits} hits to reference)"

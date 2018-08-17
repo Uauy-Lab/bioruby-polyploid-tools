@@ -68,6 +68,7 @@ module Bio::PolyploidTools
       @exon_list = Hash.new {|hsh, key| hsh[key] = [] }
       @errors = Array.new
       @repetitive = false
+      @hit_count = 0
     end
 
     def to_polymarker_coordinates(flanking_size, total:nil)
@@ -340,8 +341,8 @@ module Bio::PolyploidTools
         return primer_3_propertes 
       end
       
-      if @hit_count > @max_hits
-        errors << "The marker maps to #{@hit_count} positions (max_hits: #{@max_hits}). "
+      if self.hit_count > self.max_hits
+        errors << "The marker maps to #{self.hit_count} positions (max_hits: #{self.max_hits}). "
         repetitive = true
         return primer_3_propertes 
       end
