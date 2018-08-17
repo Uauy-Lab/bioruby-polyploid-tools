@@ -250,7 +250,7 @@ module Bio::DB::Primer3
     def print_primers
       to_print = values.dup
       to_print << @repetitive
-      to_print << hit_count
+      to_print << @hit_count
       to_print.join(",")
     end
 

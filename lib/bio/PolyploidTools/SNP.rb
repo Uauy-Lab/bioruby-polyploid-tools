@@ -64,7 +64,7 @@ module Bio::PolyploidTools
       @primer_3_min_seq_length = 50
       @variation_free_region = 0
       @contig = false
-      @max_hits = 10
+      @max_hits = 8
       @exon_list = Hash.new {|hsh, key| hsh[key] = [] }
       @errors = Array.new
       @repetitive = false
@@ -340,8 +340,8 @@ module Bio::PolyploidTools
         return primer_3_propertes 
       end
       
-      if hit_count > max_hits
-        errors << "The marker maps to #{hit_count} positions (max_hits: #{max_hits}). "
+      if @hit_count > @max_hits
+        errors << "The marker maps to #{@hit_count} positions (max_hits: #{@max_hits}). "
         repetitive = true
         return primer_3_propertes 
       end
