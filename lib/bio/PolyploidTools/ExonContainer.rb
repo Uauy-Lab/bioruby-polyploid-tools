@@ -13,7 +13,6 @@ module Bio::PolyploidTools
     def initialize
       @parents=Hash.new
       @snp_map = Hash.new 
-      @snp_contigs
       @primer_3_min_seq_length = 50
       @max_hits = 10
     end
@@ -219,7 +218,7 @@ module Bio::PolyploidTools
     def remove_alignments_over_max_hits
       @snp_map.each_pair do | gene, snp_array| 
         snp_array.each do |snp|
-          total_hits = snp.exon_list.size
+          total_hits = snp.exon_list.map { |e| e.size }.inject(:+)
           snp.hit_count = total_hits
           if total_hits > max_hits
             snp.exon_list = {} 
