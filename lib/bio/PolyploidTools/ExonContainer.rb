@@ -218,7 +218,7 @@ module Bio::PolyploidTools
     def remove_alignments_over_max_hits
       @snp_map.each_pair do | gene, snp_array| 
         snp_array.each do |snp|
-          total_hits = snp.exon_list.map { |e| e.size }.inject(:+)
+          total_hits = snp.exon_list.map { |e| e.size }.reduce(0,:+)
           snp.hit_count = total_hits
           if total_hits > max_hits
             snp.exon_list = {} 
