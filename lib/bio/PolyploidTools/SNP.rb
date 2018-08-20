@@ -19,6 +19,7 @@ module Bio::PolyploidTools
     attr_accessor :errors
     attr_accessor :repetitive
     attr_accessor :hit_count
+    attr_accessor :snp_type
 
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
@@ -356,24 +357,24 @@ module Bio::PolyploidTools
       rev_pos = seq_snp.size - position
 
       if pr.homoeologous
-        snp_type = "homoeologous"
+        @snp_type = "homoeologous"
       else
-        snp_type = "non-homoeologous"
+        @snp_type = "non-homoeologous"
       end
 
       pr.chromosome_specific.each do |pos|
 
-        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific exon #{snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
+        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
-        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{snp_type} #{chromosome}"
+        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
       end
 
       pr.almost_chromosome_specific.each do |pos|
-        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific exon #{snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
+        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
-        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{snp_type} #{chromosome}"
+        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
 
@@ -381,26 +382,26 @@ module Bio::PolyploidTools
 
       pr.crhomosome_specific_intron.each do |pos|
 
-        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific intron #{snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
+        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific intron #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
-        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{snp_type} #{chromosome}"
+        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
       end
 
       pr.almost_crhomosome_specific_intron.each do |pos|
-        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific intron #{snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
+        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific intron #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
-        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{snp_type} #{chromosome}"
+        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
 
       end
 
 
-      args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_nonspecific all #{snp_type} #{chromosome}", :left_pos => pr.snp_pos, :sequence=>seq_original}
+      args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_nonspecific all #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :sequence=>seq_original}
       primer_3_propertes << return_primer_3_string(args)
-      args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_nonspecific all #{snp_type} #{chromosome}"
+      args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_nonspecific all #{@snp_type} #{chromosome}"
       args[:sequence] = seq_snp
       primer_3_propertes << return_primer_3_string(args)
 

@@ -61,6 +61,7 @@ module Bio::DB::Primer3
     attr_accessor :primer3_errors
     attr_accessor :repetitive
     attr_accessor :hit_count
+    attr_accessor :snp_type
     
     def line_1_name
       "#{gene}:#{position}#{original}>#{snp} #{line_1}}"
@@ -125,9 +126,8 @@ module Bio::DB::Primer3
       @values << snp_from.chromosome
       @values << regions.size
       @values << regions.join("|")
+      @values << snp_type
       if primer3_line_1 and primer3_line_2
-        @values <<  primer3_line_1.polymorphism
-
         #Block that searches both if both pairs have a TM
         primer_2 = primer3_line_2.left_primer_with_coordinates(primer3_line_1.left_coordinates, primer3_line_1.orientation)
         primer_2_tm = find_left_primer_temp(primer_2)
@@ -213,7 +213,6 @@ module Bio::DB::Primer3
         end
 
       elsif primer3_line_1 
-        @values << primer3_line_1.polymorphism
         @values << primer3_line_1.left_primer
         @values << primer3_line_1.left_primer_snp(self) 
         @values << primer3_line_1.right_primer 
@@ -226,7 +225,6 @@ module Bio::DB::Primer3
         @values << "first+"
         @values << primer3_line_1.best_pair.product_size
       elsif primer3_line_2 
-        @values << primer3_line_2.polymorphism
         @values << primer3_line_2.left_primer_snp(self) 
         @values << primer3_line_2.left_primer
         @values << primer3_line_2.right_primer
@@ -769,6 +767,7 @@ module Bio::DB::Primer3
       snp.repetitive = snp_in.repetitive
       #puts snp_in.inspect
       snp.hit_count = snp_in.hit_count
+      snp.snp_type  = snp_in.snp_type
       snp.line_1 = @line_1
       snp.line_2 = @line_2 
       snp.snp_from = snp_in
