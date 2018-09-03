@@ -45,8 +45,28 @@ class TestSNPparsing < Test::Unit::TestCase
     assert_equal(snp.position, 101)
     assert_equal(snp.original, "C")
     assert_equal(snp.snp, "T")
+  end
+
+  def test_vcf_line
+    ref=@data + "/IWGSC_CSS_1AL_scaff_1455974_aln_contigs.fa"
+    fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>ref})
     
-    
+    fasta_reference_db.load_fai_entries 
+    vcf="IWGSC_CSS_1AL_scaff_1455974	127	test_snp	C	T	135.03	.	"
+
+    chr_arm_parser = Bio::PolyploidTools::ChromosomeArm.getArmSelection("embl");
+    snp = Bio::PolyploidTools::SNP.parseVCF(vcf, chr_arm_parser)
+    puts snp.inspect
+    assert_equal(snp.gene , "test_snp", "The original name was not parsed: #{snp.gene}")
+    assert_equal("1A", snp.chromosome, "The chromosome wasnt parsed: #{snp.chromosome}")
+    assert_equal(127, snp.position, "The position is not parsed: #{snp.position}")
+    snp.setTemplateFromFastaFile(fasta_reference_db, flanking_size = 100)
+    assert_equal("actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctcYttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaaga",     snp.template_sequence)
+    assert_equal("actcgatcgtcagcacccgctggaacttggggaacgtcttgaacgccgcaagcaccggggcgtcctctgactgtatgagcacgcgctgcttacaggtctc[C/T]ttgtcgtacccggacttgacaagcgctttggagaccgcatccaccacgtcaaggcttctggctataaggtacgtagcatgctgcactcggtaggtacaag", snp.to_polymarker_sequence(100))
+    assert_equal(101,snp.position)
+    assert_equal("C",snp.original)
+    assert_equal("T",snp.snp)
+
   end
 
   def test_reference_snp

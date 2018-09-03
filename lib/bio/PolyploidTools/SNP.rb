@@ -37,6 +37,28 @@ module Bio::PolyploidTools
       snp
     end
 
+    #Format:
+    #IWGSC_CSS_1AL_scaff_1455974  127 test_snp    C  T  135.03 .  
+    def self.parseVCF(vcf_line, chr_arm_parser )
+      snp = SNP.new
+      arr = vcf_line.split("\t")
+      puts arr.inspect
+      snp.gene = arr[0]
+      snp.original = arr[3]
+      snp.position = arr[1]
+      snp.snp = arr[4] 
+      snp.chromosome = chr_arm_parser.call(arr[0])
+      
+      snp.position.strip!
+      snp.position =  snp.position.to_i
+      snp.original.upcase!
+      snp.original.strip!
+      snp.snp.upcase!
+      snp.snp.strip!  
+      snp.chromosome.strip!
+      return snp
+    end
+
     def setTemplateFromFastaFile(fastaFile ,flanking_size = 100)
       reg = Bio::DB::Fasta::Region.new
       reg.entry = gene
