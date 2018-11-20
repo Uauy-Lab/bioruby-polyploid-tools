@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Ricardo H.  Ramirez-Gonzalez".freeze]
-  s.date = "2018-08-20"
+  s.date = "2018-11-20"
   s.description = "Repository of tools developed at Crop Genetics in JIC to work with polyploid wheat".freeze
   s.email = "ricardo.ramirez-gonzalez@jic.ac.uk".freeze
   s.executables = ["bfr.rb".freeze, "blast_triads.rb".freeze, "blast_triads_promoters.rb".freeze, "count_variations.rb".freeze, "filter_blat_by_target_coverage.rb".freeze, "filter_exonerate_by_identity.rb".freeze, "find_best_blat_hit.rb".freeze, "find_best_exonerate.rb".freeze, "find_homoeologue_variations.rb".freeze, "get_longest_hsp_blastx_triads.rb".freeze, "hexaploid_primers.rb".freeze, "homokaryot_primers.rb".freeze, "mafft_triads.rb".freeze, "mafft_triads_promoters.rb".freeze, "map_markers_to_contigs.rb".freeze, "markers_in_region.rb".freeze, "mask_triads.rb".freeze, "polymarker.rb".freeze, "polymarker_capillary.rb".freeze, "snp_position_to_polymarker.rb".freeze, "snps_between_bams.rb".freeze, "tag_stats.rb".freeze, "vcfLineToTable.rb".freeze]
@@ -183,7 +183,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/tgac/bioruby-polyploid-tools".freeze
   s.licenses = ["MIT".freeze]
-  s.rubygems_version = "2.7.4".freeze
+  s.rubygems_version = "2.7.7".freeze
   s.summary = "Tool to work with polyploids, NGS and molecular biology".freeze
 
   if s.respond_to? :specification_version then
