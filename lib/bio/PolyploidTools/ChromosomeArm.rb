@@ -1,8 +1,6 @@
 module Bio::PolyploidTools
 class ChromosomeArm
 
-
-
   @@arm_selection_functions = Hash.new;
 
   #example format: chr2A
@@ -42,11 +40,24 @@ class ChromosomeArm
   end
 
   def self.getArmSelection(name)
+    arr = name.split(",")
+    if arr.size == 2
+       @@arm_selection_functions[name.to_sym] = lambda do |contig_name|
+          separator, field = arr
+          field = field.to_i
+          ret = contig_name.split(separator)[field]
+          return ret
+        end
+    end
     @@arm_selection_functions[name.to_sym]
   end
 
   def self.getValidFunctions
-    @@arm_selection_functions.keys.map { |e| e.to_s }
+    tmp = @@arm_selection_functions.keys.map { |e| e.to_s }
+    tmp.unshift "<sep>,<index>"
+    tmp
   end
+
+
 end
 end

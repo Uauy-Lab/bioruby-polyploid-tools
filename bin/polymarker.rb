@@ -39,8 +39,7 @@ options[:min_identity] = 90
 options[:scoring] = :genome_specific
 options[:database]  = false
 options[:filter_best]  = false
-options[:max_hits] = 8
-options[:aligner] = :exonerate
+options[:aligner] = :blast
 
 
 options[:primer_3_preferences] = {
@@ -58,61 +57,23 @@ options[:primer_3_preferences] = {
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker.rb [options]"
 
-  opts.on("-a", "--arm_selection #{Bio::PolyploidTools::ChromosomeArm.getValidFunctions.join('|')}", "Function to decide the chromome arm") do |o|
-    tmp_str = o
-    arr = o.split(",")
-    if arr.size == 2
-       options[:arm_selection] = lambda do |contig_name|
-          separator, field = arr
-          field = field.to_i
-          ret = contig_name.split(separator)[field]
-          return ret
-        end
-    else
-      options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection(o)
-    end
-   end
-
-  opts.on("-b", "--filter_best", "If set, only keep the best alignment for each chromosome") do 
-    options[:filter_best]  = true
-  end
-
   opts.on("-c", "--contigs FILE", "File with contigs to use as database") do |o|
     options[:path_to_contigs] = o
   end
   
-  opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
-    options[:database] = o
-  end
-
-  opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
-     options[:model] = o
+  opts.on("-m", "--marker_list FILE", "File with the list of markers to search from") do |o|
+    options[:marker_list] = o
   end
 
   opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
     options[:genomes_count] = o.to_i
   end
-
-  opts.on("-i", "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
-    options[:min_identity] = o.to_i
-  end
-
-  opts.on("-m", "--marker_list FILE", "File with the list of markers to search from") do |o|
-    options[:marker_list] = o
-  end
-
-  opts.on("-o", "--output FOLDER", "Output folder") do |o|
-    options[:output_folder] = o
-  end
-
-  opts.on("-p", "--primer_3_preferences FILE", "file with preferences to be sent to primer3") do |o|
-    options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
-  end
-
-  opts.on("-r", "--reference FILE", "Fasta file with the sequence for the markers (to complement --snp_list)") do |o|
-    options[:reference] = o
-  end
   
+  opts.on("-b", "--filter_best", "If set, only keep the best alignment for each chromosome") do 
+    options[:filter_best]  = true
+  end
+
+
   opts.on("-s", "--snp_list FILE", "File with the list of snps to search from, requires --reference to get the sequence using a position") do |o|
     options[:snp_list] = o
   end
@@ -122,6 +83,30 @@ OptionParser.new do |opts|
     options[:mutant_list] = o
   end
   
+  opts.on("-r", "--reference FILE", "Fasta file with the sequence for the markers (to complement --snp_list)") do |o|
+    options[:reference] = o
+  end
+
+  opts.on("-i", "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
+    options[:min_identity] = o.to_i
+  end
+  
+  opts.on("-o", "--output FOLDER", "Output folder") do |o|
+    options[:output_folder] = o
+  end
+  
+  opts.on("-e", "--exonerate_model MODEL", "Model to be used in exonerate to search for the contigs") do |o|
+     options[:model] = o
+  end
+
+  opts.on("-a", "--arm_selection #{Bio::PolyploidTools::ChromosomeArm.getValidFunctions.join('|')}", "Function to decide the chromome arm") do |o|
+    options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection(o)
+   end
+  
+  opts.on("-p", "--primer_3_preferences FILE", "file with preferences to be sent to primer3") do |o|
+    options[:primer_3_preferences] = Bio::DB::Primer3.read_primer_preferences(o, options[:primer_3_preferences] )
+  end
+
   opts.on("-v", "--variation_free_region INT", "If present, avoid generating the common primer if there are homoeologous SNPs within the specified distance") do |o|
     options[:variation_free_region] = o.to_i
   end
@@ -130,24 +115,23 @@ OptionParser.new do |opts|
     options[:extract_found_contigs] = true
   end
 
-  opts.on("-A", "--aligner exonerate|blast", "Select the aligner to use. Default: exonerate") do |o|
-    raise "Invalid aligner" unless o == "exonerate" or o == "blast" 
-    options[:aligner] = o.to_sym
+  opts.on("-P", "--primers_to_order", "If present, save a separate file with the primers with the KASP tails")do
+    #TODO: have a string with the tails, optional. 
+    options[:primers_to_order] = true
   end
 
   opts.on("-H", "--het_dels", "If present, change the scoring to give priority to: semi-specific, specific, non-specific")  do
     options[:scoring] = :het_dels
   end
 
-  opts.on("-M", "--max_hits INT", "Maximum number of hits to consider a region as non repetitive. Markers with more than this number of hits will be ignored. (default #{options[:max_hits]})") do |o|
-    options[:max_hits] = o.to_i
+  opts.on("-A", "--aligner exonerate|blast", "Select the aligner to use. Default: exonerate") do |o|
+    raise "Invalid aligner" unless o == "exonerate" or o == "blast" 
+    options[:aligner] = o.to_sym
   end
 
-  opts.on("-P", "--primers_to_order", "If present, save a separate file with the primers with the KASP tails")do
-    #TODO: have a string with the tails, optional. 
-    options[:primers_to_order] = true
+  opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
+    options[:database] = o
   end
-
 end.parse!
 
 
@@ -312,7 +296,7 @@ def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
 
 end
 
-Bio::DB::Blast.align({:max_hits=>options[:max_hits], :query=>temp_fasta_query, :target=>options[:database], :model=>model}) do |aln|
+Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>options[:database], :model=>model}) do |aln|
   do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
 end if options[:aligner] == :blast
 
@@ -333,9 +317,8 @@ contigs_f.close() if options[:extract_found_contigs]
 write_status "Reading best alignment on each chromosome"
 
 
-container = Bio::PolyploidTools::ExonContainer.new
-container.flanking_size = options[:flanking_size] 
-container.max_hits = options[:max_hits]
+container= Bio::PolyploidTools::ExonContainer.new
+container.flanking_size=options[:flanking_size] 
 container.gene_models(temp_fasta_query)
 container.chromosomes(target)
 container.add_parental({:name=>snp_in})
@@ -392,7 +375,7 @@ snps.each do |snp|
 end
 
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
-header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors,is_repetitive,hit_count"
+header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 
 File.open(output_to_order, "w") { |io|  io.write(kasp_container.print_primers_with_tails()) }
