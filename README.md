@@ -128,6 +128,11 @@ To use blast instead of exonerate, use the following command:
 
 ## Release Notes
 
+### 0.9.7 
+There was some strange issue with the numbering, so bumped to 0.9.7
+
+* Moved the arm selection function for fields in the chromosome name to the ```ChromosomeArm``` class.
+
 ### 0.8.7
 * FEATURE: ```polymarker.rb``` now also prints the total number of hits found. 
 
