@@ -117,9 +117,9 @@ module Bio::PolyploidTools
       return nil
     end
     
-     def to_fasta
+    def to_fasta
         return ">#{self.gene}\n#{self.template_sequence}\n"
-      end
+    end
 
     def add_exon(exon, arm, filter_best: true)
       if filter_best and exon_list[arm].size > 0
