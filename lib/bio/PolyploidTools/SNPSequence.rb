@@ -18,9 +18,10 @@ module Bio::PolyploidTools
       arr = reg_str.split(",")
       
       if arr.size == 3
-        snp.gene, snp.chromosome, snp.sequence_original = reg_str.split(",")
+        snp.gene, snp.chromosome, snp.sequence_original = arr
       elsif arr.size == 2
        snp.gene, snp.sequence_original = arr
+       snp.chromosome = ""
      else
        throw SNPSequenceException.new "Need two or three fields to parse, and got #{arr.size} in #{reg_str}"
       end
