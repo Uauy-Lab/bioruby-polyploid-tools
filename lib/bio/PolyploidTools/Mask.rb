@@ -10,8 +10,7 @@ class Array
   end
 end
 
-module Bio::PolyploidTools
-class Mask
+module Bio::PolyploidTools::Mask
   def self.find_end(seqs)
     size = seqs.values[0].size
     names = seqs.keys
@@ -114,4 +113,4 @@ class Mask
     }
   end
 end
-end
+
