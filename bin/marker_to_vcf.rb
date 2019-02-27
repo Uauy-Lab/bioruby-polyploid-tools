@@ -160,10 +160,14 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
       snp = snps[record.query_id]                           
       next unless snp != nil and snp.position.between?( (record.query_start + 1) , record.query_end)
       begin
+        puts record.query_id
         position = record.query_position_on_target(snp.position)
-        puts record.inspect
-        puts position.inspect
-        
+        q_strand = record.query_strand
+        t_strand = record.target_strand
+        template = snp.template_sequence
+        puts template
+        puts position
+        puts "\n"
         #puts exon.inspect
       rescue Bio::DB::Exonerate::ExonerateException
         $stderr.puts "Failed for the range #{record.query_start}-#{record.query_end} for position #{snp.position}"     

@@ -192,8 +192,22 @@ module Bio::DB::Exonerate
 
     def query_position_on_target(position, base:0)
       vulgar = exon_on_gene_position(position)
-      return vulgar
+      qr = vulgar.query_region
+      tr = vulgar.target_region
+      
+      offset = qr.orientation == :forward ? position - qr.start  : qr.end - position
 
+      puts vulgar.to_s
+      puts "SNP position: #{position}"
+      puts vulgar.query_region
+      puts vulgar.query_region.orientation
+      puts "Offset query: #{offset}"
+      puts vulgar.target_region
+      puts vulgar.target_region.orientation
+
+      new_pos = tr.orientation == :forward ? offset + tr.start :  tr.end - offset
+
+      return new_pos
     end
 
     def tarpostion_from_query_position(position)
