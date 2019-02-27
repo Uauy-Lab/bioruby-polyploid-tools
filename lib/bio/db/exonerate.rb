@@ -190,6 +190,12 @@ module Bio::DB::Exonerate
       nil
     end
 
+    def query_position_on_target(position, base:0)
+      vulgar = exon_on_gene_position(position)
+      return vulgar
+
+    end
+
     def tarpostion_from_query_position(position)
       ret = nil
       vulgar_block = exon_on_gene_position(position)
@@ -205,7 +211,6 @@ module Bio::DB::Exonerate
       out
     end
   end
-
 
   class Vulgar
     attr_reader :label, :query_length, :target_length, :query_start, :query_end, :target_start, :target_end, :record, :snp_in_gap

@@ -124,7 +124,7 @@ OptionParser.new do |opts|
     options[:scoring] = :het_dels
   end
 
-  opts.on("-A", "--aligner exonerate|blast", "Select the aligner to use. Default: exonerate") do |o|
+  opts.on("-A", "--aligner exonerate|blast", "Select the aligner to use. Default: #{options[:aligner]}") do |o|
     raise "Invalid aligner" unless o == "exonerate" or o == "blast" 
     options[:aligner] = o.to_sym
   end
@@ -137,7 +137,7 @@ end.parse!
 
 validate_files(options)
 
- options[:database] = options[:path_to_contigs] unless  options[:database] 
+options[:database] = options[:path_to_contigs] unless  options[:database] 
 
 
 if options[:primer_3_preferences][:primer_product_size_range]
