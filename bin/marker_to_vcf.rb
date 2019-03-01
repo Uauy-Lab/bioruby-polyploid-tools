@@ -13,6 +13,7 @@ require path
 options = {}
 options[:min_identity] = 90
 options[:filter_best]  = false
+options[:debug]  = false
 
 OptionParser.new do |opts|
   opts.banner = "Usage: marler_to_vcf.rb [options]"
@@ -27,6 +28,10 @@ OptionParser.new do |opts|
   
   opts.on("-b", "--filter_best", "If set, only keep the best alignment for each chromosome") do 
     options[:filter_best]  = false
+  end
+
+    opts.on("-D", "--debug", "Validate that the flanking sequences are correct") do 
+    options[:debug]  = true
   end
 
   opts.on("-i", "--min_identity INT", "Minimum identity to consider a hit (default 90)") do |o|
@@ -49,6 +54,7 @@ OptionParser.new do |opts|
   opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
     options[:database] = o
   end
+
 end.parse!
 options[:database] = options[:path_to_contigs] 
 p options
@@ -70,6 +76,7 @@ Dir.mkdir(output_folder)
 temp_fasta_query="#{output_folder}/to_align.fa"
 temp_contigs="#{output_folder}/contigs_tmp.fa"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
+vcf_file="#{output_folder}/snp_positions.vcf"
 
 min_identity= options[:min_identity]
 
@@ -85,12 +92,11 @@ end
 
 snps = Hash.new
 
+fasta_reference_db=nil
 
-write_status "Loading Reference"
-#0. Load the fasta index 
-fasta_reference_db = nil
-if fasta_reference
-  fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>fasta_reference})
+if options[:debug]
+  write_status "Loading Reference"
+  fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path_to_contigs})
   fasta_reference_db.load_fai_entries
   write_status "Fasta reference: #{fasta_reference}"
 end
@@ -152,7 +158,8 @@ end
 
 exo_f.close() 
 
-def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test.exo", snps:{}) 
+def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test.exo", snps:{}, reference:nil, out:$stdout) 
+  marker_count=Hash.new { |h, k| h[k] = 1 }
   File.open(exonerate_filename) do |f|
     f.each_line do | line |
       record = Bio::DB::Exonerate::Alignment.parse_custom(line)
@@ -160,14 +167,44 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
       snp = snps[record.query_id]                           
       next unless snp != nil and snp.position.between?( (record.query_start + 1) , record.query_end)
       begin
-        puts record.query_id
         position = record.query_position_on_target(snp.position)
         q_strand = record.query_strand
-        t_strand = record.target_strand
+        t_strand = record.target_strand 
+        
         template = snp.template_sequence
-        puts template
-        puts position
-        puts "\n"
+        #puts template
+        #puts position
+        vulgar = record.exon_on_gene_position(snp.position)
+        tr = vulgar.target_region
+        qr = vulgar.query_region
+        template_pre = template[qr.start - 1 .. snp.position - 1 ]
+        tr.orientation == :forward ? tr.end = position : tr.start = position
+        region = tr
+        #puts region.inspect
+        target_seq = reference.fetch_sequence(region)
+        #puts template_pre
+        #puts target_seq
+        ref_base = target_seq[-1].upcase
+        
+        alt_base = [snp.snp, snp.original].join(",")
+
+        if snp.original == ref_base
+          alt_base = snp.snp
+        elsif snp.snp == ref_base
+          alt_base = snp.original
+        end
+
+        if record.target_strand == :reverse
+          alt_base = Bio::Sequence::NA.new(alt_base)
+          ref_base = Bio::Sequence::NA.new(ref_base)
+          alt_base.complement!.upcase!
+          ref_base.complement!.upcase!
+        end
+
+        #puts  snp.inspect
+        out.puts("#{record.target_id}\t#{position}\t#{record.query_id}.path#{marker_count[record.query_id]}\t#{ref_base}\t#{alt_base}\t#{record.pi}")
+        marker_count[record.query_id] += 1
+        #puts "\n"
         #puts exon.inspect
       rescue Bio::DB::Exonerate::ExonerateException
         $stderr.puts "Failed for the range #{record.query_start}-#{record.query_end} for position #{snp.position}"     
@@ -176,9 +213,14 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
   end
 end
 
-puts "SNPs:"
-#puts snps.inspect
-print_positions(exonerate_filename:exonerate_file, min_identity:98, snps:snps)
 
+#puts snps.inspect
+out = File.open(vcf_file, "w")
+out.puts "##fileformat=VCFv4.2"
+out.puts "##fileDate=#{Time.now.strftime("%Y%m%d")}"
+out.puts "##source=#{$0}"
+out.puts "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
+print_positions(exonerate_filename:exonerate_file, min_identity:98, snps:snps, reference: fasta_reference_db, out:out)
+out.close
 
 

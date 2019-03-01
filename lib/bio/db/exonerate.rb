@@ -195,17 +195,17 @@ module Bio::DB::Exonerate
       qr = vulgar.query_region
       tr = vulgar.target_region
       
-      offset = qr.orientation == :forward ? position - qr.start  : qr.end - position
+      offset = qr.orientation == :forward ? position - qr.start + 1 : qr.end - position
 
-      puts vulgar.to_s
-      puts "SNP position: #{position}"
-      puts vulgar.query_region
-      puts vulgar.query_region.orientation
-      puts "Offset query: #{offset}"
-      puts vulgar.target_region
-      puts vulgar.target_region.orientation
+      #puts vulgar.to_s
+      #puts "SNP position: #{position}"
+      #puts vulgar.query_region
+      #puts vulgar.query_region.orientation
+      #puts "Offset query: #{offset}"
+      #puts vulgar.target_region
+      #puts vulgar.target_region.orientation
 
-      new_pos = tr.orientation == :forward ? offset + tr.start :  tr.end - offset
+      new_pos = tr.orientation == :forward ? offset + tr.start - 1 :  tr.end - offset + 1
 
       return new_pos
     end
