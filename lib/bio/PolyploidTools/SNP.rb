@@ -6,6 +6,7 @@ module Bio::PolyploidTools
 
     #GENE,ORIGINAL,POS,SNP
     attr_accessor :gene, :original, :position, :snp, :snp_in, :original_name
+    attr_accessor :contig
     attr_accessor :exon_list
     attr_accessor :container
     attr_accessor :flanking_size, :ideal_min, :ideal_max
@@ -40,23 +41,48 @@ module Bio::PolyploidTools
       snp
     end
 
+    #Format:
+    #IWGSC_CSS_1AL_scaff_1455974  127 test_snp    C  T  135.03 .  
+    def self.parseVCF(vcf_line, chr_arm_parser )
+      snp = SNP.new
+      arr = vcf_line.split("\t")
+      #puts arr.inspect
+      snp.gene     = arr[2]
+      snp.original = arr[3]
+      snp.position = arr[1]
+      snp.snp = arr[4] 
+      snp.chromosome = chr_arm_parser.call(arr[0])
+      snp.contig = arr[0]
+      snp.position.strip!
+      snp.position =  snp.position.to_i
+      snp.original.upcase!
+      snp.original.strip!
+      snp.snp.upcase!
+      snp.snp.strip!  
+      snp.chromosome.strip!
+      return snp
+    end
+
     def setTemplateFromFastaFile(fastaFile ,flanking_size = 100)
       reg = Bio::DB::Fasta::Region.new
       reg.entry = gene
       reg.entry = @contig if @contig
+      #puts "setTemplateFromFastaFile"
       #puts reg.entry 
       #puts @contig
       #puts gene
       reg.start = position - flanking_size
       reg.end = position + flanking_size +1
       reg.orientation = :forward
-      entry = fastaFile.index.region_for_entry(gene)
+      entry = fastaFile.index.region_for_entry(reg.entry)
       reg.start = 1 if reg.start < 1
       reg.end = entry.length if reg.end > entry.length
       amb = Bio::NucleicAcid.to_IUAPC("#{original}#{snp}")
       @position = @position - reg.start + 1
       @position = 1 if @position < 1
+      #puts "about to fetch"
       self.template_sequence = fastaFile.fetch_sequence(reg)
+      #puts "done fetching"
       template_sequence[position - 1] = amb
     end
 
