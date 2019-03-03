@@ -554,14 +554,15 @@ module Bio::DB::Primer3
       #puts "Parsing header: '#{self.sequence_id}'"
       arr = self.sequence_id.split(" ")
 
-      if arr.size == 7
-        @snp, @line, @type, @in, @polymorphism, @chromosome, @orientation  = arr  
-      else 
-        if arr.size == 6
-          @snp, @line, @type, @in, @polymorphism, @orientation  = arr
-          @chromosome = ""   
-        end 
-      end
+      #if arr.size == 7 This validation can be useful to get the best primers regardless of the chromosome, 
+      #But it is commented as it will require further testing. 
+      @snp, @line, @type, @in, @polymorphism, @chromosome, @orientation  = arr  
+      #else 
+      #  if arr.size == 6
+      #    @snp, @line, @type, @in, @polymorphism, @orientation  = arr
+      #    @chromosome = ""   
+      #  end 
+      #end
 
       @type = @type.to_sym
       if @in
