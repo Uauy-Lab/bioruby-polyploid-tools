@@ -169,7 +169,7 @@ test_file=options[:mutant_list] if options[:mutant_list]
 fasta_reference = options[:reference]
 output_folder="#{test_file}_primer_design_#{Time.now.strftime('%Y%m%d-%H%M%S')}" 
 output_folder= options[:output_folder] if  options[:output_folder]
-Dir.mkdir(output_folder)
+Dir.mkdir(output_folder) unless Dir.exist?(output_folder)
 #TODO Make this tmp files
 temp_fasta_query="#{output_folder}/to_align.fa"
 temp_contigs="#{output_folder}/contigs_tmp.fa"

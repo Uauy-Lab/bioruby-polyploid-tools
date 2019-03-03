@@ -1,3 +1,5 @@
+require 'bio'
+
 class Array
   def sum
     inject(0.0) { |result, el| result + el }
@@ -9,7 +11,6 @@ class Array
 end
 
 module Bio::PolyploidTools::Mask
-
   def self.find_end(seqs)
     size = seqs.values[0].size
     names = seqs.keys
@@ -112,3 +113,4 @@ module Bio::PolyploidTools::Mask
     }
   end
 end
+
