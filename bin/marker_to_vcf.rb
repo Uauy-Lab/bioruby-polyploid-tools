@@ -204,10 +204,10 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
         info <<  "MA=#{ma}"
         info <<  "TS=#{target_seq}"
         vcf_line="#{record.target_id}\t#{position}\t#{record.query_id}.path#{marker_count[record.query_id]}\t#{ref_base}\t#{alt_base}\t#{record.pi}\t.\t#{info.join(";")}"
-        snp2 = Bio::PolyploidTools::SNP.parseVCF( vcf_line )
-        snp2.setTemplateFromFastaFile(reference)
-        seq2=snp2.to_polymarker_sequence(50)
-        info << "PS=#{seq2}"
+        #snp2 = Bio::PolyploidTools::SNP.parseVCF( vcf_line )
+        #snp2.setTemplateFromFastaFile(reference)
+        #seq2=snp2.to_polymarker_sequence(50)
+        #info << "PS=#{seq2}"
         vcf_line="#{record.target_id}\t#{position}\t#{record.query_id}.path#{marker_count[record.query_id]}\t#{ref_base}\t#{alt_base}\t#{record.pi}\t.\t#{info.join(";")}"
         out.puts(vcf_line)
         
