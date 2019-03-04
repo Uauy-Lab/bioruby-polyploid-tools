@@ -1,9 +1,9 @@
 require 'bio'
 module Bio::PolyploidTools
   class SNPException < RuntimeError 
-   end
+  end
+  
   class SNP
-
     #GENE,ORIGINAL,POS,SNP
     attr_accessor :gene, :original, :position, :snp, :snp_in, :original_name
     attr_accessor :contig
@@ -21,6 +21,7 @@ module Bio::PolyploidTools
     attr_accessor :repetitive
     attr_accessor :hit_count
     attr_accessor :snp_type
+    attr_accessor :orientation
 
     #Format: 
     #Gene_name,Original,SNP_Pos,pos,chromosome
@@ -36,7 +37,7 @@ module Bio::PolyploidTools
       snp.snp.upcase!
       snp.snp.strip!  
       snp.chromosome.strip!
-   
+      
       snp.use_reference = false
       snp
     end
@@ -46,7 +47,6 @@ module Bio::PolyploidTools
     def self.parseVCF(vcf_line, chr_arm_parser )
       snp = SNP.new
       arr = vcf_line.split("\t")
-      #puts arr.inspect
       snp.gene     = arr[2]
       snp.original = arr[3]
       snp.position = arr[1]
@@ -60,6 +60,14 @@ module Bio::PolyploidTools
       snp.snp.upcase!
       snp.snp.strip!  
       snp.chromosome.strip!
+      snp.orientation = :forward
+
+      info = arr[7]
+      details =  info.scan(/(\w+)=([\w|.]+)/).collect { |id, value| { :id => id, :value => value }}
+      details.each do |e|   
+        snp.orientation = :reverse if e[:id] == "OR" and e[:value] == "reverse"
+      end
+
       return snp
     end
 
@@ -67,12 +75,8 @@ module Bio::PolyploidTools
       reg = Bio::DB::Fasta::Region.new
       reg.entry = gene
       reg.entry = @contig if @contig
-      #puts "setTemplateFromFastaFile"
-      #puts reg.entry 
-      #puts @contig
-      #puts gene
       reg.start = position - flanking_size
-      reg.end = position + flanking_size +1
+      reg.end = position + flanking_size + 1
       reg.orientation = :forward
       entry = fastaFile.index.region_for_entry(reg.entry)
       reg.start = 1 if reg.start < 1
@@ -109,15 +113,24 @@ module Bio::PolyploidTools
 
     def to_polymarker_sequence(flanking_size, total:nil)
       out = template_sequence.clone
-      #puts "changing: #{position} #{flanking_size} len: #{total}"
-      out[position-1]  = "[#{original}/#{snp}]"
+      snp_seq = "[#{original}/#{snp}]"
+      p = position-1 
+      if orientation == :reverse
+        p = out.length - p - 1
+        s = Bio::Sequence::NA.new(out)
+        s1 = Bio::Sequence::NA.new(original)
+        s2 = Bio::Sequence::NA.new(snp) 
+        out = s.reverse_complement
+        snp_seq = "[#{s1.reverse_complement}/#{s2.reverse_complement}]"
+
+      end
+
+      out[p]  = snp_seq
       start = position - flanking_size - 1
-      #puts "Start: #{start}"
       start = 0 if start < 0
       total = flanking_size * 2 unless total
       total += 5
-      #puts "Total: #{total}"
-      out[start , total ]
+      out[start , total ].upcase
     end
     
     def snp_id_in_seq
