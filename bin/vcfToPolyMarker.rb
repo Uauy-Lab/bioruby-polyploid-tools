@@ -77,6 +77,6 @@ $stdin.each do |line|
 	#puts line
 	snp = Bio::PolyploidTools::SNP.parseVCF( line , options[:arm_selection])
 	#puts snp.inspect
-	snp.setTemplateFromFastaFile(fasta_reference_db, flanking_size = 100)
+	snp.setTemplateFromFastaFile(fasta_reference_db, flanking_size: 100)
 	puts [snp.gene, snp.chromosome ,snp.to_polymarker_sequence(100)].join(",")
 end

@@ -44,14 +44,14 @@ module Bio::PolyploidTools
 
     #Format:
     #IWGSC_CSS_1AL_scaff_1455974  127 test_snp    C  T  135.03 .  
-    def self.parseVCF(vcf_line, chr_arm_parser )
+    def self.parseVCF(vcf_line, chr_arm_parser: Bio::PolyploidTools::ChromosomeArm.getArmSelection("first_two") )
       snp = SNP.new
       arr = vcf_line.split("\t")
       snp.gene     = arr[2]
       snp.original = arr[3]
       snp.position = arr[1]
       snp.snp = arr[4] 
-      snp.chromosome = chr_arm_parser.call(arr[0])
+      snp.chromosome = chr_arm_parser.call(arr[0]) 
       snp.contig = arr[0]
       snp.position.strip!
       snp.position =  snp.position.to_i
@@ -59,7 +59,7 @@ module Bio::PolyploidTools
       snp.original.strip!
       snp.snp.upcase!
       snp.snp.strip!  
-      snp.chromosome.strip!
+      snp.chromosome.strip! 
       snp.orientation = :forward
 
       info = arr[7]
@@ -71,7 +71,7 @@ module Bio::PolyploidTools
       return snp
     end
 
-    def setTemplateFromFastaFile(fastaFile ,flanking_size = 100)
+    def setTemplateFromFastaFile(fastaFile ,flanking_size: 100)
       reg = Bio::DB::Fasta::Region.new
       reg.entry = gene
       reg.entry = @contig if @contig

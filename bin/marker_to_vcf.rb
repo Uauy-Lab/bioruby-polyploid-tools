@@ -180,8 +180,9 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
         tr.orientation == :forward ? tr.end = position : tr.start = position
         region = tr
         target_seq = reference.fetch_sequence(region)
-        ref_base = target_seq[-1].upcase
-        
+        target_seq[-1] = target_seq[-1].upcase
+        ref_base = target_seq[-1]
+        ma = ref_base
         alt_base = [snp.snp, snp.original].join(",")
 
         if snp.original == ref_base
@@ -200,7 +201,15 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
         info =  ["OR=#{record.target_strand}"]
         info <<  "SC=#{record.score}"
         info <<  "PI=#{record.pi}"
-        out.puts("#{record.target_id}\t#{position}\t#{record.query_id}.path#{marker_count[record.query_id]}\t#{ref_base}\t#{alt_base}\t#{record.pi}\t.\t#{info.join(";")}")
+        info <<  "MA=#{ma}"
+        info <<  "TS=#{target_seq}"
+        vcf_line="#{record.target_id}\t#{position}\t#{record.query_id}.path#{marker_count[record.query_id]}\t#{ref_base}\t#{alt_base}\t#{record.pi}\t.\t#{info.join(";")}"
+        snp2 = Bio::PolyploidTools::SNP.parseVCF( vcf_line )
+        snp2.setTemplateFromFastaFile(reference)
+        seq2=snp2.to_polymarker_sequence(50)
+        info << "PS=#{seq2}"
+        vcf_line="#{record.target_id}\t#{position}\t#{record.query_id}.path#{marker_count[record.query_id]}\t#{ref_base}\t#{alt_base}\t#{record.pi}\t.\t#{info.join(";")}"
+        out.puts(vcf_line)
         
         marker_count[record.query_id] += 1
       rescue Bio::DB::Exonerate::ExonerateException
@@ -211,6 +220,7 @@ def print_positions(min_identity:90, filter_best:false, exonerate_filename:"test
 end
 
 
+write_status "Printing VCF file"
 #puts snps.inspect
 out = File.open(vcf_file, "w")
 out.puts "##fileformat=VCFv4.2"
@@ -220,8 +230,12 @@ out.puts "##reference=file://#{options[:path_to_contigs]}"
 out.puts "##INFO=<ID=OR,Number=1,Type=String,Description=\"Orientation of the alignment of the marker\">"
 out.puts "##INFO=<ID=SC,Number=1,Type=Float,Description=\"Alignment score of the marker\">"
 out.puts "##INFO=<ID=PI,Number=1,Type=Float,Description=\"Percentage of identity of the alignment to the marker\">"
+out.puts "##INFO=<ID=PS,Number=1,Type=String,Description=\"SNP sequence for PolyMarker\">"
+out.puts "##INFO=<ID=MA,Number=1,Type=String,Description=\"Allele based on the original marker sequence\">"
+out.puts "##INFO<ID=TS,Number=1,Type=String,Description=\"Target sequence before the SNP from the reference\""
 out.puts "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
 print_positions(exonerate_filename:exonerate_file, min_identity:95, snps:snps, reference: fasta_reference_db, out:out)
 out.close
+write_status "DONE"
 
 
