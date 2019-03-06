@@ -216,6 +216,7 @@ out = File.open(vcf_file, "w")
 out.puts "##fileformat=VCFv4.2"
 out.puts "##fileDate=#{Time.now.strftime("%Y%m%d")}"
 out.puts "##source=#{$0}"
+out.puts "##reference=file://#{options[:path_to_contigs]}"
 out.puts "##INFO=<ID=OR,Number=1,Type=String,Description=\"Orientation of the alignment of the marker\">"
 out.puts "##INFO=<ID=SC,Number=1,Type=Float,Description=\"Alignment score of the marker\">"
 out.puts "##INFO=<ID=PI,Number=1,Type=Float,Description=\"Percentage of identity of the alignment to the marker\">"
