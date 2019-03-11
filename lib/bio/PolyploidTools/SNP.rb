@@ -63,11 +63,12 @@ module Bio::PolyploidTools
       snp.orientation = :forward
 
       info = arr[7]
-      details =  info.scan(/(\w+)=([\w|.]+)/).collect { |id, value| { :id => id, :value => value }}
-      details.each do |e|   
-        snp.orientation = :reverse if e[:id] == "OR" and e[:value] == "reverse"
+      if info
+        details =  info.scan(/(\w+)=([\w|.]+)/).collect { |id, value| { :id => id, :value => value }}
+        details.each do |e|   
+          snp.orientation = :reverse if e[:id] == "OR" and e[:value] == "reverse"
+        end
       end
-
       return snp
     end
 
@@ -226,7 +227,7 @@ module Bio::PolyploidTools
       self.position - self.covered_region.start
     end
 
-    def padded_position (pos)
+    def padded_position(pos)
       pos + left_padding
     end
 
