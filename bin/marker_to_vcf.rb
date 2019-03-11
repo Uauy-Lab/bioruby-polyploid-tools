@@ -231,7 +231,7 @@ out.puts "##INFO=<ID=SC,Number=1,Type=Float,Description=\"Alignment score of the
 out.puts "##INFO=<ID=PI,Number=1,Type=Float,Description=\"Percentage of identity of the alignment to the marker\">"
 out.puts "##INFO=<ID=PS,Number=1,Type=String,Description=\"SNP sequence for PolyMarker\">"
 out.puts "##INFO=<ID=MA,Number=1,Type=String,Description=\"Allele based on the original marker sequence\">"
-out.puts "##INFO<ID=TS,Number=1,Type=String,Description=\"Target sequence before the SNP from the reference\""
+out.puts "##INFO=<ID=TS,Number=1,Type=String,Description=\"Target sequence before the SNP from the reference\">"
 out.puts "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
 print_positions(exonerate_filename:exonerate_file, min_identity:95, snps:snps, reference: fasta_reference_db, out:out)
 out.close

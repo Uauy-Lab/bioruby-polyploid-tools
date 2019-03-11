@@ -79,7 +79,7 @@ module Bio::DB::Blast
 	def self.align(opts={})
 		target=opts[:target]
 		query=opts[:query]
-		max_target_seqs = 15
+		max_target_seqs = 6 #TODO: Actually add this as an argument to PolyMarker. 
 		max_target_seqs = opts[:max_hits] * 2 if opts[:max_hits]
 		cmdline = "blastn -max_target_seqs #{max_target_seqs} -query #{query} -db #{target} -outfmt '6 qseqid qstart qend qframe sseqid sstart send sframe score pident qlen slen qseq sseq'"
 
