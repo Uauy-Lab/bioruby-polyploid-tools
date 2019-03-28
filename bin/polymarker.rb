@@ -201,7 +201,7 @@ end
 Signal.trap("TERM")  do 
   write_status "ERROR: Job terminated. Please try a small number of primers." 
   Signal.trap("SIGTERM", "DEFAULT") # restore handler
-  Process.kill("TERM", 0)           # kill this process with correct signal
+  exit
 end
 
 snps = Array.new
