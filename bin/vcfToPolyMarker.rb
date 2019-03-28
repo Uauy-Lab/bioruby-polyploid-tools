@@ -16,7 +16,7 @@ options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nr
 
 
 OptionParser.new do |opts|
-	opts.banner = "Usage: polymarker.rb [options]"
+	opts.banner = "Usage: vcfToPolyMarker.rb [options]"
 
 	opts.on("-c", "--reference FILE", "File with genome reference to use as database") do |o|
 		options[:path_to_contigs] = o
@@ -75,7 +75,7 @@ $stdin.each do |line|
 	end
 	line.chomp!
 	#puts line
-	snp = Bio::PolyploidTools::SNP.parseVCF( line , options[:arm_selection])
+	snp = Bio::PolyploidTools::SNP.parseVCF( line , chr_arm_parser: options[:arm_selection])
 	#puts snp.inspect
 	snp.setTemplateFromFastaFile(fasta_reference_db, flanking_size: 100)
 	puts [snp.gene, snp.chromosome ,snp.to_polymarker_sequence(100)].join(",")

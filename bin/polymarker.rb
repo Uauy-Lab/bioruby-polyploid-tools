@@ -149,8 +149,8 @@ if options[:primer_3_preferences][:primer_product_size_range]
   options[:flanking_size] = max
 end
 
-p options
-p ARGV
+#p options
+#p ARGV
 
 
 #TODO: Use temporary files somewhere in the file system and add traps to delete them/forward them as a result. 
@@ -192,6 +192,17 @@ def write_status(status)
   f.close
 end
 
+Signal.trap("ABRT")  do
+  write_status "ERROR: Job aborted. Please try a small number of primers." 
+  Signal.trap("SIGABRT", "DEFAULT") # restore handler
+  Process.kill("ABRT", 0)   
+end
+
+Signal.trap("TERM")  do 
+  write_status "ERROR: Job terminated. Please try a small number of primers." 
+  Signal.trap("SIGTERM", "DEFAULT") # restore handler
+  Process.kill("TERM", 0)           # kill this process with correct signal
+end
 
 snps = Array.new
 
@@ -377,8 +388,7 @@ end
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
 header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors,repetitive,total_hits"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
-
-File.open(output_to_order, "w") { |io|  io.write(kasp_container.print_primers_with_tails()) }
+File.open(output_to_order, "w") { |io|  io.write(kasp_container.print_primers_with_tails())}
 
 write_status "DONE"
 rescue StandardError => e
