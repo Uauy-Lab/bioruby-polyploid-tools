@@ -76,7 +76,6 @@ module Bio::PolyploidTools
     end
     
     def add_snp(snp)
-      #TODO: add to the snp the maximum number of hits? 
       snp.max_hits = self.max_hits
       @snp_map[snp.gene] = Array.new unless   @snp_map[snp.gene] 
       @snp_map[snp.gene] << snp

@@ -40,7 +40,7 @@ options[:scoring] = :genome_specific
 options[:database]  = false
 options[:filter_best]  = false
 options[:aligner] = :blast
-
+options[:max_hits] = 8
 
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
@@ -131,6 +131,10 @@ OptionParser.new do |opts|
 
   opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
     options[:database] = o
+  end
+
+  opts.on("-H", "--max_hits INT", "Maximum number of hits to the reference. If there are more hits than this value, the marker is ignored") do |o|
+    options[:max_hits] = o.to_i
   end
 end.parse!
 
@@ -233,8 +237,8 @@ File.open(test_file) do | f |
        region = fasta_reference_db.index.region_for_entry(snp.gene).get_full_region
        snp.template_sequence = fasta_reference_db.fetch_sequence(region)
      else
-        write_status "WARN: Unable to find entry for #{snp.gene}"
-      end
+      write_status "WARN: Unable to find entry for #{snp.gene}"
+    end
     elsif options[:mutant_list] and options[:reference] #List and fasta file
       snp = Bio::PolyploidTools::SNPMutant.parse(line)
       entry = fasta_reference_db.index.region_for_entry(snp.contig)
@@ -242,21 +246,21 @@ File.open(test_file) do | f |
        region = fasta_reference_db.index.region_for_entry(snp.contig).get_full_region
        snp.full_sequence = fasta_reference_db.fetch_sequence(region)
      else
-        write_status "WARN: Unable to find entry for #{snp.gene}"
-      end
-    else
-      raise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
+      write_status "WARN: Unable to find entry for #{snp.gene}"
     end
-    raise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
-
-    snp.genomes_count = options[:genomes_count]
-    snp.snp_in = snp_in
-    snp.original_name = original_name
-    if snp.position 
-      snps << snp
-    else
-      $stderr.puts "ERROR: #{snp.gene} doesn't contain a SNP"
-    end
+  else
+    raise Bio::DB::Exonerate::ExonerateException.new "Wrong number of arguments. " 
+  end
+  raise Bio::DB::Exonerate::ExonerateException.new "No SNP for line '#{line}'" if snp == nil
+  snp.max_hits = options[:max_hits]
+  snp.genomes_count = options[:genomes_count]
+  snp.snp_in = snp_in
+  snp.original_name = original_name
+  if snp.position 
+    snps << snp
+  else
+    $stderr.puts "ERROR: #{snp.gene} doesn't contain a SNP"
+  end
   end
 end
 
@@ -307,7 +311,7 @@ def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
 
 end
 
-Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>options[:database], :model=>model}) do |aln|
+Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>options[:database], :model=>model, :max_hits=>options[:max_hits]}) do |aln|
   do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
 end if options[:aligner] == :blast
 
@@ -334,7 +338,7 @@ container.gene_models(temp_fasta_query)
 container.chromosomes(target)
 container.add_parental({:name=>snp_in})
 container.add_parental({:name=>original_name})
-
+container.max_hits = options[:max_hits]
 snps.each do |snp|
   snp.container = container
   snp.flanking_size = container.flanking_size

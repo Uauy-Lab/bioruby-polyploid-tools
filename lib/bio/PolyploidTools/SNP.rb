@@ -381,8 +381,8 @@ module Bio::PolyploidTools
         errors << "The sequence (#{seq_original.size}) is shorter than #{primer_3_min_seq_length}"
         return primer_3_propertes 
       end
-      
       if self.hit_count > self.max_hits
+
         errors << "The marker maps to #{self.hit_count} positions (max_hits: #{self.max_hits}). "
         repetitive = true
         return primer_3_propertes 
