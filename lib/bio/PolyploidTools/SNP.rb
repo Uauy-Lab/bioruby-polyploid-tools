@@ -162,6 +162,7 @@ module Bio::PolyploidTools
     end
 
     def add_exon(exon, arm, filter_best: true)
+      exon_list[arm] = Array.new unless exon_list[arm]
       if filter_best and exon_list[arm].size > 0
         current = exon_list[arm].first
         exon_list[arm] = [exon] if exon.record.score > current.record.score 

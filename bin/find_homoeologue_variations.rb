@@ -53,14 +53,12 @@ class Bio::PolyploidTools::ExonContainer
 end
 
 class Bio::DB::Primer3::SNP
-
   def to_s
      "#{gene}:#{snp_from.chromosome}"
   end
-
 end
-class Bio::DB::Primer3::Primer3Record
 
+class Bio::DB::Primer3::Primer3Record
 
   def best_pair
     return @best_pair if @best_pair
@@ -123,25 +121,6 @@ class Bio::DB::Primer3::Primer3Record
 
    def left_primer_snp(snp)
       tmp_primer = String.new(left_primer)
-      #if self.orientation == :forward
-      #  base_original = snp.original 
-      #  base_snp = snp.snp
-      #elsif self.orientation == :reverse
-      #  base_original = reverse_complement_string(snp.original )
-      #  base_snp = reverse_complement_string(snp.snp)
-      #else
-      #  raise Primer3Exception.new "#{self.orientation} is not a valid orientation"
-      #end
-
-      # puts "#{snp.to_s} #{self.orientation} #{tmp_primer[-1] } #{base_original} #{base_snp}"
-      #if tmp_primer[-1] == base_original
-      #  tmp_primer[-1] = base_snp
-      #elsif tmp_primer[-1] == base_snp
-      #  tmp_primer[-1] = base_original  
-      #else
-      #  raise Primer3Exception.new "#{tmp_primer} doesnt end in a base in the SNP #{snp.to_s}"
-      #end
-      #puts "tmp_primer: #{tmp_primer}"
       return tmp_primer
     end
 

@@ -35,15 +35,20 @@ options[:primer_3_preferences] = {
 }
 options[:genomes_count] = 3
 options[:allow_non_specific] = false
+options[:aligner] = :blast
+model="ungapped" 
 
+options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene");
+ options[:database]  = false 
 OptionParser.new do |opts|
-  opts.banner = "Usage: polymarker_capillary.rb [options]"
+  opts.banner = "Usage: polymarker_deletions.rb [options]"
 
   opts.on("-r", "--reference FILE", "Fasta file with the assembly") do |o|
     options[:reference] = o
   end
 
-  opts.on("-m", "--sequences FILE", "Fasta file with the sequences to amplify. the format must be Chromosome:start-end. Chromosome should match the names to the entries in the fasta files as it is used as main target") do |o|
+  opts.on("-m", "--sequences FILE", "Fasta file with the sequences to amplify. the format must be Chromosome:start-end. Chromosome 
+    should match the names to the entries in the fasta files as it is used as main target") do |o|
     options[:markers] = o
   end
 
@@ -53,8 +58,17 @@ OptionParser.new do |opts|
   opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
     options[:genomes_count] = o.to_i
   end
-  opts.on("-a", "--allow_non_specific", "If used, semi-specific and non-specific primers will be produced") do |o|
+  opts.on("-A", "--allow_non_specific", "If used, semi-specific and non-specific primers will be produced") do |o|
     options[:allow_non_specific] = true
+  end
+
+  opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
+    options[:database] = o
+  end
+
+
+  opts.on("-a", "--arm_selection #{Bio::PolyploidTools::ChromosomeArm.getValidFunctions.join('|')}", "Function to decide the chromome arm") do |o|
+    options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection(o)
   end
 
 end.parse!
@@ -65,23 +79,32 @@ reference     = options[:reference]
 markers       = options[:markers]
 output_folder = options[:output_folder]
 allow_non_specific = options[:allow_non_specific]
+
+options[:database] = options[:reference] unless  options[:database] 
+temp_fasta_query="#{output_folder}/to_align.fa"
 log "Output folder: #{output_folder}"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 Dir.mkdir(output_folder)
-
+@@arm_selection = options[:arm_selection]
 module Bio::PolyploidTools
-
-
   
   class SequenceToAmplify < SNP
 
-    def self.select_chromosome(contig_name)
-  
-      arr = contig_name.split('_')
-      ret = "U"
-      ret = arr[2][0,2] if arr.size >= 3
-      ret = "3B" if arr.size == 2 and arr[0] == "v443"
-      ret = arr[0][0,2] if arr.size == 1   
+    def self.select_chromosome(gene_name)
+      #m=/##INFO=<ID=(.+),Number=(.+),Type=(.+),Description="(.+)">/.match(gene_name)
+      #m=/TraesCS(\d{1})(\w{1})(\d{2})G(\d+)/.match(gene_name)
+      #ret = {:group : m[1],
+      #       :genome : m[2],:version=>m[3],:chr_id=>m[4]}
+    
+      
+      #arr = contig_name.split('_')
+      #ret = "U"
+      #ret = arr[2][0,2] if arr.size >= 3
+      #ret = "3B" if arr.size == 2 and arr[0] == "v443"
+      #ret = arr[0][0,2] if arr.size == 1   
+      #ret = "#{m[1]}#{m[2]}"
+      #puts ret
+      ret = @@arm_selection.call(gene_name)
       return ret
     end
 
@@ -93,17 +116,17 @@ module Bio::PolyploidTools
     #A fasta entry with the id: contig:start-end
     #The sequence can be prodcued with samtools faidx
     def self.parse(fasta_entry)
-
+      #puts fasta_entry.definition
       snp = SequenceToAmplify.new
       match_data = /(?<rname>\w*):(?<rstart>\w*)-(?<rend>\w*)/.match(fasta_entry.definition)
-      
+      #puts match_data.inspect
       rName = Regexp.last_match(:rname)
       rStart =  Regexp.last_match(:rstart).to_i
       rEnd =  Regexp.last_match(:rend).to_i
       snp.gene = fasta_entry.definition
       #snp.chromosome=rName
-
-      snp.chromosome=select_chromosome(rName)
+      #puts "Gene: #{snp.gene}"
+      snp.chromosome=select_chromosome(fasta_entry.definition)
       #puts "#{rName}: #{snp.chromosome}"
       snp.sequence_original = fasta_entry.seq
       snp.template_sequence = fasta_entry.seq.upcase
@@ -232,6 +255,7 @@ file = Bio::FastaFormat.open(markers)
 file.each do |entry|
 
   begin
+    #puts entry.inspect
     tmp = Bio::PolyploidTools::SequenceToAmplify.parse(entry)
     snps << tmp if tmp
   rescue
@@ -251,40 +275,33 @@ fasta_file.load_fai_entries
 min_identity = 95
 found_contigs = Set.new
 
-Bio::DB::Exonerate.align({:query=>markers, :target=>reference, :model=>'ungapped'}) do |aln|
+
+def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
   if aln.identity > min_identity
     exo_f.puts aln.line
-    #puts aln.line
     unless found_contigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
       found_contigs.add(aln.target_id)
       entry = fasta_file.index.region_for_entry(aln.target_id)
-      raise Exception.new,  "Entry not found! #{aln.target_id}. Make sure that the #{reference}.fai was generated properly." if entry == nil
+      raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
+      if options[:extract_found_contigs]
+        region = entry.get_full_region
+        seq = fasta_file.fetch_sequence(region)
+        contigs_f.puts(">#{aln.target_id}\n#{seq}") 
+      end
     end
   end  
+
 end
+
+Bio::DB::Blast.align({:query=>markers, :target=>options[:database], :model=>model, :max_hits=>options[:max_hits]}) do |aln|
+  do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
+end if options[:aligner] == :blast
+
+Bio::DB::Exonerate.align({:query=>markers, :target=>target, :model=>model}) do |aln|
+  do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
+end if options[:aligner] == :exonerate
+
 exo_f.close
-
-arm_selection_functions = Hash.new
-
-arm_selection_functions[:full_scaffold] = lambda do | contig_name |    
-  return contig_name
-end
-
-#Function to parse stuff like: "IWGSC_CSS_1AL_scaff_110"
-#Or the first two characters in the contig name, to deal with 
-#pseudomolecules that start with headers like: "1A"
-#And with the cases when 3B is named with the prefix: v443
-arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
-  
-  arr = contig_name.split('_')
-  ret = "U"
-  ret = arr[2][0,2] if arr.size >= 3
-  ret = "3B" if arr.size == 2 and arr[0] == "v443"
-  ret = arr[0][0,2] if arr.size == 1   
-  return ret
-end
-
-
 
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=500 
@@ -292,6 +309,7 @@ container.gene_models(markers)
 container.chromosomes(target)
 container.add_parental({:name=>"A"})
 container.add_parental({:name=>"B"})
+#puts "SNPs size: #{snps.size}"
 snps.each do |snp|
   snp.snp_in = "B"
   snp.container = container
@@ -300,8 +318,10 @@ snps.each do |snp|
   snp.includeNoSpecific = allow_non_specific
   container.add_snp(snp)
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>arm_selection_functions[:arm_selection_embl] , :min_identity=>min_identity})
 
+container.add_alignments({:exonerate_file=>exonerate_file, 
+  :arm_selection=> @@arm_selection,
+  :min_identity=>min_identity})
 
 
 exons_filename="#{output_folder}/localAlignment.fa"
