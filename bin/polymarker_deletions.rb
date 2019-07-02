@@ -126,47 +126,16 @@ class Bio::DB::Primer3::Primer3Record
 
 end
 
-arm_selection_functions = Hash.new;
-
-
-arm_selection_functions[:arm_selection_first_two] = lambda do | contig_name |
-  ret = contig_name[0,2]       
-  return ret
-end
-
-#Function to parse stuff like: "IWGSC_CSS_1AL_scaff_110"
-#Or the first two characters in the contig name, to deal with 
-#pseudomolecules that start with headers like: "1A"
-#And with the cases when 3B is named with the prefix: v443
-arm_selection_functions[:arm_selection_embl] = lambda do | contig_name|
-  
-  arr = contig_name.split('_')
-  ret = "U"
-  ret = arr[2][0,2] if arr.size >= 3
-  ret = "3B" if arr.size == 2 and arr[0] == "v443"
-  ret = arr[0][0,2] if arr.size == 1   
-  return ret
-end
-
-arm_selection_functions[:arm_selection_morex] = lambda do | contig_name |
-  ret = contig_name.split(':')[0].split("_")[1];       
-  return ret
-end
-
-arm_selection_functions[:scaffold] = lambda do | contig_name |
-  ret = contig_name;       
-  return ret
-end
-
 markers = nil
 
 options = {}
+options[:aligner] = :blast
 options[:model] = "est2genome"
 options[:min_identity] = 90
-options[:extract_found_contigs] = false
-options[:arm_selection] = arm_selection_functions[:arm_selection_embl] ;
+options[:extract_found_contigs] = true
+options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene");
 options[:genomes_count] = 3
-
+options[:variation_free_region] =0
 
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
@@ -179,11 +148,14 @@ options[:primer_3_preferences] = {
   }
 
 
+options[:database]  = false 
+
+
 OptionParser.new do |opts|
   
-  opts.banner = "Usage: find_homoeologue_variations.rb [options]"
+  opts.banner = "Usage: polymarker_deletions.rb [options]"
 
-  opts.on("-c", "--sequences FASTA", "Sequence of the region to searc") do |o|
+  opts.on("-m", "--sequences FASTA", "Sequence of the region to search") do |o|
     options[:sequences] = o
   end
   opts.on("-r", "--reference FASTA", "reference with the contigs") do |o|
@@ -200,6 +172,14 @@ OptionParser.new do |opts|
   opts.on("-x", "--extract_found_contigs", "If present, save in a separate file the contigs with matches. Useful to debug.") do |o|
     options[:extract_found_contigs] = true
   end
+
+  opts.on("-d", "--database PREFIX", "Path to the blast database. Only used if the aligner is blast. The default is the name of the contigs file without extension.") do |o|
+    options[:database] = o
+  end
+
+    opts.on("-a", "--arm_selection #{Bio::PolyploidTools::ChromosomeArm.getValidFunctions.join('|')}", "Function to decide the chromome arm") do |o|
+    options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection(o)
+  end
   
 end.parse!
 #reference="/Users/ramirezr/Documents/TGAC/references/Triticum_aestivum.IWGSP1.21.dna_rm.genome.fa"
@@ -210,11 +190,14 @@ throw raise Exception.new(), "Fasta file with sequences has to be provided" unle
 output_folder = options[:output] if options[:output]
 throw raise Exception.new(), "An output directory has to be provided" unless output_folder
 model=options[:model] 
+
+options[:database] = options[:reference] unless  options[:database] 
+
 Dir.mkdir(output_folder)
 min_identity= options[:min_identity]
 
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
-temp_contigs="#{output_folder}/contigs_tmp.fa"
+
 primer_3_input="#{output_folder}/primer_3_input_temp"
 primer_3_output="#{output_folder}/primer_3_output_temp"
 exons_filename="#{output_folder}/exons_genes_and_contigs.fa"
@@ -227,14 +210,8 @@ fasta_file.load_fai_entries
 original_name="A"
 snp_in="B"
 
- arm_selection = options[:arm_selection]
+arm_selection = options[:arm_selection]
 
-unless arm_selection
-   arm_selection = lambda do | contig_name |
-      ret = contig_name[0,3]       
-      return ret
-    end
-end
 begin
 log "Reading exons"
 exons = Array.new
@@ -258,22 +235,28 @@ end
 log "Searching markers in genome"
 found_contigs = Set.new
 exo_f = File.open(exonerate_file, "w")
-contigs_f = File.open(temp_contigs, "w") if options[:extract_found_contigs]
-Bio::DB::Exonerate.align({:query=>sequences, :target=>reference, :model=>model}) do |aln|
-	if aln.identity > min_identity
+
+def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
+  if aln.identity > min_identity
     exo_f.puts aln.line
     unless found_contigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
       found_contigs.add(aln.target_id)
       entry = fasta_file.index.region_for_entry(aln.target_id)
       raise ExonerateException.new,  "Entry not found! #{aln.target_id}. Make sure that the #{target_id}.fai was generated properly." if entry == nil
-      region = entry.get_full_region
-      seq = fasta_file.fetch_sequence(region)
-      contigs_f.puts(">#{aln.target_id}\n#{seq}") if options[:extract_found_contigs]
+
     end
   end  
 end
+
+Bio::DB::Blast.align({:query=>sequences, :target=>options[:database], :model=>model, :max_hits=>options[:max_hits]}) do |aln|
+  do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
+end if options[:aligner] == :blast
+
+Bio::DB::Exonerate.align({:query=>sequences, :target=>target, :model=>model}) do |aln|
+  do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
+end if options[:aligner] == :exonerate
+
 exo_f.close() 
-contigs_f.close() if options[:extract_found_contigs]
 
 
 
@@ -282,14 +265,14 @@ log "Reading best alignment on each chromosome"
 container= Bio::PolyploidTools::ExonContainer.new
 container.flanking_size=options[:flanking_size] 
 container.gene_models(sequences)
-container.chromosomes(temp_contigs)
+container.chromosomes(reference)
 container.add_parental({:name=>"A"})
 container.add_parental({:name=>"B"})
 exons.each do |exon|
   exon.container = container
-  exon.flanking_size = 50
+  exon.flanking_size = 200
   exon.variation_free_region = options[:variation_free_region]
-#  puts exon.inspect
+  #puts exon.inspect
   container.add_snp(exon)
 
 end
