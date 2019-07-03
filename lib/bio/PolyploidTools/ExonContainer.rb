@@ -159,8 +159,8 @@ module Bio::PolyploidTools
           begin 
             primer_3_min_seq_length
             string = snp.primer_3_string( snp.chromosome, parental )
-            #TODO: add tan error to the SNP this snp has more than max_hits. Or maybe inside the SNP file. 
-            #puts "print_primer_3_exons: #{string.size}"
+            #TODO: add tan error to the SNP this snp has more than max_hits. 
+            #Or maybe inside the SNP file. 
             if string.size > 0
               file.puts string
               added += 1

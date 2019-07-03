@@ -80,7 +80,7 @@ class Bio::DB::Primer3::Primer3Record
         @total_caps = capital_count
       end
     end
-    #@best_pair = @primerPairs.min
+    
     @best_pair
   end
 
@@ -105,12 +105,13 @@ class Bio::DB::Primer3::Primer3Record
 
   def score
     best_pair
+    total_caps = "#{best_pair.left.sequence}#{best_pair.right.sequence}".scan(/[A-Z]/).length
 #    puts "score"
  #   puts self.inspect
     ret = 0
     ret += @scores[type]
     ret += @scores[:exon] if exon?
-    ret -= @total_caps * 10  
+    ret -= total_caps * 10  
     ret -= product_length
     ret
   end
@@ -135,7 +136,7 @@ options[:min_identity] = 90
 options[:extract_found_contigs] = true
 options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene");
 options[:genomes_count] = 3
-options[:variation_free_region] =0
+options[:variation_free_region] =0 
 
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
@@ -276,7 +277,13 @@ exons.each do |exon|
   container.add_snp(exon)
 
 end
-container.add_alignments({:exonerate_file=>exonerate_file, :arm_selection=>options[:arm_selection] , :min_identity=>min_identity})
+container.add_alignments(
+  {:exonerate_file=>exonerate_file, 
+  :arm_selection=>options[:arm_selection] , 
+  :min_identity=>min_identity})
+
+
+
 
 #4.1 generating primer3 file
 log "Running primer3"

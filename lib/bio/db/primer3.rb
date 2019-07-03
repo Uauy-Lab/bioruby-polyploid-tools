@@ -129,12 +129,12 @@ module Bio::DB::Primer3
       @values << snp_type
       if primer3_line_1 and primer3_line_2
         #Block that searches both if both pairs have a TM
-        primer_2 = primer3_line_2.left_primer_with_coordinates(primer3_line_1.left_coordinates, primer3_line_1.orientation)
-        primer_2_tm = find_left_primer_temp(primer_2)
-        primer_1 = primer3_line_1.left_primer_with_coordinates(primer3_line_2.left_coordinates, primer3_line_2.orientation) 
+        primer_1    = primer3_line_1.left_primer_with_coordinates(primer3_line_2.left_coordinates, primer3_line_2.orientation) 
         primer_1_tm = find_left_primer_temp(primer_1)
-        #  $stderr.puts primer_1
-        #  $stderr.puts primer_2
+
+        primer_2    = primer3_line_2.left_primer_with_coordinates(primer3_line_1.left_coordinates, primer3_line_1.orientation)
+        primer_2_tm = find_left_primer_temp(primer_2)
+
         if primer3_line_1 < primer3_line_2 and primer_2_tm != "NA"
           @values << primer3_line_1.left_primer
           @values << primer_2
@@ -159,7 +159,7 @@ module Bio::DB::Primer3
           @values << primer3_line_2.best_pair.product_size
         else
 
-          first_candidate = find_primer_pair_first
+          first_candidate  = find_primer_pair_first
           second_candidate = find_primer_pair_second
 
           if first_candidate
@@ -183,7 +183,7 @@ module Bio::DB::Primer3
             @values << first_candidate.best_pair.left.tm 
             @values << primer_2_tm
             @values << first_candidate.best_pair.right.tm
-            @values << "first" 
+            @values << "first-" 
             @values << first_candidate.best_pair.product_size
           elsif  second_candidate 
             #puts "B"
@@ -195,7 +195,7 @@ module Bio::DB::Primer3
             @values << primer_1_tm
             @values << second_candidate.best_pair.left.tm
             @values << second_candidate.best_pair.right.tm
-            @values << "second"
+            @values << "second-"
             @values << second_candidate.best_pair.product_size
           elsif  first_candidate 
             #puts "C"
@@ -207,7 +207,7 @@ module Bio::DB::Primer3
             @values << primer_2_tm
             @values << first_candidate.best_pair.left.tm
             @values << first_candidate.best_pair.right.tm
-            @values << "first"
+            @values << "first/"
             @values << first_candidate.best_pair.product_size
           end
         end
@@ -277,7 +277,6 @@ module Bio::DB::Primer3
     end
 
     def orientation
-      puts "insideOrientation: #{self.values[11]}"
       return self.values[11] if self.values[11]&& self.values[11] != nil 
       return 'unknown'
     end
@@ -385,7 +384,7 @@ module Bio::DB::Primer3
           @primer3_line_1 = primer3record if not @primer3_line_1  or @primer3_line_1 > primer3record
         when primer3record.line == @line_2
           primers_line_2 << primer3record
-          @primer3_line_2 = primer3record if not @primer3_line_2 or @primer3_line_2 > primer3record
+          @primer3_line_2 = primer3record if not @primer3_line_2  or @primer3_line_2 > primer3record
         else
           raise Primer3Exception.new "#{primer3record.line} is not recognized (#{line_1}, #{line_2})"
         end
@@ -508,9 +507,7 @@ module Bio::DB::Primer3
     def left_primer_with_coordinates(coordinates, other_orientation)
 
       seq = self.sequence_template
-      #puts "Left coordinates: #{seq}"
-      seq = Primer3Record.reverse_complement_string(seq) if self.orientation != other_orientation
-
+      seq = Primer3Record.reverse_complement_string(seq) if self.orientation != other_orientation    
       seq[coordinates[0],coordinates[1]] 
     end
 

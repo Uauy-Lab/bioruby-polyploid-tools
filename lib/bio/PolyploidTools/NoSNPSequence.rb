@@ -55,11 +55,15 @@ module Bio::PolyploidTools
 
      def mask_aligned_chromosomal_snp(chromosome)
       return nil if  aligned_sequences.values.size == 0
-      names = exon_sequences.keys
+      names = aligned_sequences.keys
+      parentals =  parental_sequences.keys
+      names = names - parentals
 
-      masked_snps = aligned_sequences[chromosome].downcase if aligned_sequences[chromosome]
-   
-      masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[chromosome]
+
+      best_target = get_target_sequence(names, chromosome)
+      masked_snps = aligned_sequences[best_target].downcase if aligned_sequences[best_target]
+      masked_snps = "-" * aligned_sequences.values[0].size  unless aligned_sequences[best_target]
+
       #TODO: Make this chromosome specific, even when we have more than one alignment going to the region we want.
       i = 0
       while i < masked_snps.size
@@ -105,17 +109,23 @@ module Bio::PolyploidTools
 
         aligned_sequences.each_pair do |name, val|  
           has_del = true if val[i] == '-'
-          print "#{val[i]}\t"
+          #print "#{val[i]}\t"
         end
         count += 1 if has_del
-        print "#{count}\n"
+        #print "#{count}\n"
       end
       return count
     end
 
     def primer_region(target_chromosome, parental_chr )
       chromosome_seq = aligned_sequences[target_chromosome]
+      names = aligned_sequences.keys
+      target_chromosome = get_target_sequence(names, target_chromosome)
+      chromosome_seq = aligned_sequences[target_chromosome]
       #chromosome_seq = "-" * parental.size unless chromosome_seq
+      chromosome_seq = chromosome_seq.downcase
+      #puts chromosome_seq
+
       if aligned_sequences.size == 0
         #puts aligned_sequences.inspect
         #puts surrounding_exon_sequences.inspect
@@ -124,7 +134,7 @@ module Bio::PolyploidTools
 
       end
       chromosome_seq = chromosome_seq.downcase
-
+      #puts chromosome_seq
       mask = mask_aligned_chromosomal_snp(target_chromosome)
     
       pr = PrimerRegion.new
@@ -146,7 +156,7 @@ module Bio::PolyploidTools
               pr.crhomosome_specific_intron << position_in_region
             elsif Bio::NucleicAcid.is_valid(parental[i], mask[i])
               parental[i] = mask[i]
-              pr.chromosome_specific << position_in_region if count_deletions_around(1,target_chromosome) < 3
+              pr.chromosome_specific << position_in_region #if count_deletions_around(1,target_chromosome) < 3
               pr.chromosome_specific_in_mask << i
             end
 
@@ -165,16 +175,15 @@ module Bio::PolyploidTools
           position_in_region += 1
         end #Closes region with bases 
       end         
-
       pr.sequence=parental.gsub('-','')
       pr
     end
 
-    def return_primer_3_string_test(opts={})
-
-      left = opts[:right_pos]
+    def return_primer_3_string(opts={})
+      #puts "return_primer_3_string #{opts.inspect}"
+      left = opts[:left_pos]
       right = opts[:right_pos]
-      sequence =  opts[:sequence]
+      sequence =  opts[:sequence].clone
       orientation = "forward"
       if opts[:right_pos]
         orientation = "forward"
@@ -201,7 +210,7 @@ module Bio::PolyploidTools
 
       #In case that we don't have a right primer, we do both orientations
       unless opts[:right_pos]
-        sequence =  opts[:sequence]    
+        sequence =  opts[:sequence].clone    
         left = sequence.size - left - 1
         orientation = "reverse"
         sequence = reverse_complement_string(sequence)
@@ -223,7 +232,9 @@ module Bio::PolyploidTools
     end
 
     def primer_3_all_strings(target_chromosome, parental) 
+      #puts "primer_3_all_strings: #{target_chromosome} #{parental}"
       pr = primer_region(target_chromosome, parental )
+      #puts pr.inspect
       primer_3_propertes = Array.new
 
       seq_original = String.new(pr.sequence)
@@ -236,24 +247,28 @@ module Bio::PolyploidTools
         snp_type = "non-homoeologous"
       end
 
-      pr.chromosome_specific.each do |pos|
-        
-        seq_snp =  String.new(pr.sequence)
-        orgiginal_base = seq_snp[pos]
-        other_chromosome_base = get_base_in_different_chromosome(pos, target_chromosome)
+      pr.chromosome_specific.each_with_index do |pos , i|
+        seq_snp =  seq_original.clone
+        #original_base = seq_snp[pos]
+        #puts "___"
+        #puts aligned_sequences.keys.inspect
+        #puts target_chromosome
+        t_chr =  get_target_sequence(aligned_sequences.keys, target_chromosome)
+        other_chromosome_base = get_base_in_different_chromosome(pr.chromosome_specific_in_mask[i], t_chr)
 
         args = {
           :name =>"#{gene} A chromosome_specific exon #{snp_type} #{chromosome}", 
           :left_pos => pos,  
-          :sequence=>seq_original
+          :sequence=>seq_snp
         }
         
-        
+        seq_snp =  seq_original.clone
         primer_3_propertes << return_primer_3_string(args)
+        
         args[:name] = "#{gene} B chromosome_specific exon #{snp_type} #{chromosome}"
-        args[:sequence] = seq_snp
-        #TODO: Find base from another chromosome
         seq_snp[pos] =  other_chromosome_base.upcase
+        args[:sequence] = seq_snp
+        
         
         primer_3_propertes << return_primer_3_string(args)
       end
