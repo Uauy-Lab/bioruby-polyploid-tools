@@ -36,10 +36,11 @@ options[:primer_3_preferences] = {
 options[:genomes_count] = 3
 options[:allow_non_specific] = false
 options[:aligner] = :blast
+options[:arm_selection]
 model="ungapped" 
+options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene")
+options[:database]  = false 
 
-options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene");
- options[:database]  = false 
 OptionParser.new do |opts|
   opts.banner = "Usage: polymarker_deletions.rb [options]"
 
@@ -85,12 +86,13 @@ temp_fasta_query="#{output_folder}/to_align.fa"
 log "Output folder: #{output_folder}"
 exonerate_file="#{output_folder}/exonerate_tmp.tab"
 Dir.mkdir(output_folder)
-@@arm_selection = options[:arm_selection]
+arm_selection = options[:arm_selection]
+
 module Bio::PolyploidTools
   
   class SequenceToAmplify < SNP
 
-    def self.select_chromosome(gene_name)
+    def self.select_chromosome(gene_name, arm_selection)
       #m=/##INFO=<ID=(.+),Number=(.+),Type=(.+),Description="(.+)">/.match(gene_name)
       #m=/TraesCS(\d{1})(\w{1})(\d{2})G(\d+)/.match(gene_name)
       #ret = {:group : m[1],
@@ -104,7 +106,7 @@ module Bio::PolyploidTools
       #ret = arr[0][0,2] if arr.size == 1   
       #ret = "#{m[1]}#{m[2]}"
       #puts ret
-      ret = @@arm_selection.call(gene_name)
+      ret = arm_selection.call(gene_name)
       return ret
     end
 
@@ -115,7 +117,7 @@ module Bio::PolyploidTools
     #Format: 
     #A fasta entry with the id: contig:start-end
     #The sequence can be prodcued with samtools faidx
-    def self.parse(fasta_entry)
+    def self.parse(fasta_entry, arm_selection)
       #puts fasta_entry.definition
       snp = SequenceToAmplify.new
       match_data = /(?<rname>\w*):(?<rstart>\w*)-(?<rend>\w*)/.match(fasta_entry.definition)
@@ -126,7 +128,7 @@ module Bio::PolyploidTools
       snp.gene = fasta_entry.definition
       #snp.chromosome=rName
       #puts "Gene: #{snp.gene}"
-      snp.chromosome=select_chromosome(fasta_entry.definition)
+      snp.chromosome=select_chromosome(fasta_entry.definition, arm_selection)
       #puts "#{rName}: #{snp.chromosome}"
       snp.sequence_original = fasta_entry.seq
       snp.template_sequence = fasta_entry.seq.upcase
@@ -134,7 +136,7 @@ module Bio::PolyploidTools
       snp.rstart = rStart
       snp.rend = rEnd
 
-      snp.position   = 100
+      snp.position   = snp.sequence_original.size / 2
       snp.original   = snp.sequence_original[snp.position]
       
       tmp =  Bio::Sequence::NA.new(snp.original)
@@ -256,10 +258,12 @@ file.each do |entry|
 
   begin
     #puts entry.inspect
-    tmp = Bio::PolyploidTools::SequenceToAmplify.parse(entry)
+    tmp = Bio::PolyploidTools::SequenceToAmplify.parse(entry, arm_selection)
     snps << tmp if tmp
-  rescue
+  rescue Exception => e
+    log "ERROR\t#{e.message}"
     $stderr.puts "Unable to generate the marker for: #{entry.definition}"
+    $stderr.puts e.backtrace
   end
 
 end
@@ -320,7 +324,7 @@ snps.each do |snp|
 end
 
 container.add_alignments({:exonerate_file=>exonerate_file, 
-  :arm_selection=> @@arm_selection,
+  :arm_selection=> arm_selection,
   :min_identity=>min_identity})
 
 
@@ -349,6 +353,9 @@ output_file  = "#{output_folder}/primers.csv"
 file = File.open(masks_output, "w")
 out  = File.open(output_file,  "w")
 
+out.puts ["Id","specificity","inside","type","target","orientation","product_size",
+  "left_position","left_tm","left_sequence",
+"rigth_position","rigth_tm","rigth_sequence"].join ","
 class Bio::DB::Primer3::Primer3Record
   attr_accessor :primerPairs
 end
@@ -378,10 +385,7 @@ Bio::DB::Primer3::Primer3Record.parse_file(primer_3_output) do | primer3record |
 
   file.puts ">#{seq_id}\n#{sequence_template}"
   file.puts ">#{seq_id}:mask\n#{sequence_mask}"
-   #puts "FDFDS"
-
-   #puts primer3record.primerPairs
-
+  
    primer3record.primerPairs.each do |p| 
     #puts p.inspect
     printed += 1   
@@ -401,10 +405,10 @@ Bio::DB::Primer3::Primer3Record.parse_file(primer_3_output) do | primer3record |
     toPrint <<  p.right.sequence
 
     middle = 501 
-    toPrint << lArr[0]
-    toPrint << rArr[0]
-    toPrint << middle - lArr[0]
-    toPrint << rArr[0] - middle
+    #toPrint << lArr[0]
+    #toPrint << rArr[0]
+    #toPrint << middle - lArr[0]
+    #toPrint << rArr[0] - middle
 #Start End LeftDistance  RightDistance
 
     out.puts toPrint.join(",")
