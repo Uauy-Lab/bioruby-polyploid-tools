@@ -355,7 +355,7 @@ out  = File.open(output_file,  "w")
 
 out.puts ["Id","specificity","inside","type","target","orientation","product_size",
   "left_position","left_tm","left_sequence",
-"rigth_position","rigth_tm","rigth_sequence"].join ","
+"right_position","right_tm","right_sequence"].join ","
 class Bio::DB::Primer3::Primer3Record
   attr_accessor :primerPairs
 end
