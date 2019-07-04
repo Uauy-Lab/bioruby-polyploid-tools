@@ -804,9 +804,9 @@ module Bio::DB::Primer3
       str = ""
       snp_hash.each do |k, snp|  
         if snp.found_primers?
-          str << snp.gene << snp.original << "\t" << tail_a << snp.first_primer << "\n"
-          str << snp.gene << snp.snp      << "\t" << tail_b << snp.second_primer << "\n"
-          str << snp.gene                 << "\t"           << snp.common_primer << "\n"
+          str << snp.gene << snp.original << "_1st\t" << tail_a << snp.first_primer  << "\n"
+          str << snp.gene << snp.snp      << "_2nd\t" << tail_b << snp.second_primer << "\n"
+          str << snp.gene                 << "_common\t"        << snp.common_primer << "\n"
         end
       end
       return str

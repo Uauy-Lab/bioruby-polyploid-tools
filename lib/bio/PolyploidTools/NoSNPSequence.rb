@@ -122,17 +122,8 @@ module Bio::PolyploidTools
       names = aligned_sequences.keys
       target_chromosome = get_target_sequence(names, target_chromosome)
       chromosome_seq = aligned_sequences[target_chromosome]
-      #chromosome_seq = "-" * parental.size unless chromosome_seq
-      chromosome_seq = chromosome_seq.downcase
-      #puts chromosome_seq
-
-      if aligned_sequences.size == 0
-        #puts aligned_sequences.inspect
-        #puts surrounding_exon_sequences.inspect
-        #puts self.inspect
-        chromosome_seq = surrounding_exon_sequences[target_chromosome]
-
-      end
+      chromosome_seq = surrounding_exon_sequences[target_chromosome ]if aligned_sequences.size == 0
+      chromosome_seq = "-" * sequence_original.size unless chromosome_seq
       chromosome_seq = chromosome_seq.downcase
       #puts chromosome_seq
       mask = mask_aligned_chromosomal_snp(target_chromosome)
@@ -280,7 +271,7 @@ module Bio::PolyploidTools
     def aligned_sequences
      
       return @aligned_sequences if @aligned_sequences
-      if sequences_to_align.size == 1
+      if sequences_to_align.size <= 1
         @aligned_sequences = sequences_to_align
         return @aligned_sequences
       end

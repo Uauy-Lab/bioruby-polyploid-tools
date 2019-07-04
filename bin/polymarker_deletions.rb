@@ -317,18 +317,14 @@ exons.each do |snp|
 end
 
 kasp_container.add_primers_file(primer_3_output) if added_exons > 0
-header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors"
+header = "Marker,SNP,RegionSize,chromosome,total_contigs,contig_regions,SNP_type,#{original_name},#{snp_in},common,primer_type,orientation,#{original_name}_TM,#{snp_in}_TM,common_TM,selected_from,product_size,errors,repetitive,blast_hits"
 File.open(output_primers, 'w') { |f| f.write("#{header}\n#{kasp_container.print_primers}") }
 
-kasp_container.snp_hash.each_pair do |name, kaspSNP|  
-  #puts kaspSNP.snp_from.surrounding_exon_sequences.inspect
-  #puts kaspSNP.first_product
-  #puts kaspSNP.realigned_primers
-
-  out_fasta_products = "#{output_folder}/#{name}.fa"
-  File.open(out_fasta_products, 'w') { |f| f.write(kaspSNP.realigned_primers_fasta) }
-
-
+out_fasta_products = "#{output_folder}/products.fa"
+File.open(out_fasta_products, 'w') do  |f|
+  kasp_container.snp_hash.each_pair do |name, kaspSNP|  
+    f.write(kaspSNP.realigned_primers_fasta) 
+  end
 end
 
 File.open(output_to_order, "w") { |io|  io.write(kasp_container.print_primers_with_tails()) }

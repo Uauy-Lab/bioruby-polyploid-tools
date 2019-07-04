@@ -140,6 +140,7 @@ module Bio::PolyploidTools
           begin 
             file.puts snp.aligned_sequences_fasta
           rescue Exception=>e
+            #puts snp.inspect
             @missing_exons << snp.to_s
             $stderr.puts "print_fasta_snp_exones:" + snp.to_s + ":" + e.to_s
             $stderr.puts "Local position: #{snp.local_position}"

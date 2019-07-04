@@ -559,7 +559,7 @@ module Bio::PolyploidTools
     def aligned_sequences
      
       return @aligned_sequences if @aligned_sequences
-     
+      return Hash.new if sequences_to_align.size == 0
       
       options = ['--maxiterate', '1000', '--localpair', '--quiet']
       mafft = Bio::MAFFT.new( "mafft" , options)
@@ -757,13 +757,13 @@ module Bio::PolyploidTools
       self.exon_list.each do |chromosome, exon_arr| 
         exon_arr.each do |exon|
           exon_start_offset = exon.query_region.start - gene_region.start
-          flanquing_region  = exon.target_flanking_region_from_position(position,flanking_size)
+          flanking_region  = exon.target_flanking_region_from_position(position,flanking_size)
           #TODO: Padd when the exon goes over the regions... 
-          #puts flanquing_region.inspect
+          #puts flanking_region.inspect
           #Ignoring when the exon is in a gap
           unless exon.snp_in_gap 
-            exon_seq = container.chromosome_sequence(flanquing_region)
-            @surrounding_exon_sequences["#{chromosome}_#{flanquing_region.start}_#{exon.record.score}"] = exon_seq
+            exon_seq = container.chromosome_sequence(flanking_region)
+            @surrounding_exon_sequences["#{chromosome}_#{flanking_region.start}_#{exon.record.score}"] = exon_seq
           end
         end
       end
