@@ -134,7 +134,7 @@ options[:aligner] = :blast
 options[:model] = "est2genome"
 options[:min_identity] = 90
 options[:extract_found_contigs] = true
-options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene");
+options[:arm_selection] = Bio::PolyploidTools::ChromosomeArm.getArmSelection("nrgene")
 options[:genomes_count] = 3
 options[:variation_free_region] =0 
 
