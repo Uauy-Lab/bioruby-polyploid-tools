@@ -41,7 +41,7 @@ options[:database]  = false
 options[:filter_best]  = false
 options[:aligner] = :blast
 options[:max_hits] = 8
-
+options[:max_specific_primers]  = 20
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -136,6 +136,11 @@ OptionParser.new do |opts|
   opts.on("-H", "--max_hits INT", "Maximum number of hits to the reference. If there are more hits than this value, the marker is ignored") do |o|
     options[:max_hits] = o.to_i
   end
+
+  opts.on("-S", "--max_specific_primers INT", "Maximum number of candidate primers to attempt to design. Default: #{options[:max_specific_primers]} ") do |o|
+    options[:max_specific_primers]  = o.to_i
+  end
+  
 end.parse!
 
 
@@ -362,7 +367,7 @@ write_status "Running primer3"
 file = File.open(primer_3_input, "w")
 
 Bio::DB::Primer3.prepare_input_file(file, options[:primer_3_preferences])
-added_exons = container.print_primer_3_exons(file, nil, snp_in)
+added_exons = container.print_primer_3_exons(file, nil, snp_in,  max_specific_primers: options[:max_specific_primers] )
 file.close
 
 Bio::DB::Primer3.run({:in=>primer_3_input, :out=>primer_3_output}) if added_exons > 0

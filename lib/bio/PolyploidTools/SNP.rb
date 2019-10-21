@@ -371,7 +371,7 @@ module Bio::PolyploidTools
     end
 
 
-    def primer_3_all_strings(target_chromosome, parental) 
+    def primer_3_all_strings(target_chromosome, parental, max_specific_primers: 20 ) 
 
       pr = primer_region(target_chromosome, parental )
       primer_3_propertes = Array.new
@@ -402,51 +402,52 @@ module Bio::PolyploidTools
       else
         @snp_type = "non-homoeologous"
       end
-
+      
       pr.chromosome_specific.each do |pos|
-
+        break if max_specific_primers <= 0
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
-      end
-
-      pr.almost_chromosome_specific.each do |pos|
-        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
-        primer_3_propertes << return_primer_3_string(args)
-        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
-        args[:sequence] = seq_snp
-        primer_3_propertes << return_primer_3_string(args)
-
+        max_specific_primers -= 1
       end
 
       pr.crhomosome_specific_intron.each do |pos|
-
+        break if max_specific_primers <= 0
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific intron #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
+        max_specific_primers -= 1
+      end
+
+      pr.almost_chromosome_specific.each do |pos|
+        break if max_specific_primers <= 0
+        args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
+        primer_3_propertes << return_primer_3_string(args)
+        args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
+        args[:sequence] = seq_snp
+        primer_3_propertes << return_primer_3_string(args)
+        max_specific_primers -= 1
       end
 
       pr.almost_crhomosome_specific_intron.each do |pos|
+        break if max_specific_primers <= 0
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific intron #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
-
+        max_specific_primers -= 1
       end
-
 
       args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_nonspecific all #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :sequence=>seq_original}
       primer_3_propertes << return_primer_3_string(args)
       args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_nonspecific all #{@snp_type} #{chromosome}"
       args[:sequence] = seq_snp
       primer_3_propertes << return_primer_3_string(args)
-
-
       primer_3_propertes
     end
 
@@ -458,8 +459,8 @@ module Bio::PolyploidTools
       "#{original}#{position}#{snp}".upcase
     end
 
-    def primer_3_string(target_chromosome, parental) 
-      strings = primer_3_all_strings(target_chromosome, parental) 
+    def primer_3_string(target_chromosome, parental, max_specific_primers: 20) 
+      strings = primer_3_all_strings(target_chromosome, parental, max_specific_primers: max_specific_primers) 
       strings.join
     end
 

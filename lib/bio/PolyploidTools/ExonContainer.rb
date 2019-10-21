@@ -151,7 +151,7 @@ module Bio::PolyploidTools
       end
     end
 
-    def print_primer_3_exons (file, target_chromosome , parental )
+    def print_primer_3_exons (file, target_chromosome , parental,  max_specific_primers: 20 )
       added = 0
       
       @snp_map.each do | gene, snp_array|
@@ -159,7 +159,7 @@ module Bio::PolyploidTools
           string = ""
           begin 
             primer_3_min_seq_length
-            string = snp.primer_3_string( snp.chromosome, parental )
+            string = snp.primer_3_string( snp.chromosome, parental,  max_specific_primers: max_specific_primers )
             #TODO: add tan error to the SNP this snp has more than max_hits. 
             #Or maybe inside the SNP file. 
             if string.size > 0
