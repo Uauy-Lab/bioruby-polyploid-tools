@@ -403,44 +403,47 @@ module Bio::PolyploidTools
         @snp_type = "non-homoeologous"
       end
       
+      total_candidates  = pr.chromosome_specific.size
+      total_candidates += pr.crhomosome_specific_intron.size 
+      total_candidates += pr.almost_chromosome_specific.size
+      total_candidates += pr.almost_crhomosome_specific_intron.size
+
+      skip_specific = total_candidates > max_specific_primers
+
       pr.chromosome_specific.each do |pos|
-        break if max_specific_primers <= 0
+        break if skip_specific
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
-        max_specific_primers -= 1
       end
 
       pr.crhomosome_specific_intron.each do |pos|
-        break if max_specific_primers <= 0
+        break if skip_specific
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific intron #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_specific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
-        max_specific_primers -= 1
       end
 
       pr.almost_chromosome_specific.each do |pos|
-        break if max_specific_primers <= 0
+        break if skip_specific
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
-        max_specific_primers -= 1
       end
 
       pr.almost_crhomosome_specific_intron.each do |pos|
-        break if max_specific_primers <= 0
+        break if skip_specific
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_semispecific intron #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}
         primer_3_propertes << return_primer_3_string(args)
         args[:name] = "#{gene}:#{original}#{position}#{snp} #{snp_in} chromosome_semispecific exon #{@snp_type} #{chromosome}"
         args[:sequence] = seq_snp
         primer_3_propertes << return_primer_3_string(args)
-        max_specific_primers -= 1
       end
 
       args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_nonspecific all #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :sequence=>seq_original}
