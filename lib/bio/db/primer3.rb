@@ -30,7 +30,6 @@ module Bio::DB::Primer3
     opts.each do |key,value|
       file.puts "#{key.to_s.upcase}=#{value}\n"
     end
-    # file.puts "="
   end
 
   def self.run(opts={})
