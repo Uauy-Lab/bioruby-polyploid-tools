@@ -64,7 +64,7 @@ end
 
 class Bio::NucleicAcid
 
-  IUPAC_CODES = {
+  IUPAC_CODES ||= {
 
     'y' => 'ct',
     'r' => 'ag',
