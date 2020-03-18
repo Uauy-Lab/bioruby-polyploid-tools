@@ -184,7 +184,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/tgac/bioruby-polyploid-tools".freeze
   s.licenses = ["MIT".freeze]
-  s.rubygems_version = "3.0.6".freeze
+  s.rubygems_version = "3.0.8".freeze
   s.summary = "Tool to work with polyploids, NGS and molecular biology".freeze
 
   if s.respond_to? :specification_version then
