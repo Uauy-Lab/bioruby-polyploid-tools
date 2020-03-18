@@ -222,7 +222,7 @@ module Bio::PolyploidTools
         end
     end
 
-    def primer_3_all_strings(target_chromosome, parental) 
+    def primer_3_all_strings(target_chromosome, parental, max_specific_primers: nil) 
       #puts "primer_3_all_strings: #{target_chromosome} #{parental}"
       pr = primer_region(target_chromosome, parental )
       #puts pr.inspect
