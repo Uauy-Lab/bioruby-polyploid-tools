@@ -18,7 +18,7 @@ module Bio::PolyploidTools
     end
 
     def gene_models(path)
-      @gene_models_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
+      @gene_models_db = Bio::DB::Fasta::FastaFile.new(fasta: path)
       @gene_models_db.index
       @gene_models_path = path
     end
@@ -48,7 +48,7 @@ module Bio::PolyploidTools
 
     #Sets the reference file for the gene models
     def chromosomes(path)
-      @chromosomes_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
+      @chromosomes_db = Bio::DB::Fasta::FastaFile.new(fasta: path)
       @chromosomes_path = path
     end
 
@@ -72,7 +72,7 @@ module Bio::PolyploidTools
       name = opts[:name]
       path = opts[:reference_path]
       path = opts[:alig_path]
-      chromosomes[name] = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
+      chromosomes[name] = Bio::DB::Fasta::FastaFile.new(fasta: path)
     end
     
     def add_snp(snp)
@@ -109,7 +109,7 @@ module Bio::PolyploidTools
       ret_str = ""
       @parents.each  do |name, bam|
         ret_str << ">#{gene_region.id}_SNP-#{snp.position}_#{name} Overlapping_exons:#{gene_region.to_s} localSNPpo:#{local_pos_in_gene+1}\n" 
-        to_print =  bam.consensus_with_ambiguities({:region=>gene_region}).to_s
+        to_print =  bam.consensus_with_ambiguities(region: gene_region).to_s
         to_print[local_pos_in_gene] = to_print[local_pos_in_gene].upcase
         ret_str << to_print << "\n"
       end

@@ -146,7 +146,7 @@ module Bio::PolyploidTools
       snp
     end
 
-    def primer_3_all_strings(target_chromosome, parental) 
+    def primer_3_all_strings(target_chromosome, parental, max_specific_primers: 20, flanking_size:500) 
       #puts target_chromosome 
       #puts parental
       #puts aligned_sequences.to_fasta
@@ -155,8 +155,11 @@ module Bio::PolyploidTools
 
       seq_original = String.new(pr.sequence)
       #puts seq_original.size.to_s << "-" << primer_3_min_seq_length.to_s
+      #puts "___"
+      #puts pr.inspect
       return primer_3_propertes if seq_original.size < primer_3_min_seq_length
-      return primer_3_propertes unless pr.snp_pos == 500
+      #puts "((("
+      return primer_3_propertes unless pr.snp_pos == flanking_size
       #puts "Sequence origina: #{ self.original}" 
       #puts pr.to_fasta
       #puts "Postion: #{pr.snp_pos}"
@@ -274,9 +277,9 @@ file.close
 exo_f = File.open(exonerate_file, "w")
 target=reference
 
-fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
+fasta_file = Bio::DB::Fasta::FastaFile.new(fasta: target)
 fasta_file.load_fai_entries
-min_identity = 95
+min_identity = 90
 found_contigs = Set.new
 
 
@@ -361,7 +364,7 @@ class Bio::DB::Primer3::Primer3Record
 end
 
 printed_counts = Hash.new(0)
-Bio::DB::Primer3::Primer3Record.parse_file(primer_3_output) do | primer3record |
+Bio::DB::Primer3::Primer3Record.parse_file(primer_3_output ) do | primer3record |
   #puts primer3record.inspect
   next if primer3record.primer_left_num_returned.to_i == 0
   
