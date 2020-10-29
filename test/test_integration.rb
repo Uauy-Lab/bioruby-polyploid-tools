@@ -43,26 +43,26 @@ class TestInregration < Test::Unit::TestCase
   end
   
   def teardown
-    
+    FileUtils.rm_r(@output_folder, force: true) if Dir.exist? @output_folder
   end
   
   def test_amplicon_primers
     cmd = "ruby #{@bin}/polymarker_capillary.rb --reference #{@ref} --sequences #{@amplicon}  --genomes_count #{@genomes_count}  --output #{@output_folder} --database #{@ref}"
     status, stdout, stderr = systemu cmd
-    assert_equal(status.exitstatus, 0, "Failed running '#{cmd}'")
+    assert_equal(status.exitstatus, 0, "Failed running '#{cmd}'\nSTDOUT:\n#{stdout}\nSTDERR\n#{stderr}")
    
   end
 
   def test_deletion_primers
     cmd = "ruby #{@bin}/polymarker_deletions.rb --reference #{@ref} --sequences #{@amplicon}  --genomes_count #{@genomes_count}  --output #{@output_folder} --database #{@ref}"
     status, stdout, stderr = systemu cmd
-     assert_equal(status.exitstatus, 0, "Failed running '#{cmd}'")
+     assert_equal(status.exitstatus, 0, "Failed running '#{cmd}'\nSTDOUT:\n#{stdout}\nSTDERR\n#{stderr}")
   end
 
   def test_polymerker
     cmd = "ruby ./bin/polymarker.rb -m #{@marker} -c #{@ref} --extract_found_contigs  -A blast -a nrgene --output #{@output_folder}"
     status, stdout, stderr = systemu cmd
-     assert_equal(status.exitstatus, 0, "Failed running '#{cmd}'")
+     assert_equal(status.exitstatus, 0, "Failed running '#{cmd}'\nSTDOUT:\n#{stdout}\nSTDERR\n#{stderr}")
   end
 
 end
