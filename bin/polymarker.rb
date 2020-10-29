@@ -41,7 +41,7 @@ options[:database]  = false
 options[:filter_best]  = false
 options[:aligner] = :blast
 options[:max_hits] = 8
-options[:max_specific_primers]  = 15
+options[:max_specific_primers]  = 20
 options[:primer_3_preferences] = {
       :primer_product_size_range => "50-150" ,
       :primer_max_size => 25 , 
@@ -288,18 +288,19 @@ file.close
 #chr_group = chromosome[0]
 write_status "Searching markers in genome"
 exo_f = File.open(exonerate_file, "w")
+contigs_f = nil
 contigs_f = File.open(temp_contigs, "w") if options[:extract_found_contigs]
 filename=path_to_contigs 
 #puts filename
 target=filename
 
-fasta_file = Bio::DB::Fasta::FastaFile.new({:fasta=>target})
+fasta_file = Bio::DB::Fasta::FastaFile.new(fasta: target)
 fasta_file.load_fai_entries
 
 found_contigs = Set.new
 
 
-def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
+def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options, contigs_f: nil)
   if aln.identity > min_identity
     exo_f.puts aln.line
     unless found_contigs.include?(aln.target_id) #We only add once each contig. Should reduce the size of the output file. 
@@ -317,11 +318,11 @@ def do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
 end
 
 Bio::DB::Blast.align({:query=>temp_fasta_query, :target=>options[:database], :model=>model, :max_hits=>options[:max_hits]}) do |aln|
-  do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options)
+  do_align(aln, exo_f, found_contigs,min_identity, fasta_file,options, contigs_f: contigs_f)
 end if options[:aligner] == :blast
 
 Bio::DB::Exonerate.align({:query=>temp_fasta_query, :target=>target, :model=>model}) do |aln|
-  do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options)
+  do_align(aln, exo_f, found_contigs, min_identity,fasta_file,options, contigs_f: contigs_f)
 end if options[:aligner] == :exonerate
  
 exo_f.close() 

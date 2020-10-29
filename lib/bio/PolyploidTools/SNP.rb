@@ -409,7 +409,7 @@ module Bio::PolyploidTools
       total_candidates += pr.almost_crhomosome_specific_intron.size
 
       skip_specific = total_candidates > max_specific_primers
-
+      #puts "skip_specific: #{skip_specific}: #{total_candidates} > #{max_specific_primers}"
       pr.chromosome_specific.each do |pos|
         break if skip_specific
         args = {:name =>"#{gene}:#{original}#{position}#{snp} #{original_name} chromosome_specific exon #{@snp_type} #{chromosome}", :left_pos => pr.snp_pos, :right_pos => pos, :sequence=>seq_original}

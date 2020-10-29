@@ -53,7 +53,7 @@ OptionParser.new do |opts|
     options[:markers] = o
   end
 
-  opts.on("-o", "--output_folder FOLDER", "Path to a folder where the outputs are going to be stored") do |o|
+  opts.on("-o", "--output FOLDER", "Path to a folder where the outputs are going to be stored") do |o|
     options[:output_folder] = o
   end
   opts.on("-g", "--genomes_count INT", "Number of genomes (default 3, for hexaploid)") do |o|
