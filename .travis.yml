@@ -10,6 +10,7 @@ addons:
     - blast2
     - ncbi-blast+
     - mafft
+    - primer3
 before_install:
   - gem update --system
   - export RUBYOPT="-W1"
