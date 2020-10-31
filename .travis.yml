@@ -8,6 +8,7 @@ addons:
     - libtinfo-dev 
     - exonerate  
     - blast2
+    - ncbi-blast+
 before_install:
   - gem update --system
   - export RUBYOPT="-W1"
