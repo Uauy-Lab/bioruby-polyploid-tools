@@ -26,12 +26,12 @@ class TestPolyploidTools < Test::Unit::TestCase
     @f2_b=data_path + "/LIB1719.bam"
     
     @bfr_path=data_path + "/bfr_out_test.csv"
-    @fasta_db = Bio::DB::Fasta::FastaFile.new({:fasta=>@ref})
+    @fasta_db = Bio::DB::Fasta::FastaFile.new(fasta: @ref)
     @fasta_db.load_fai_entries
-    @bam_a =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@a})
-    @bam_b =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@b})
-    @bam_f2_a =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@f2_a})
-    @bam_f2_b =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@f2_b})
+    @bam_a =  Bio::DB::Sam.new(fasta: @ref, bam: @a)
+    @bam_b =  Bio::DB::Sam.new(fasta: @ref, bam: @b)
+    @bam_f2_a =  Bio::DB::Sam.new(fasta: @ref, bam: @f2_a)
+    @bam_f2_b =  Bio::DB::Sam.new(fasta: @ref, bam: @f2_b)
    # puts "SETUP"
   end
   
@@ -49,8 +49,8 @@ class TestPolyploidTools < Test::Unit::TestCase
     
     #puts @bam_a.methods
     ref_seq=@fasta_db.fetch_sequence(region)
-    reg_a = @bam_a.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
-    reg_b = @bam_b.fetch_region({:region=>region,  :min_cov=>min_cov, :A=>1})
+    reg_a = @bam_a.fetch_region(region: region,  min_cov: min_cov, A: 1)
+    reg_b = @bam_b.fetch_region(region: region,  min_cov: min_cov, A: 1)
     cons_1 = reg_a.consensus
     cons_2 = reg_b.consensus
     
@@ -85,10 +85,10 @@ class TestPolyploidTools < Test::Unit::TestCase
     container = Bio::BFRTools::BFRContainer.new
     
     container.reference @ref
-    container.parental_1  ( {:path => @a } )
-    container.parental_2  ( {:path => @b } )
-    container.bulk_1 ( {:path => @f2_a  })
-    container.bulk_2 ( {:path => @f2_b  })
+    container.parental_1( path:  @a )
+    container.parental_2( path:  @b )
+    container.bulk_1( path:  @f2_a  )
+    container.bulk_2( path:  @f2_b  )
 
     i = -1
 

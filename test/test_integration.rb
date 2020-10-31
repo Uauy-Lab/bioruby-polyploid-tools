@@ -25,7 +25,10 @@ class TestInregration < Test::Unit::TestCase
     @bin=File.expand_path(File.dirname(__FILE__) + '/../bin')
     @marker = "#{@data_path}/7B_marker_test.txt"
     FileUtils.rm_r(@output_folder, force: true) if Dir.exist? @output_folder
-    
+
+    cmd = "makeblastdb -in #{@ref} -dbtype nucl "
+    #status, stdout, stderr = 
+    systemu cmd
     # @ref=data_path + '/S22380157.fa'
     # @a=data_path + "/LIB1721.bam"
     # @b=data_path + "/LIB1722.bam"
@@ -40,10 +43,15 @@ class TestInregration < Test::Unit::TestCase
     # @bam_f2_a =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@f2_a})
     # @bam_f2_b =  Bio::DB::Sam.new({:fasta=>@ref, :bam=>@f2_b})
    # puts "SETUP"
+
   end
   
   def teardown
     FileUtils.rm_r(@output_folder, force: true) if Dir.exist? @output_folder
+    Dir.glob("#{@ref}.n*").each do |file| 
+      #puts file 
+      File.delete(file)
+    end
   end
   
   def test_amplicon_primers

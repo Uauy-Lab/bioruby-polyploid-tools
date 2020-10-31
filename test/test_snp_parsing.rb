@@ -27,7 +27,7 @@ class TestSNPparsing < Test::Unit::TestCase
   def test_mutant_snp
 
     ref=@data + "/IWGSC_CSS_1AL_scaff_1455974_aln_contigs.fa"
-    fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>ref})
+    fasta_reference_db = Bio::DB::Fasta::FastaFile.new(fasta: ref)
     fasta_reference_db.index
     fasta_reference_db.load_fai_entries 
     
@@ -49,7 +49,7 @@ class TestSNPparsing < Test::Unit::TestCase
 
   def test_vcf_line
     ref=@data + "/IWGSC_CSS_1AL_scaff_1455974_aln_contigs.fa"
-    fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>ref})
+    fasta_reference_db = Bio::DB::Fasta::FastaFile.new(fasta: ref)
     
     fasta_reference_db.load_fai_entries 
     vcf="IWGSC_CSS_1AL_scaff_1455974	127	test_snp	C	T	135.03	.	"
@@ -85,7 +85,7 @@ class TestSNPparsing < Test::Unit::TestCase
   def test_reference_snp
 
     ref=@data + "/IWGSC_CSS_1AL_scaff_1455974_aln_contigs.fa"
-    fasta_reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>ref})
+    fasta_reference_db = Bio::DB::Fasta::FastaFile.new(fasta: ref)
     
     fasta_reference_db.load_fai_entries 
     

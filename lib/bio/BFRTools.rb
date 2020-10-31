@@ -31,7 +31,7 @@ module Bio::BFRTools
     BASES = [:A, :C, :G, :T]
     #Sets the reference file
     def reference(path)
-      @reference_db = Bio::DB::Fasta::FastaFile.new({:fasta=>path})
+      @reference_db = Bio::DB::Fasta::FastaFile.new(fasta: path)
       @reference_path = path
     end
 
@@ -49,7 +49,7 @@ module Bio::BFRTools
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
       @parental_1_name = opts[:name] ? opts[:name] : path.basename(".bam").to_s
-      @parental_1_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
+      @parental_1_sam =  Bio::DB::Sam.new(fasta: @reference_path, :bam=>path.realpath.to_s)
       @parental_1_path = path
 
     end 
@@ -61,7 +61,7 @@ module Bio::BFRTools
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
       @parental_2_name = @name = opts[:name] ? opts[:name] : path.basename(".bam").to_s
-      @parental_2_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
+      @parental_2_sam =  Bio::DB::Sam.new(fasta: @reference_path, :bam=>path.realpath.to_s)
       @parental_2_path = path
     end
 
@@ -72,7 +72,7 @@ module Bio::BFRTools
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
       @bulk_1_name =  opts[:name] ? opts[:name] : path.basename(".bam").to_s
-      @bulk_1_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
+      @bulk_1_sam =  Bio::DB::Sam.new(fasta: @reference_path, :bam=>path.realpath.to_s)
       @bulk_1_path = path
     end 
 
@@ -83,7 +83,7 @@ module Bio::BFRTools
       raise BFRToolsException.new("Unable to open #{path}") unless path.readable? or path.directory?        
 
       @bulk_2_name =  opts[:name] ? opts[:name] : path.basename(".bam").to_s
-      @bulk_2_sam =  Bio::DB::Sam.new({:fasta=>@reference_path, :bam=>path.realpath.to_s})
+      @bulk_2_sam =  Bio::DB::Sam.new(fasta: @reference_path, :bam=>path.realpath.to_s)
       @bulk_2_path = path
     end     
 
