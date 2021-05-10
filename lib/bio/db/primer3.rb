@@ -34,13 +34,17 @@ module Bio::DB::Primer3
 
   def self.run(opts={})
     puts "Primer3.run running..."
-
+    timeout = 600
     f_in=opts[:in]
     f_out=opts[:out]
+    timeout = opts[:timeout] if opts[:timeout]
     opts.delete(:in)
     opts.delete(:out)
     primer_3_in = File.read(f_in)
-    status = systemu "primer3_core", 0=>primer_3_in, 1=>stdout='', 2=>stderr=''
+    status = systemu "primer3_core", 0=>primer_3_in, 1=>stdout='', 2=>stderr='' do |cid|
+      sleep timeout
+      Process.kill 9, cid
+    end
     # $stderr.puts cmdline
     if status.exitstatus == 0
       File.open(f_out, 'w') { |f| f.write(stdout) }
