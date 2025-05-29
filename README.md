@@ -1,5 +1,7 @@
 # bio-polyploid-tools
 
+This project is now maintained by the informatics department at the John Innes Centre and can be found [here](https://github.com/Informatics-John-Innes-Centre/bio-polymarker).
+
 ## Introduction
 
 This tools are designed to deal with polyploid wheat. The first tool is to design KASP primers, making them as specific as possible. 
